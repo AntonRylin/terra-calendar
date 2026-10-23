@@ -44,7 +44,7 @@ const VIEW_ICONS: Record<ViewMode, JSX.Element> = {
 
 const VIEW_OPTIONS: { value: ViewMode; label: string; hint: string }[] = [
   { value: 'separate', label: 'Month', hint: 'One month at a time' },
-  { value: 'week', label: 'Week', hint: 'Seven days with hours' },
+  { value: 'week', label: '3 days', hint: 'Three days with hours, swipe for more' },
   { value: 'continuous', label: 'Continuous', hint: 'An endless scroll of weeks' },
 ];
 
