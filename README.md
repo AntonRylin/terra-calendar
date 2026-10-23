@@ -1,6 +1,6 @@
 # Terra Calendar
 
-**[Download](https://github.com/AntonRylin/terra-calendar/releases/latest)** · **[Website](https://antonrylin.github.io/terra-calendar/)** · **[Discord](https://discord.com/invite/kfTbsN7eF7)**
+**[Download](https://antonrylin.github.io/terra-calendar/download.html)** · **[Website](https://antonrylin.github.io/terra-calendar/)** · **[Discord](https://discord.com/invite/kfTbsN7eF7)**
 
 A minimalistic calendar for desktop (and later mobile). It ships in two editions
 from this one codebase:

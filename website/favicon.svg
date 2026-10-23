@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#93b8e6"/><stop offset="1" stop-color="#6c98d3"/></linearGradient>
+    <linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fd"/></linearGradient>
+    <linearGradient id="sage" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9cdb9"/><stop offset="1" stop-color="#93b098"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+    <clipPath id="card"><rect x="252" y="272" width="520" height="500" rx="96"/></clipPath>
+  </defs>
+  <g transform="translate(512 500) scale(1.8) translate(-512 -522)">
+    <rect x="258" y="286" width="508" height="500" rx="96" fill="#3f6aa8" opacity="0.32" filter="url(#shadow)"/>
+    <rect x="252" y="272" width="520" height="500" rx="96" fill="url(#white)"/>
+    <rect x="252" y="272" width="520" height="150" fill="url(#blue)" clip-path="url(#card)"/>
+    <rect x="254.500" y="274.500" width="515" height="495" rx="93.500" fill="none" stroke="#a9c1e4" stroke-width="5"/>
+    <circle cx="400" cy="520" r="34" fill="url(#blue)"/>
+    <circle cx="512" cy="520" r="34" fill="#cfdcee"/>
+    <circle cx="624" cy="520" r="34" fill="#cfdcee"/>
+    <circle cx="400" cy="632" r="34" fill="#cfdcee"/>
+    <circle cx="512" cy="632" r="34" fill="url(#sage)"/>
+    <circle cx="624" cy="632" r="34" fill="#cfdcee"/>
+  </g>
+</svg>

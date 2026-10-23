@@ -1,132 +1,119 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Terra Calendar — Privacy Policy</title>
-    <script>
-      // Follow the theme chosen on the main site (or the system preference).
-      (function () {
-        var t = null;
-        try { t = localStorage.getItem('oc-theme'); } catch (e) {}
-        if (t !== 'light' && t !== 'dark') {
-          t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        document.documentElement.setAttribute('data-theme', t);
-      })();
-    </script>
-    <style>
-      :root {
-        color-scheme: light;
-        --bg: #fafafa; --text: #1d1d1f; --muted: #5c5e66;
-        --accent: #4f6fe6; --code-bg: #f2f2f6;
-      }
-      :root[data-theme="dark"] {
-        color-scheme: dark;
-        --bg: #0b0c10; --text: #e8e9ed; --muted: #a0a3ad;
-        --accent: #6c8cff; --code-bg: #15171f;
-      }
-      body {
-        margin: 0; background: var(--bg); color: var(--text); line-height: 1.65;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      }
-      .wrap { max-width: 760px; margin: 0 auto; padding: 48px 24px 96px; }
-      h1 { font-size: 2rem; letter-spacing: -0.02em; }
-      h2 { margin-top: 36px; font-size: 1.25rem; }
-      a { color: var(--accent); }
-      .muted { color: var(--muted); }
-      code { background: var(--code-bg); padding: 2px 6px; border-radius: 6px; }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <h1>Privacy Policy</h1>
-      <p class="muted">Terra Calendar &middot; Last updated: 18 June 2026</p>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy – Terra Calendar</title>
+<meta name="description" content="How Terra Calendar handles your data: your events stay on your device and in your own calendar accounts.">
+<link rel="canonical" href="https://antonrylin.github.io/terra-calendar/privacy.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="stylesheet" href="site.css?v=2026-10-23">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Terra Calendar home"><img src="img/logo.webp" alt="" width="34" height="34"><span class="brand-text"><b>Terra Calendar</b><small>by Social Artworks</small></span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="./">Home</a>
+      <a class="get" href="app/">Open app</a>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap article"><h1>Privacy Policy</h1>
+<p>Terra Calendar &middot; Last updated: 23 October 2026</p>
 
-      <p>
-        Terra Calendar ("the app") is a desktop calendar application. This policy
-        explains what data the app accesses and how it is handled. The short
-        version: <strong>the app stores your data on your own device and in your
-        own calendar accounts. The developer operates no server and does not
-        collect, store, sell, or share your personal data.</strong>
-      </p>
+<p>
+  Terra Calendar ("the app") is a desktop calendar application. This policy
+  explains what data the app accesses and how it is handled. The short
+  version: <strong>the app stores your data on your own device and in your
+  own calendar accounts. The developer operates no server and does not
+  collect, store, sell, or share your personal data.</strong>
+</p>
 
-      <h2>What the app accesses</h2>
-      <ul>
-        <li>
-          <strong>Your calendar data.</strong> When you connect a Google account,
-          the app uses the Google Calendar API to read and write events in the
-          calendars you choose. When you connect Apple iCloud, it does the same
-          over CalDAV. Calendar data flows directly between your device and your
-          chosen account provider.
-        </li>
-        <li>
-          <strong>Your account email.</strong> Read only to display which account
-          is connected and to label local data.
-        </li>
-        <li>
-          <strong>Authentication tokens.</strong> OAuth tokens (Google) and
-          app-specific passwords (Apple) are stored in your operating system's
-          secure keychain on your own device. They are never transmitted to the
-          developer.
-        </li>
-      </ul>
+<h2>What the app accesses</h2>
+<ul>
+  <li>
+    <strong>Your calendar data.</strong> When you connect a Google account,
+    the app uses the Google Calendar API to read and write events in the
+    calendars you choose. When you connect Apple iCloud, it does the same
+    over CalDAV. Calendar data flows directly between your device and your
+    chosen account provider.
+  </li>
+  <li>
+    <strong>Your account email.</strong> Read only to display which account
+    is connected and to label local data.
+  </li>
+  <li>
+    <strong>Authentication tokens.</strong> OAuth tokens (Google) and
+    app-specific passwords (Apple) are stored in your operating system's
+    secure keychain on your own device. They are never transmitted to the
+    developer.
+  </li>
+</ul>
 
-      <h2>How your data is used</h2>
-      <p>
-        Calendar data is used solely to provide the app's functionality —
-        displaying, creating, editing, and deleting your events on your device.
-        It is processed locally. The developer has no servers and receives no
-        copy of your events, tokens, or account information.
-      </p>
+<h2>How your data is used</h2>
+<p>
+  Calendar data is used solely to provide the app's functionality —
+  displaying, creating, editing, and deleting your events on your device.
+  It is processed locally. The developer has no servers and receives no
+  copy of your events, tokens, or account information.
+</p>
 
-      <h2>Google API Services — Limited Use disclosure</h2>
-      <p>
-        Terra Calendar's use and transfer of information received from Google APIs
-        adheres to the
-        <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noreferrer">
-          Google API Services User Data Policy</a>, including the
-        <a href="https://developers.google.com/terms/api-services-user-data-policy#limited-use" target="_blank" rel="noreferrer">
-          Limited Use</a> requirements. Specifically, data obtained via Google
-        APIs (your Google Calendar data) is used only to provide and improve the
-        app's user-facing calendar features on your device, is not transferred to
-        others except as needed to provide those features or as required by law,
-        is not used for advertising, and is not read by humans except with your
-        consent or as required by law.
-      </p>
+<h2>Google API Services — Limited Use disclosure</h2>
+<p>
+  Terra Calendar's use and transfer of information received from Google APIs
+  adheres to the
+  <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noreferrer">
+    Google API Services User Data Policy</a>, including the
+  <a href="https://developers.google.com/terms/api-services-user-data-policy#limited-use" target="_blank" rel="noreferrer">
+    Limited Use</a> requirements. Specifically, data obtained via Google
+  APIs (your Google Calendar data) is used only to provide and improve the
+  app's user-facing calendar features on your device, is not transferred to
+  others except as needed to provide those features or as required by law,
+  is not used for advertising, and is not read by humans except with your
+  consent or as required by law.
+</p>
 
-      <h2>Data sharing</h2>
-      <p>
-        We do not share your data with any third party. The only external parties
-        involved are the calendar providers <em>you</em> connect (Google, Apple),
-        which handle your data under their own privacy policies.
-      </p>
+<h2>Data sharing</h2>
+<p>
+  We do not share your data with any third party. The only external parties
+  involved are the calendar providers <em>you</em> connect (Google, Apple),
+  which handle your data under their own privacy policies.
+</p>
 
-      <h2>Data retention and deletion</h2>
-      <p>
-        Because the developer stores none of your data, there is nothing for us to
-        retain or delete. Locally cached data and stored tokens are removed when
-        you disconnect an account in the app or uninstall it. You can also revoke
-        the app's access at any time at
-        <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">myaccount.google.com/permissions</a>
-        (Google) or in your Apple ID security settings.
-      </p>
+<h2>Data retention and deletion</h2>
+<p>
+  Because the developer stores none of your data, there is nothing for us to
+  retain or delete. Locally cached data and stored tokens are removed when
+  you disconnect an account in the app or uninstall it. You can also revoke
+  the app's access at any time at
+  <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">myaccount.google.com/permissions</a>
+  (Google) or in your Apple ID security settings.
+</p>
 
-      <h2>Children</h2>
-      <p>The app is not directed to children under 13.</p>
+<h2>Children</h2>
+<p>The app is not directed to children under 13.</p>
 
-      <h2>Changes</h2>
-      <p>
-        This policy may be updated; the "Last updated" date above reflects the
-        latest version.
-      </p>
+<h2>Changes</h2>
+<p>
+  This policy may be updated; the "Last updated" date above reflects the
+  latest version.
+</p>
 
-      <h2>Contact</h2>
-      <p>
-        Questions: <a href="mailto:montiesprache@gmail.com">montiesprache@gmail.com</a>
-      </p>
-
-      <p class="muted"><a href="./index.html">&larr; Back to Terra Calendar</a></p>
-    </div>
-  </body>
+<h2>Contact</h2>
+<p>
+  Questions: <a href="mailto:montiesprache@gmail.com">montiesprache@gmail.com</a>
+</p>
+</div>
+</main>
+<footer>
+  <div class="wrap">
+    <span>Terra Calendar by Social Artworks. Made in Austria.</span>
+    <span class="links"><a href="./">Home</a><a href="https://github.com/AntonRylin/terra-calendar">GitHub</a><a href="https://discord.com/invite/kfTbsN7eF7">Discord</a><a href="impressum/">Impressum</a></span>
+  </div>
+</footer>
+</body>
 </html>
