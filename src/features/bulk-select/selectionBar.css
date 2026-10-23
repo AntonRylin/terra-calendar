@@ -1,0 +1,74 @@
+/* Slim vertical toolbar floating just OUTSIDE the Upcoming panel, on the divider
+   seam between the sidebar and the calendar — so it never overlaps the cards.
+   Anchored to the sidebar's right edge (--sidebar-width) and vertically centered
+   on the Upcoming region (the top half of the sidebar, --sidebar-split). */
+.selection-bar {
+  position: absolute;
+  left: var(--sidebar-width, 100%);
+  top: calc(var(--sidebar-split, 100%) / 2);
+  transform: translateY(-50%);
+  margin-left: var(--space-2, 8px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px) var(--space-1, 4px);
+  background: var(--color-surface, #1c1c1e);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
+  border-radius: 999px;
+  box-shadow: var(--shadow-popover, 0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+/* Mobile: no sidebar — pin to the right edge of the screen. */
+.main-screen-mobile .selection-bar {
+  left: auto;
+  right: var(--space-3, 12px);
+  top: 50%;
+  margin-left: 0;
+}
+
+.selection-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-accent, #0a84ff);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.selection-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary, #98989d);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.selection-icon:hover {
+  background: var(--color-muted-bg, rgba(255, 255, 255, 0.08));
+  color: var(--color-text, #fff);
+}
+
+.selection-icon-danger:hover {
+  background: rgba(255, 69, 58, 0.15);
+  color: var(--color-danger, #ff453a);
+}
+
+.selection-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: transparent;
+  color: var(--color-text-faint, #636366);
+}

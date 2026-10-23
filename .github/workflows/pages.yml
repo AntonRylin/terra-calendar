@@ -1,0 +1,76 @@
+name: Deploy website to GitHub Pages
+
+# Publishes one Pages site with two surfaces:
+#   /      — the static marketing site in website/ (landing + privacy policy)
+#   /app/  — the web build of the calendar itself (Vite), so visitors can
+#            create an account and use Terra Calendar in the browser.
+#
+# Supabase credentials come from public-safe repository *variables*
+# (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY — the anon key is designed to be
+# shipped to clients). When they are unset the app still builds; it simply runs
+# in local-only mode with accounts disabled.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'src/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # --base=./ keeps asset URLs relative so the same build works at
+      # <user>.github.io/<repo>/app/ and at any future custom domain.
+      - name: Build web app
+        run: npm run build -- --base=./
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_BILLING_ENABLED: ${{ vars.VITE_BILLING_ENABLED }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+
+      - name: Assemble site (landing at /, app at /app/)
+        run: |
+          mkdir -p _site/app
+          cp -r website/. _site/
+          cp -r dist/. _site/app/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

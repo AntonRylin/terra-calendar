@@ -1,0 +1,71 @@
+/* A hover card you can move the pointer into (see HoverTip.tsx): unlike a
+   native `title` tooltip it can hold a link. */
+
+.hovertip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  color: var(--color-text-faint);
+  cursor: help;
+  transition: color 120ms ease;
+}
+
+.hovertip-trigger:hover,
+.hovertip-trigger:focus-visible {
+  color: var(--color-text-secondary);
+}
+
+.hovertip-card {
+  /* Above the popovers it is opened from (350) and above a mobile sheet (400),
+     but below confirm dialogs (2000). */
+  z-index: 420;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 230px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.hovertip-card strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* The "linked word" action inside a card: plain text with an underline, no
+   button chrome. */
+.hovertip-link {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 120ms ease;
+}
+
+.hovertip-link:hover {
+  opacity: 0.75;
+}
+
+@media (max-width: 768px) {
+  .hovertip-card {
+    font-size: 13px;
+    max-width: 260px;
+  }
+}

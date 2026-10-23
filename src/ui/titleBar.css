@@ -1,0 +1,37 @@
+/* Frameless window controls, pinned to the window's top-right corner so they
+   stay visible no matter how narrow the window gets (Notion-style). */
+.window-controls {
+  position: fixed;
+  top: 6px;
+  right: 10px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  /* Opt out of any drag region so clicks aren't swallowed. */
+  -webkit-app-region: no-drag;
+}
+
+.window-control-btn {
+  width: 34px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: default;
+  padding: 0;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.window-control-btn:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+.window-control-close:hover {
+  background: #e81123;
+  color: #ffffff;
+}

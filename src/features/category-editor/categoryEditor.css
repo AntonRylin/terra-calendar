@@ -1,0 +1,240 @@
+/* Popover shell for the shared CategoryEditor (chip double-click). */
+.category-editor {
+  padding: var(--space-1);
+  width: min(92vw, 360px);
+  max-height: min(78vh, 560px);
+  overflow-y: auto;
+}
+
+/* ---- Swatch grid (nameless tiles, hover/title names) ---- */
+.catswatch-wrap { display: flex; flex-direction: column; gap: var(--space-2); }
+/* Tiles are sized like the event editor's .cosmetic-swatch so color pickers
+   look the same everywhere in the app. */
+.catswatch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+.catswatch-cell { position: relative; }
+.catswatch {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  box-sizing: border-box;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.catswatch:hover { transform: scale(1.08); z-index: 2; }
+.catswatch.is-selected { border-color: var(--color-text); box-shadow: 0 0 0 2px var(--color-accent-soft); }
+@media (max-width: 768px) {
+  /* Finger-sized targets, same bump the event editor applies. */
+  .catswatch { width: 46px; height: 28px; }
+}
+.catswatch.is-locked { opacity: 0.75; }
+.catswatch-lock { position: absolute; right: -4px; top: -6px; font-size: 10px; pointer-events: none; }
+.catswatch-delete {
+  position: absolute;
+  left: -5px;
+  top: -6px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 0.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 3;
+}
+.catswatch-cell:hover .catswatch-delete { opacity: 1; }
+.catswatch-add {
+  border-style: dashed;
+  border-color: var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1;
+}
+.catswatch-more {
+  border: none;
+  background: none;
+  color: var(--color-accent);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px;
+  align-self: center;
+  font-family: inherit;
+}
+.catswatch-group-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-1);
+}
+.catswatch-custom-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.catswatch-custom-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-secondary); }
+.catswatch-custom-label input[type='color'] { width: 26px; height: 26px; border: none; padding: 0; background: transparent; cursor: pointer; }
+.catswatch-custom-strip { flex: 1; min-width: 60px; height: 24px; border-radius: 6px; }
+
+/* ---- Preview block ---- */
+/* One soft borderless canvas: big name on top, example event below. A slim
+   strip, not a wide slab — it never grows past the compact editor column. */
+.catprev {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  min-width: 0;
+  /* The preview chip is a real .event-chip; its paddings/font scale off this. */
+  --effective-tile-scale: 1.6;
+}
+.catprev-name { font-size: 26px; font-weight: 500; line-height: 1.15; outline: none; word-break: break-word; max-width: 100%; }
+.catprev-caption {
+  font-size: 11px;
+  color: var(--color-text-faint);
+  margin: var(--space-2) 0;
+}
+/* Only preview-specific tweaks on top of the real chip styles. */
+.catprev-pill {
+  cursor: default;
+  background-size: 300% 100%;
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* ---- Editor composition ---- */
+/* Capped to a compact column so the whole editor reads tight and intentional
+   in the wide settings pane, instead of stretching edge to edge. */
+.catedit { display: flex; flex-direction: column; gap: var(--space-3); max-width: 360px; }
+.catedit-seg {
+  display: flex;
+  align-self: center;
+  width: min(100%, 240px);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.catedit-seg-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 6px 0;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.catedit-seg-btn.is-on { background: var(--color-accent-soft); color: var(--color-accent); font-weight: 500; }
+/* Toggle rows: label fills the row, switch pinned to the right so a stack of
+   them lines up in a clean column. Tighter divider + padding than a full
+   section break. */
+.catedit-match { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); border-top: 0.5px solid var(--color-border); padding-top: var(--space-2); }
+.catedit-match + .catedit-match { border-top: none; padding-top: 0; }
+.catedit-match-label { min-width: 0; }
+.catedit-match-title { font-size: 13px; font-weight: 500; color: var(--color-text); }
+.catedit-match-hint { font-size: 11px; color: var(--color-text-faint); }
+/* ---- Category default reminders ---- */
+.catedit-reminders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 0.5px solid var(--color-border);
+  padding-top: var(--space-2);
+}
+/* Reminders sit right above the toggle stack; keep a single divider. */
+.catedit-reminders + .catedit-match { border-top: none; padding-top: 0; }
+.catedit-reminders .reminder-custom-value { width: 64px; text-align: center; }
+.catedit-reminders .reminder-custom-unit { flex: 1; min-width: 0; }
+.catedit-switch {
+  width: 36px;
+  height: 21px;
+  border-radius: 11px;
+  border: none;
+  background: var(--color-border-strong);
+  position: relative;
+  cursor: pointer;
+  flex: none;
+  padding: 0;
+  transition: background 0.15s ease;
+}
+.catedit-switch.is-on { background: var(--color-accent); }
+.catedit-knob { position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; border-radius: 50%; background: #fff; transition: left 0.15s ease; }
+.catedit-switch.is-on .catedit-knob { left: 17px; }
+/* Notion-style quiet text action: no chrome, only rendered while a custom
+   style exists to reset. */
+.catedit-reset {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 4px 0;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 0.13s ease;
+}
+.catedit-reset:hover { color: var(--color-text); }
+.catedit.is-popover { max-width: min(92vw, 360px); }
+
+/* ---- Animated styles (cosmetic picker) ---- */
+.catedit-cosmetic {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* A gradient cosmetic on the big name: the `cosmetic-swatch` host class pulls
+   in the animated background from cosmetics.css; here we undo the swatch's
+   tile chrome and clip the flowing gradient to the text itself. Halos and
+   overlay pseudo-elements stay off the name — the event pill below shows the
+   full effect. */
+.catprev-name.cosmetic-swatch {
+  width: auto;
+  height: auto;
+  display: inline-block;
+  border: none;
+  background-color: transparent;
+  padding: 2px 6px;
+  cursor: text;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  box-shadow: none !important;
+  overflow: visible;
+}
+.catprev-name.cosmetic-swatch::before,
+.catprev-name.cosmetic-swatch::after {
+  display: none;
+}
+.catprev-name.cosmetic-swatch:hover,
+.catprev-name.cosmetic-swatch:focus {
+  transform: none;
+  background-color: transparent;
+  outline: 1px solid var(--color-border-strong);
+  outline-offset: 2px;
+}
+
+/* ---- Rename affordance ---- */
+/* The preview block itself is muted-bg, so the hover wash flips to surface.
+   Skipped for cosmetic names — a background wash would repaint the clipped
+   gradient text; those get an outline instead (rule above). */
+.catprev-name { cursor: text; border-radius: var(--radius-sm); padding: 2px 6px; margin-left: -6px; }
+.catprev-name:not(.cosmetic-swatch):hover { background: var(--color-surface); }
+.catprev-name:not(.cosmetic-swatch):focus { background: var(--color-surface); caret-color: var(--color-accent); }
+.catprev-name.cosmetic-swatch:focus { caret-color: var(--color-accent); }

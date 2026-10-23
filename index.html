@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Terra Calendar</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a light flash on load.
+      (function () {
+        try {
+          var raw = localStorage.getItem('open-calendar.settings');
+          var saved = raw ? JSON.parse(raw) : {};
+          var theme = saved.theme || 'light';
+          if (theme === 'system') {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          } else if (theme === 'claude') {
+            // Legacy id for the warm palette, renamed to 'sand'.
+            theme = 'sand';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+          // Same reason: without this, dark-mode day styles paint at full
+          // strength for a frame before React tones them down (ui/skinTone.css).
+          document.documentElement.setAttribute(
+            'data-dim-skins',
+            saved.dimSkinsInDark === false ? 'off' : 'on',
+          );
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.setAttribute('data-dim-skins', 'on');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

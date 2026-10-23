@@ -1,0 +1,1238 @@
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  animation: settingsFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.settings-backdrop.minimap-mode {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@keyframes settingsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes settingsScaleUp {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.settings-card {
+  width: 420px;
+  /* The viewport units (vw/vh) ignore the interface-scale zoom on <html>, so a
+     plain calc(100vh - …) renders ×scale too tall and pushes the close button
+     off-screen. Dividing by --font-scale caps the card to the *visible* window
+     at any scale. At scale 1 this is a no-op. */
+  max-width: calc((100vw - 2 * var(--space-4)) / var(--font-scale, 1));
+  max-height: calc((100vh - 2 * var(--space-5)) / var(--font-scale, 1));
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: 16px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  padding: 24px 28px 28px;
+  animation: settingsScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Keep the title + close button pinned while the body scrolls, so the panel is
+   always closable regardless of height or scale. */
+.settings-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  background: var(--color-surface);
+}
+
+.settings-header h2 {
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+/* "‹ All categories" back button shown in the header while editing a category
+   (the category's own name lives in the preview, so no need to repeat it). */
+.settings-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 5px 10px 5px 6px;
+  border-radius: 8px;
+  background: var(--color-muted-bg);
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.settings-back svg { flex: none; }
+.settings-back span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.settings-back:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.settings-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-muted-bg);
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.settings-close:hover {
+  background: var(--color-border-strong);
+  color: var(--color-text);
+  transform: rotate(90deg);
+}
+
+.settings-section {
+  padding: 20px 0 0 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.settings-section h3 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+}
+
+.settings-empty {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px;
+  opacity: 0.85;
+}
+
+.settings-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: 24px;
+}
+
+.settings-connect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.settings-btn-icon {
+  margin-right: 12px;
+  color: var(--color-text);
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.settings-connect:hover {
+  background: var(--color-border);
+}
+
+.settings-connect:hover .settings-btn-icon {
+  transform: scale(1.1);
+}
+
+.settings-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 13px;
+}
+
+.settings-field select {
+  font-family: inherit;
+  font-size: 13px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* Each settings group gets a clear, readable title with a divider above it, so
+   the long list reads as distinct sections instead of one flat gray wall.
+   Selector is qualified to outrank the `.settings-section h3` base style. */
+.settings-section h3.settings-subhead {
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--color-text);
+}
+
+.settings-theme-seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background-color: var(--color-muted-bg);
+  border-radius: 10px;
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-4);
+  width: 340px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.settings-theme-seg-btn {
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border: none;
+  background-color: transparent;
+  border-radius: 7px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.settings-theme-seg-btn:hover {
+  color: var(--color-text);
+}
+
+.settings-theme-seg-btn.is-active {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.settings-mode {
+  display: block;
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  background-color: var(--color-muted-bg);
+  border-radius: 10px;
+  color: var(--color-text);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px;
+  padding-right: 40px !important;
+  transition: all 0.2s ease;
+}
+
+.settings-mode:hover {
+  background-color: var(--color-border);
+}
+
+.settings-mode:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  background-color: var(--color-surface);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.settings-month-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.settings-month.is-disabled {
+  color: var(--color-text-faint);
+  background: rgba(0, 0, 0, 0.01);
+  border-color: transparent;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.settings-month {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 6px;
+  border: 1px solid transparent;
+  background: var(--color-muted-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.settings-month input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.settings-month:hover:not(.is-disabled) {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.settings-month.is-checked {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.settings-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-border-strong);
+  outline: none;
+  transition: background 0.2s;
+}
+
+.settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+.settings-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.settings-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+.settings-slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
+}
+
+.settings-size-reset-btn {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.1s, opacity 0.15s ease;
+}
+
+.settings-size-reset-btn:hover:not(:disabled) {
+  background-color: var(--color-accent-soft);
+}
+
+.settings-size-reset-btn:disabled {
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.settings-reset-btn {
+  display: block;
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-4);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.settings-reset-btn:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.settings-reset-btn:disabled {
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.settings-reset-btn:disabled:hover {
+  background: transparent;
+  border-color: var(--color-border);
+}
+
+/* ---- Today's clock customization (Appearance panel) ----
+   Minimal tile gallery: each tile shows only the live time in that style; the
+   style's name floats in as a small tooltip on hover. */
+
+.settings-section .clock-toggle-row {
+  justify-content: space-between;
+  width: 340px;
+  max-width: 100%;
+  margin: var(--space-2) 0 var(--space-3) 0;
+  color: var(--color-text);
+}
+
+/* Everything below the master toggle dims and locks while the clock is off. */
+.clock-settings-body {
+  transition: opacity 0.15s ease;
+}
+
+.clock-settings-body.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.clock-group-label {
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.clock-tile-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.clock-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.clock-tile:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-muted-bg);
+}
+
+.clock-tile.is-active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.clock-tile-time {
+  font-size: 15px;
+  color: var(--color-accent);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* Name-on-hover tooltip: hidden ink until the user asks for it. */
+.clock-tile-label {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-2px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 5;
+}
+
+.clock-tile:hover .clock-tile-label,
+.clock-tile:focus-visible .clock-tile-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* The two editable tiles read as "yours": dashed border instead of solid. */
+.clock-tile-custom {
+  border-style: dashed;
+}
+
+.clock-tile-custom.is-active {
+  border-style: solid;
+}
+
+.clock-grad-swatches {
+  display: flex;
+  gap: 5px;
+  cursor: default;
+}
+
+.clock-grad-swatches input[type='color'] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+}
+
+/* Quiet inline reset — only rendered while something differs from default. */
+.clock-reset-btn {
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.clock-reset-btn:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+/* ---- Mobile: present settings as a bottom sheet ---- */
+@media (max-width: 768px) {
+  .settings-backdrop {
+    align-items: flex-end;
+  }
+
+  .settings-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90dvh;
+    border-radius: 18px 18px 0 0;
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .settings-header h2 {
+    font-size: 20px;
+  }
+
+  .settings-close {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Comfortable tap rows. */
+  .settings-connect {
+    padding: 14px 16px;
+    font-size: 15px;
+    width: 100%;
+  }
+
+  .settings-mode {
+    padding: 13px 16px;
+    font-size: 16px;
+    padding-right: 44px !important;
+    width: 100%;
+  }
+
+  .settings-empty {
+    font-size: 13px;
+  }
+
+  .settings-month-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
+  }
+
+  .settings-month {
+    padding: 12px 6px;
+    font-size: 14px;
+  }
+
+  .settings-reset-btn {
+    padding: 13px;
+    font-size: 15px;
+    width: 100%;
+  }
+
+  .color-circle {
+    width: 30px;
+    height: 30px;
+  }
+
+  .color-options {
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+}
+
+.settings-cleanup-btn {
+  display: block;
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 69, 58, 0.3);
+  background: transparent;
+  color: var(--color-danger, #ff453a);
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.settings-cleanup-btn:hover {
+  background: rgba(255, 69, 58, 0.08);
+  border-color: var(--color-danger, #ff453a);
+}
+
+/* Typed confirmation inside the delete-all-data dialog. */
+.delete-all-phrase {
+  width: 100%;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.02em;
+}
+.delete-all-phrase:focus {
+  border-color: var(--color-danger, #ff453a);
+  box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.15);
+  outline: none;
+}
+
+.settings-calendar-list {
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-muted-bg);
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.settings-calendar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  padding: 12px 16px;
+  transition: background-color 0.15s ease;
+}
+
+.settings-calendar-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.settings-calendar-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.settings-calendar-label {
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.settings-calendar-name {
+  color: var(--color-text);
+}
+
+.settings-calendar-count {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  margin-left: auto;
+  opacity: 0.8;
+}
+
+/* A calendar someone else shared with this account. */
+.settings-calendar-shared {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  flex: none;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .settings-cleanup-btn {
+    padding: 13px;
+    font-size: 15px;
+    width: 100%;
+  }
+
+  .settings-calendar-list,
+  .category-list {
+    width: 100%;
+  }
+}
+
+/* Categories Card styling */
+.category-add-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--space-2);
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.category-item-row {
+  display: flex;
+  align-items: center;
+  padding: 6px var(--space-2);
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+  transition: all 0.15s ease;
+}
+
+.category-item-row:hover {
+  background: var(--color-muted-bg);
+}
+
+/* Side-by-side gap and stacking */
+.settings-backdrop {
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .settings-backdrop {
+    flex-direction: column;
+    overflow-y: auto;
+    padding: var(--space-5) 0;
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .settings-card {
+    /* Even when the backdrop scrolls, keep the card capped to the visible
+       window so its sticky header (and close button) stays reachable. */
+    max-height: calc((100vh - 2 * var(--space-5)) / var(--font-scale, 1));
+    overflow-y: auto;
+    width: 420px;
+  }
+}
+
+/* ---- Two-pane settings layout: sidebar nav + content pane ---- */
+/* Fixed size (not content-sized) so the card never jumps when switching
+   sections; each pane scrolls internally instead. */
+.settings-card-split {
+  display: flex;
+  padding: 0;
+  width: min(860px, 92vw);
+  height: min(640px, 86vh);
+  overflow: hidden;
+}
+
+.settings-nav {
+  width: 172px;
+  flex: none;
+  border-right: 0.5px solid var(--color-border);
+  background: var(--color-bg);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.settings-nav-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 12px;
+  min-width: 0;
+}
+
+.settings-nav-avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border: 0.5px solid var(--color-accent);
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-nav-id { min-width: 0; }
+
+.settings-nav-email {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-nav-plan {
+  font-size: 11px;
+  color: var(--color-text-faint);
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.settings-nav-item svg { flex: none; }
+
+.settings-nav-item:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+.settings-nav-item.is-active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.settings-pane {
+  flex: 1;
+  min-width: 0;
+  padding: 0 20px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-pane .settings-header {
+  padding-top: 16px;
+}
+
+/* The pane header already names the section, so the first subhead inside a
+   pane drops its divider treatment. */
+.settings-pane .settings-section > .settings-subhead:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Mobile: stack the split card — the nav becomes a horizontal scrollable row. */
+@media (max-width: 768px) {
+  .settings-card-split {
+    flex-direction: column;
+    width: 100%;
+    padding: 0;
+  }
+
+  .settings-nav {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 0.5px solid var(--color-border);
+  }
+
+  .settings-nav-item {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  /* No room for the account header in the horizontal mobile nav. */
+  .settings-nav-account {
+    display: none;
+  }
+
+  .settings-theme-seg {
+    width: 100%;
+  }
+}
+
+.settings-action-btn {
+  display: block;
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+@media (max-width: 768px) {
+  .settings-action-btn {
+    width: 100%;
+  }
+}
+
+.settings-btn-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  width: 280px;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: auto;
+}
+@media (max-width: 768px) {
+  .settings-btn-row {
+    width: 100%;
+  }
+}
+
+.settings-checkout-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  width: 100%;
+}
+
+.settings-calendar-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.settings-calendar-header svg {
+  flex: none;
+  opacity: 0.95;
+  color: var(--color-text);
+}
+
+.settings-calendar-header-title {
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.settings-calendar-header-email {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Account: profile card ────────────────────────────────────────────── */
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 14px);
+  background-color: var(--color-muted-bg);
+}
+
+.profile-avatar {
+  position: relative;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-accent-soft);
+  color: var(--color-accent);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-avatar:disabled { cursor: default; opacity: 0.7; }
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-avatar-initials {
+  font-family: var(--font-stack);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* Hover-reveal "Change / Add" chip across the bottom of the avatar. */
+.profile-avatar-edit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3px 0;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.profile-avatar:hover .profile-avatar-edit,
+.profile-avatar:focus-visible .profile-avatar-edit {
+  opacity: 1;
+}
+
+.profile-fields {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-name-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  background-color: transparent;
+}
+.profile-name-input::placeholder { color: var(--color-text-faint); font-weight: 500; }
+.profile-name-input:hover { background-color: var(--color-surface); }
+.profile-name-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  background-color: var(--color-surface);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.profile-sub {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-remove {
+  align-self: flex-start;
+  margin: 2px 0 0 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.profile-remove:hover { color: var(--color-danger, #ff453a); }
+
+/* ── Account: plan rows ───────────────────────────────────────────────── */
+.settings-plan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 14px);
+  background-color: var(--color-muted-bg);
+}
+/* Name over description, so the copy gets the full row width. */
+.settings-plan-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.settings-plan-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.settings-plan-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+.settings-plan-btn {
+  margin: 0;
+  width: auto;
+  flex: none;
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .settings-plan-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .settings-plan-btn {
+    width: 100%;
+  }
+}
+
+/* ── Account: "or with email" divider ─────────────────────────────────── */
+.settings-or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 280px;
+  max-width: 100%;
+  color: var(--color-text-faint);
+  font-size: 12px;
+}
+.settings-or::before,
+.settings-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+
+.settings-sync-health {
+  margin-bottom: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.settings-sync-health.is-error {
+  border-color: var(--color-danger, #ff453a);
+}
+
+.settings-sync-health.is-error strong {
+  color: var(--color-danger, #ff453a);
+}
+
+.settings-sync-health p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+}

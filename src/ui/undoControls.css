@@ -1,0 +1,43 @@
+/* Pill of Undo / Redo buttons, pinned to the bottom-left corner so it stays
+   clear of the centered toast and the right-edge selection bar. */
+.undo-controls {
+  position: fixed;
+  bottom: var(--space-5, 24px);
+  left: var(--space-5, 24px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  padding: var(--space-1, 4px);
+  background: var(--color-surface, #1c1c1e);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
+  border-radius: 999px;
+  box-shadow: var(--shadow-popover, 0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.undo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary, #98989d);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.undo-icon:hover:not(:disabled) {
+  background: var(--color-muted-bg, rgba(255, 255, 255, 0.08));
+  color: var(--color-text, #fff);
+}
+
+.undo-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: transparent;
+  color: var(--color-text-faint, #636366);
+}

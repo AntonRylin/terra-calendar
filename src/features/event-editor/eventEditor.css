@@ -1,0 +1,871 @@
+.event-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 300px;
+}
+
+.event-editor input,
+.event-editor textarea,
+.event-editor select {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--color-text);
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* Style the native selects so they don't look like raw OS controls: a custom
+   chevron and room for it. (The opened dropdown list is still OS-rendered.) */
+.event-editor select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%2386868b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+}
+
+.event-editor input:focus,
+.event-editor textarea:focus,
+.event-editor select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.editor-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.editor-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Date / time share the row; the date needs a little more room so the full
+   "09 Jul 2026" and "12:35 PM" values are never clipped. */
+.editor-row > input[type='date'],
+.editor-row > input[type='time'] {
+  flex: 1;
+  min-width: 0;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.editor-row > input[type='date'] {
+  flex: 1.25;
+}
+
+.event-editor textarea {
+  resize: vertical;
+  min-height: 56px;
+}
+
+.editor-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.editor-label select {
+  flex: 1;
+}
+
+.editor-label input[type='number'] {
+  width: 56px;
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* Save/Delete share the .tb button language (src/ui/toolbarButton.css);
+   only the destructive hover tint is editor-specific. */
+.editor-actions .editor-delete:hover:not(:disabled) {
+  color: var(--color-danger);
+}
+
+.delete-choices-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 300px;
+}
+
+.delete-choices-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.delete-choices-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.delete-choices-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* Choice buttons share the .tb button language (src/ui/toolbarButton.css). */
+
+.color-selector-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+
+.color-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* The Style row's swatches can wrap to a second line when expanded, so pin the
+   label to the top instead of centring it against the whole block. */
+.style-row {
+  align-items: flex-start;
+}
+
+.style-row .color-label {
+  padding-top: 4px;
+}
+
+.color-options {
+  /* Styled by src/ui/paletteSelector.css */
+}
+
+/* iOS-style toggle switch */
+.ios-switch-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-left: auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* A toggle the event's category overrides: shown in its effective (off)
+   position, not operable, with a lock that explains why on hover. The label
+   keeps the normal text colour — it still names a real setting — so the lock
+   and the dimmed switch carry the "you can't change this here" signal. */
+.ios-switch-label.is-locked {
+  cursor: default;
+}
+
+.ios-switch-label.is-locked .ios-switch-slider {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.switch-label-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.minimap-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+
+.minimap-toggle-row .ios-switch-label {
+  flex: 1;
+  justify-content: space-between;
+  margin-left: 0;
+}
+
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ios-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-border);
+  transition: 0.2s ease;
+  border-radius: 20px;
+}
+
+.ios-switch-slider::before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--color-surface);
+  transition: 0.2s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.ios-switch input:checked + .ios-switch-slider {
+  background-color: #30d158; /* iOS-style green */
+}
+
+.ios-switch input:checked + .ios-switch-slider::before {
+  transform: translateX(16px);
+}
+
+/* ---- Mobile: roomier fields and finger-sized targets ---- */
+@media (max-width: 768px) {
+  .event-editor {
+    gap: var(--space-4);
+  }
+
+  .event-editor input,
+  .event-editor textarea,
+  .event-editor select {
+    padding: 11px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .editor-title {
+    font-size: 18px;
+  }
+
+  .editor-row {
+    flex-wrap: wrap;
+  }
+
+  .editor-row > input[type='date'],
+  .editor-row > input[type='time'] {
+    min-width: 120px;
+  }
+
+  .editor-label {
+    font-size: 15px;
+  }
+
+  .editor-label input[type='number'] {
+    width: 72px;
+  }
+
+  .event-editor textarea {
+    min-height: 72px;
+  }
+
+  .color-label,
+  .ios-switch-label {
+    font-size: 15px;
+  }
+
+  /* Larger swatches are easier to tap. */
+  .color-options {
+    gap: var(--space-3);
+  }
+
+  .color-circle {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ios-switch {
+    width: 46px;
+    height: 28px;
+  }
+
+  .ios-switch-slider {
+    border-radius: 28px;
+  }
+
+  .ios-switch-slider::before {
+    height: 24px;
+    width: 24px;
+  }
+
+  .ios-switch input:checked + .ios-switch-slider::before {
+    transform: translateX(18px);
+  }
+
+  .editor-actions {
+    margin-top: var(--space-2);
+  }
+
+  /* Taller tap targets for the shared .tb buttons on narrow layouts. */
+  .editor-actions .editor-save,
+  .editor-actions .editor-delete {
+    height: 40px;
+    font-size: 15px;
+    padding: 0 18px;
+  }
+
+  .delete-choices-title {
+    font-size: 17px;
+  }
+
+  .delete-choices-desc {
+    font-size: 15px;
+  }
+
+  .delete-choices-actions .delete-choice-btn,
+  .delete-choices-actions .delete-choice-cancel {
+    height: 40px;
+    font-size: 15px;
+  }
+}
+
+
+/* Multi-calendar picker (event lives in one or more connected calendars).
+   Calendars are grouped under their owning account; each account shows its
+   real brand mark + email so it's obvious which iCloud/Google it belongs to. */
+.editor-calendars {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.editor-calendars legend {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding: 0 var(--space-1);
+}
+
+.editor-account-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.editor-account-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 2px;
+}
+
+.editor-account-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+}
+
+.editor-account-email {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-cal-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  padding: 5px 4px 5px 2px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.editor-cal-row:hover {
+  background: var(--color-muted-bg);
+}
+
+/* Visually hide the native checkbox but keep it accessible/clickable. */
+.editor-cal-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.editor-cal-check {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border-strong);
+  background: var(--color-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.editor-cal-check.checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.editor-cal-input:focus-visible + .editor-cal-check {
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.editor-cal-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-reminders-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}
+
+.editor-reminders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reminders-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reminders-bell {
+  color: var(--color-text-secondary);
+}
+
+/* Reminders render as compact removable pills; the dashed pill opens the
+   add menu. */
+.reminder-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reminder-pill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+}
+
+.reminder-pill-label {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 5px 4px 5px 11px;
+  cursor: default;
+}
+
+.reminder-pill-label:enabled {
+  cursor: pointer;
+}
+
+.reminder-pill-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.65;
+  cursor: pointer;
+  padding: 5px 8px 5px 4px;
+  transition: opacity 120ms ease;
+}
+
+.reminder-pill-remove:hover {
+  opacity: 1;
+}
+
+/* The pill currently being edited gets a ring tying it to the editor row. */
+.reminder-pill.active {
+  box-shadow: inset 0 0 0 1.5px var(--color-accent);
+}
+
+/* Roomy full-width editor for a custom reminder, shown below the pills. */
+.reminder-custom-editor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-md);
+}
+
+.event-editor .reminder-custom-value {
+  width: 64px;
+  text-align: center;
+}
+
+.event-editor .reminder-custom-unit {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-custom-suffix {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.reminder-custom-done {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.reminder-custom-done:hover {
+  opacity: 0.9;
+}
+
+.reminder-add-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.reminder-add-pill {
+  background: none;
+  border: 1px dashed var(--color-border-strong);
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.reminder-add-pill:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.popover.reminder-add-popover {
+  padding: var(--space-1);
+  min-width: 180px;
+  max-height: none;
+  overflow: visible;
+}
+
+.reminder-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.reminder-menu-item:hover:enabled {
+  background: var(--color-muted-bg);
+}
+
+.reminder-menu-item:disabled {
+  color: var(--color-text-faint);
+  cursor: default;
+}
+
+.reminder-menu-item.custom {
+  border-top: 1px solid var(--color-border);
+  margin-top: 2px;
+  padding-top: 9px;
+}
+
+.reminder-menu-check {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .reminder-pill {
+    font-size: 14px;
+  }
+
+  .reminder-pill-label {
+    padding: 8px 4px 8px 13px;
+  }
+
+  .reminder-pill-remove {
+    padding: 8px 11px 8px 6px;
+  }
+
+  .reminder-add-pill {
+    font-size: 14px;
+    padding: 8px 15px;
+  }
+
+  .reminder-menu-item {
+    font-size: 15px;
+    padding: 10px 10px;
+  }
+
+  .reminder-custom-suffix {
+    font-size: 15px;
+  }
+
+  .event-editor .reminder-custom-value {
+    width: 72px;
+  }
+}
+
+/* Custom Category/Type Dropdown */
+.category-select-wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+/* The field takes the row; the pencil sits beside it as a fixed-size square. */
+.editor-row > .editor-label.category-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.category-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.category-edit-btn:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.category-edit-btn:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.event-editor input.category-input-with-chevron {
+  padding-right: 28px !important;
+  width: 100%;
+}
+
+.category-dropdown-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  transition: transform 150ms ease;
+}
+
+.category-dropdown-arrow.open {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.popover.category-dropdown-popover {
+  padding: var(--space-1);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.category-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  width: 100%;
+}
+
+.category-dropdown-item:hover {
+  background: var(--color-muted-bg);
+}
+
+.category-dropdown-item.create-item {
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 2px;
+  padding-bottom: var(--space-2);
+}
+
+.category-menu-check {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+.category-dropdown-empty {
+  padding: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Ensure the upcoming-type inside dropdown gets correct spacing */
+.category-dropdown-item .upcoming-type {
+  font-size: 13px;
+}
+
+.category-input-overlay {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 35px);
+}
+
+.event-editor input.category-input-with-chevron.hidden-text {
+  color: transparent !important;
+}
+
+@media (max-width: 768px) {
+  .category-dropdown-item {
+    font-size: 15px;
+    padding: 10px 10px;
+  }
+  .category-dropdown-item .upcoming-type {
+    font-size: 15px;
+  }
+  /* Match the taller fields on this breakpoint, and stay finger-sized. */
+  .category-edit-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+  }
+}
+
+
+/* Events on a calendar someone else shared with this account ------------- */
+
+/* Editable share: the edit reaches the owner, so say so before they type. */
+.event-shared-note {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  padding: 10px 14px;
+}
+
+/* View-only share: shown instead of the form, which could never save. */
+.event-readonly {
+  padding: 14px;
+  max-width: 320px;
+}
+
+.event-readonly-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.event-readonly-when {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin: 0;
+}
+
+.event-readonly-description {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+}
+
+.event-readonly-note {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-faint);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 12px 0 0;
+  padding-top: 10px;
+}

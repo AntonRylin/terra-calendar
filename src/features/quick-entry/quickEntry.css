@@ -1,0 +1,691 @@
+/* Popover wrapper styling */
+.popover.popover-quick-entry-wrapper {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 320px;
+}
+
+/* Desktop popover (not the mobile sheet, which has its own scroll). This wrapper
+   is a transparent shell holding self-contained cards, plus the demo card, which
+   hangs outside it entirely (see .qe-demo). The base .popover sets
+   overflow-y:auto, which would clip that overhang and turn it into a scrollbar.
+   The wrapper never needs to scroll (the hourly row scrolls itself), so opt out
+   of being a scroll box. */
+@media (min-width: 769px) {
+  .popover.popover-quick-entry-wrapper {
+    overflow: visible;
+    max-height: none;
+  }
+}
+
+/* Cards styling */
+.quick-entry-weather-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 8px 10px 6px; /* Reduced vertical padding for better info-to-space ratio */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Holds the input card and the demo. On desktop the demo is taken out of this
+   box's flow (see below), so the popover measures the input card alone and
+   floating-ui centres THAT on the day cell. On mobile both stay in flow and
+   stack inside the sheet. */
+.quick-entry-input-anchor {
+  --qe-demo-gap: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--qe-demo-gap);
+}
+
+.quick-entry-input-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.quick-entry-input {
+  font-family: inherit;
+  font-size: 13px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 120ms ease;
+}
+
+.quick-entry-input:focus {
+  border-color: var(--color-accent);
+}
+
+.quick-entry-hint {
+  font-size: 10px;
+  color: var(--color-text-faint);
+}
+
+/* ---- Quick-entry syntax demo -------------------------------------------
+   A looping mini screencast under the input card, framed on one day cell: the
+   pointer clicks the cell, a scaled-down copy of the popover above types
+   "1230 1410 gym", and the event lands in the cell.
+
+   The whole card IS the screencast — no inner frame, no caption, so the card's
+   own border is the only one and every pixel inside it is animation. Positions
+   are percentages of the stage so the same layout holds at sheet width.
+
+   Nothing here changes size mid-loop: every moving part is absolutely
+   positioned, so the card can't resize and jog the popover it hangs off. All
+   beats are driven by a `qe-demo-<phase>` class on the root, set by
+   QuickEntryDemo.tsx; the timings there and the transitions here are meant to
+   be read together. */
+.qe-demo {
+  position: relative;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  background: var(--color-bg, var(--color-surface));
+  overflow: hidden;
+  animation: qeDemoIn 220ms ease both;
+}
+
+@keyframes qeDemoIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Desktop: hang the demo off the input card instead of stacking under it, so
+   its height never shifts the box you type in — that stays centred on the day.
+   QuickEntryDemo picks whichever side has room. */
+@media (min-width: 769px) {
+  .qe-demo {
+    position: absolute;
+    left: 0;
+    right: 0;
+  }
+
+  .qe-demo.is-below {
+    top: calc(100% + var(--qe-demo-gap));
+  }
+
+  /* Hanging above, it should grow upward out of the input card. */
+  .qe-demo.is-above {
+    bottom: calc(100% + var(--qe-demo-gap));
+    animation-name: qeDemoInAbove;
+  }
+}
+
+@keyframes qeDemoInAbove {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The "screen" being recorded: fills the card edge to edge. The verticals are
+   the day-column separators, three of them, so the grid reads as continuing
+   past the frame on both sides. */
+.qe-demo-stage {
+  position: relative;
+  height: 152px;
+  background-image: linear-gradient(
+    to right,
+    transparent 0 calc(2.5% - 1px),
+    var(--color-border) calc(2.5% - 1px) 2.5%,
+    transparent 2.5% calc(38.5% - 1px),
+    var(--color-border) calc(38.5% - 1px) 38.5%,
+    transparent 38.5% calc(74.5% - 1px),
+    var(--color-border) calc(74.5% - 1px) 74.5%,
+    transparent 74.5%
+  );
+}
+
+/* The day cell the demo is framed on, and the neighbour beside it. */
+.qe-demo-cell {
+  /* Where the stack of events starts, and the step between them. */
+  --qe-row-top: 26px;
+  --qe-row-pitch: 19px;
+  position: absolute;
+  left: 2.5%;
+  top: 0;
+  width: 36%;
+  bottom: 0;
+  padding: 6px 7px;
+  border: 1.5px solid transparent;
+  border-radius: 3px;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.qe-demo-cell-next {
+  left: 38.5%;
+}
+
+.qe-demo-cell.is-active {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+}
+
+.qe-demo-daynum {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+/* The events that land in the cell — same shape as a real month-grid chip.
+   Absolutely placed on a row set by `--row`, so a later arrival with an earlier
+   time can push the others down without the cell reflowing. */
+.qe-demo-event {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: calc(var(--qe-row-top) + var(--row, 0) * var(--qe-row-pitch));
+  padding: 2px 5px;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  color: var(--color-text);
+  font-size: 10.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(-5px) scale(0.94);
+  transition: opacity 200ms ease, transform 240ms cubic-bezier(0.2, 0.9, 0.3, 1.25),
+    top 260ms cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+
+.qe-demo-event.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* All-day events are filled rather than left-barred, like the real ones. */
+.qe-demo-event.is-allday {
+  border-left: none;
+  padding-left: 8px;
+  background: color-mix(in srgb, var(--color-accent) 20%, var(--color-surface));
+}
+
+.qe-demo-event-time {
+  font-weight: 600;
+  margin-right: 3px;
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The scaled-down stand-in for the popover above, centred on the day cell just
+   like the real one. It covers most of the neighbouring cell, exactly as the
+   real popover does. */
+.qe-demo-pop {
+  position: absolute;
+  left: 41%;
+  right: 3%;
+  top: 50%;
+  padding: 7px 8px 6px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 5px;
+  background: var(--color-surface);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.07);
+  opacity: 0;
+  /* Grows out of the click point: level with the cell's centre, off to the left. */
+  transform-origin: -55px 50%;
+  transform: translateY(-50%) scale(0.9);
+  transition: opacity 130ms ease, transform 170ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.qe-demo-pop.is-open {
+  opacity: 1;
+  transform: translateY(-50%);
+}
+
+.qe-demo-pop-input {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  height: 19px;
+  padding: 0 6px;
+  border: 1px solid var(--color-accent);
+  border-radius: 3px;
+  background: var(--color-surface);
+  font-size: 10.5px;
+  color: var(--color-text);
+  white-space: pre;
+  transition: background-color 110ms ease;
+}
+
+.qe-demo-pop-input.is-entering {
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+.qe-demo-pop-text {
+  font-variant-numeric: tabular-nums;
+}
+
+.qe-demo-caret {
+  width: 1px;
+  height: 11px;
+  background: var(--color-accent);
+  animation: qeDemoCaret 1s steps(1, end) infinite;
+}
+
+@keyframes qeDemoCaret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.qe-demo-pop-hint {
+  margin-top: 5px;
+  font-size: 8.5px;
+  line-height: 1.2;
+  color: var(--color-text-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* "Enter" lights up for the beat where the key is down. */
+.qe-demo-enter {
+  padding: 0 2px;
+  border-radius: 2px;
+  transition: background-color 110ms ease, color 110ms ease;
+}
+
+.qe-demo-entering .qe-demo-enter {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Click feedback, centred on the cell. Runs once, on the clicking beat only. */
+.qe-demo-ripple {
+  position: absolute;
+  left: 20.5%;
+  top: 50%;
+  margin: 0 0 0 -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.qe-demo-clicking .qe-demo-ripple {
+  animation: qeDemoRipple 400ms ease-out;
+}
+
+@keyframes qeDemoRipple {
+  from {
+    opacity: 0.7;
+    transform: translateY(-50%) scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50%) scale(4.5);
+  }
+}
+
+/* The pointer. Parked off-frame, glides onto the cell, then stays put while the
+   typing happens — same as a real recording. Its tip is the SVG's top-left, so
+   left/top place the tip directly; percentages keep it on the cell at any width. */
+.qe-demo-pointer {
+  position: absolute;
+  left: 8%;
+  top: 92%;
+  opacity: 0;
+  transition: left 600ms cubic-bezier(0.33, 0.8, 0.3, 1),
+    top 600ms cubic-bezier(0.33, 0.8, 0.3, 1), transform 130ms ease,
+    opacity 200ms ease;
+  pointer-events: none;
+}
+
+.qe-demo-idle .qe-demo-pointer {
+  opacity: 0.9;
+}
+
+.qe-demo-moving .qe-demo-pointer,
+.qe-demo-clicking .qe-demo-pointer,
+.qe-demo-typing .qe-demo-pointer,
+.qe-demo-review .qe-demo-pointer,
+.qe-demo-entering .qe-demo-pointer,
+.qe-demo-settling .qe-demo-pointer,
+.qe-demo-saved .qe-demo-pointer {
+  opacity: 0.9;
+  left: 20.5%;
+  top: 50%;
+}
+
+/* Pressed-in nudge on the click beat. */
+.qe-demo-clicking .qe-demo-pointer {
+  transform: scale(0.86);
+}
+
+.qe-demo-resetting .qe-demo-pointer {
+  opacity: 0;
+}
+
+/* Reduced motion holds the last frame (see QuickEntryDemo.tsx), so everything
+   that would move is simply stilled. */
+@media (prefers-reduced-motion: reduce) {
+  .qe-demo,
+  .qe-demo-caret,
+  .qe-demo-ripple {
+    animation: none;
+  }
+
+  .qe-demo-pointer,
+  .qe-demo-pop,
+  .qe-demo-event,
+  .qe-demo-cell {
+    transition: none;
+  }
+
+  .qe-demo-pointer {
+    opacity: 0;
+  }
+}
+
+.quick-entry-weather-hours {
+  display: flex;
+  gap: 12px; /* Tighter gap for better space utilization */
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+/* Apple-style scrollbar: a thin rounded line, no arrow buttons. Same shape and
+   tokens as .week-scroll / .upcoming-list, but always visible here since the
+   hourly row is short and the scroll affordance should be obvious. We use ONLY
+   the ::-webkit-scrollbar pseudo-elements — setting scrollbar-width/-color makes
+   Chromium (the Tauri WebView) ignore these rules, including the button hiding. */
+.quick-entry-weather-hours::-webkit-scrollbar {
+  height: 7px;
+}
+
+.quick-entry-weather-hours::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.quick-entry-weather-hours::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quick-entry-weather-hours::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-faint);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s ease;
+}
+
+.quick-entry-weather-hours::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-secondary);
+}
+
+.weather-hour-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px; /* Tighter gap */
+  min-width: 44px; /* Wider tiles */
+  flex-shrink: 0;
+}
+
+.weather-hour-time {
+  font-size: 10px; /* Slightly larger time text */
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.weather-hour-emoji {
+  font-size: 24px; /* Much larger weather icon */
+  margin: 1px 0;
+}
+
+.weather-hour-rain {
+  font-size: 10px; /* Bigger rain probability percentage */
+  color: var(--color-accent);
+  font-weight: 700;
+  min-height: 12px;
+}
+
+.weather-hour-temp {
+  font-size: 14px; /* Much larger temperature numbers */
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.quick-entry-weather-uv-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.quick-entry-weather-hours-container {
+  position: relative;
+}
+
+.quick-entry-weather-uv-section + .quick-entry-weather-hours-container {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* Dismiss control shared by the demo and the two weather panels: a cross in
+   the panel's top-right corner, on hover. It sits over the content rather than
+   reserving space for itself, so it's a translucent chip — the same thing the
+   demo's cross does over its stage. */
+.qe-close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  backdrop-filter: blur(3px);
+  color: var(--color-text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease, background-color 120ms ease;
+}
+
+.qe-close-btn:hover {
+  color: var(--color-text);
+  background: var(--color-muted-bg);
+}
+
+.qe-demo:hover .qe-close-btn,
+.quick-entry-weather-uv-section:hover .qe-close-btn,
+.quick-entry-weather-hours-container:hover .qe-close-btn,
+.qe-close-btn:focus-visible {
+  opacity: 1;
+}
+
+.quick-entry-weather-uv-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  /* Keeps the UV reading clear of the dismiss cross in the corner — it's the
+     headline number, so it must never end up underneath it on hover. */
+  padding-right: 30px;
+}
+
+.uv-header-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+.uv-header-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: var(--space-1);
+}
+
+.uv-header-subtitle {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quick-entry-weather-uv-chart {
+  width: 100%;
+  margin-top: 2px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  /* No hover on touch, so every dismiss cross is always there, just quiet. */
+  .qe-close-btn {
+    opacity: 0.75;
+    width: 24px;
+    height: 24px;
+  }
+
+  .popover-quick-entry-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+  }
+
+  .quick-entry-weather-card {
+    background: var(--color-muted-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-3);
+    box-shadow: none;
+  }
+
+  .quick-entry-input-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* Flat inside the sheet, which already provides the surface. The layout is
+     all percentages, so the extra width just makes the same shot bigger; only
+     the fixed heights and type sizes need a nudge. */
+  .qe-demo {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: none;
+  }
+
+  .qe-demo-stage {
+    height: 178px;
+  }
+
+  .qe-demo-pop-input {
+    height: 22px;
+    font-size: 12px;
+  }
+
+  .qe-demo-pop-hint {
+    font-size: 9.5px;
+  }
+
+  .qe-demo-daynum {
+    font-size: 14px;
+  }
+
+  .qe-demo-event {
+    font-size: 11.5px;
+  }
+
+  .qe-demo-cell {
+    --qe-row-top: 29px;
+    --qe-row-pitch: 22px;
+  }
+
+
+  .quick-entry-input {
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .quick-entry-hint {
+    font-size: 12px;
+  }
+}
+
+/* Hover effects for UV Index Chart */
+.uv-hover-line {
+  transition: x1 80ms ease-out, x2 80ms ease-out;
+}
+
+.uv-hover-circle {
+  transition: cx 80ms ease-out, cy 80ms ease-out;
+}
+
+@keyframes uvPulse {
+  0% {
+    r: 4.5;
+    opacity: 0.7;
+  }
+  100% {
+    r: 9.5;
+    opacity: 0;
+  }
+}
+
+.uv-pulse-ring {
+  animation: uvPulse 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+.uv-tooltip {
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.12));
+}
+
+.uv-tooltip rect {
+  fill: var(--color-surface);
+  stroke: var(--color-border);
+}
+

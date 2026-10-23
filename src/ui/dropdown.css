@@ -1,0 +1,36 @@
+.dd-caret { color: var(--color-text-faint); margin-left: 1px; }
+.popover.popover--dropdown {
+  min-width: 200px;
+  padding: 6px;
+}
+.dd-menu {
+  display: flex;
+  flex-direction: column;
+}
+.dd-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-stack);
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+.dd-item:hover { background: var(--color-muted-bg); }
+.dd-check { width: 18px; display: inline-flex; justify-content: center; color: var(--color-accent); }
+.dd-label { flex: 1; }
+.dd-hint {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--color-text-faint);
+  background: var(--color-muted-bg);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+}

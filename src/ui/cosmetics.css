@@ -1,0 +1,1607 @@
+/*
+ * Animated event cosmetics. Each cosmetic is a `.cosmetic-<id>` class applied to
+ * an event host: a month-grid chip (`.event-chip`), a span segment (`.span-seg`),
+ * or a picker preview (`.cosmetic-swatch`). Rules are scoped to those hosts so
+ * they reliably win over the base chip/span styles regardless of import order.
+ *
+ * Two kinds:
+ *  - gradient: a self-contained flowing multi-colour fill (white text).
+ *  - effect:   an animation layered over the event's own `--event-color`.
+ *
+ * The registry of ids lives in src/core/cosmetics.ts — keep the two in sync.
+ *
+ * Seamless-loop contract for flowing skins (enforced by cosmeticsCss.test.ts):
+ * every `cos-flow` gradient must be 90deg, repeat its first stop as its last,
+ * and use `background-size: 300% 100%`. The 90deg tile then repeats with no
+ * seam, and one cos-flow cycle scrolls exactly two tile widths, so the loop
+ * closes with no visible jump. (110deg looked similar, but a slanted gradient
+ * never tiles horizontally — its seam swept across the chip every cycle.)
+ */
+
+/* ---- Shared host reset for any cosmetic ---- */
+.event-chip[class*='cosmetic-'],
+.span-seg[class*='cosmetic-'],
+.cosmetic-swatch {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient cosmetics fill the whole chip, so drop the timed-chip's left accent
+   and make the time/text white. */
+.event-chip.cosmetic-gradient {
+  border-left: none;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.38);
+}
+.span-seg.cosmetic-gradient,
+.wv-block.cosmetic-gradient,
+.wv-allday-bar.cosmetic-gradient,
+.wv-ghost-solid.cosmetic-gradient {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.38);
+}
+.event-chip.cosmetic-gradient .event-time {
+  color: inherit;
+}
+
+/* Flowing gradient skins ------------------------------------------------- */
+.event-chip.cosmetic-aurora,
+.span-seg.cosmetic-aurora,
+.cosmetic-swatch.cosmetic-aurora,
+.wv-block.cosmetic-aurora,
+.wv-allday-bar.cosmetic-aurora,
+.wv-ghost-solid.cosmetic-aurora {
+  background-image: linear-gradient(90deg, #1d9e75, #5dcaa5, #7f77dd, #534ab7, #1d9e75);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-sunset,
+.span-seg.cosmetic-sunset,
+.cosmetic-swatch.cosmetic-sunset,
+.wv-block.cosmetic-sunset,
+.wv-allday-bar.cosmetic-sunset,
+.wv-ghost-solid.cosmetic-sunset {
+  background-image: linear-gradient(90deg, #ef9f27, #d85a30, #d4537e, #7f77dd, #ef9f27);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-ocean,
+.span-seg.cosmetic-ocean,
+.cosmetic-swatch.cosmetic-ocean,
+.wv-block.cosmetic-ocean,
+.wv-allday-bar.cosmetic-ocean,
+.wv-ghost-solid.cosmetic-ocean {
+  background-image: linear-gradient(90deg, #042c53, #185fa5, #378add, #85b7eb, #185fa5, #042c53);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-rainbow,
+.span-seg.cosmetic-rainbow,
+.cosmetic-swatch.cosmetic-rainbow,
+.wv-block.cosmetic-rainbow,
+.wv-allday-bar.cosmetic-rainbow,
+.wv-ghost-solid.cosmetic-rainbow {
+  background-image: linear-gradient(90deg, #534ab7, #d4537e, #d85a30, #ef9f27, #1d9e75, #185fa5, #534ab7);
+  background-size: 300% 100%;
+  animation: cos-flow 9s linear infinite;
+}
+.event-chip.cosmetic-candy,
+.span-seg.cosmetic-candy,
+.cosmetic-swatch.cosmetic-candy,
+.wv-block.cosmetic-candy,
+.wv-allday-bar.cosmetic-candy,
+.wv-ghost-solid.cosmetic-candy {
+  background-image: linear-gradient(90deg, #ed93b1, #d4537e, #7f77dd, #85b7eb, #ed93b1);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-magma,
+.span-seg.cosmetic-magma,
+.cosmetic-swatch.cosmetic-magma,
+.wv-block.cosmetic-magma,
+.wv-allday-bar.cosmetic-magma,
+.wv-ghost-solid.cosmetic-magma {
+  background-image: linear-gradient(90deg, #4a1b0c, #a32d2d, #e24b4a, #ef9f27, #a32d2d, #4a1b0c);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-mint,
+.span-seg.cosmetic-mint,
+.cosmetic-swatch.cosmetic-mint,
+.wv-block.cosmetic-mint,
+.wv-allday-bar.cosmetic-mint,
+.wv-ghost-solid.cosmetic-mint {
+  background-image: linear-gradient(90deg, #0f6e56, #1d9e75, #9fe1cb, #5dcaa5, #0f6e56);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+/* Gold is light — use dark text for legibility. */
+.event-chip.cosmetic-gold,
+.span-seg.cosmetic-gold,
+.cosmetic-swatch.cosmetic-gold,
+.wv-block.cosmetic-gold,
+.wv-allday-bar.cosmetic-gold,
+.wv-ghost-solid.cosmetic-gold {
+  background-image: linear-gradient(90deg, #6e4e10, #caa033, #f4d97a, #fff7da, #caa033, #6e4e10);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-gold,
+.span-seg.cosmetic-gold,
+.wv-block.cosmetic-gold,
+.wv-allday-bar.cosmetic-gold,
+.wv-ghost-solid.cosmetic-gold {
+  color: #3a2a06;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+.event-chip.cosmetic-gold .event-time {
+  color: inherit;
+}
+
+/* Neon Rush */
+.event-chip.cosmetic-neon-rush,
+.span-seg.cosmetic-neon-rush,
+.cosmetic-swatch.cosmetic-neon-rush,
+.wv-block.cosmetic-neon-rush,
+.wv-allday-bar.cosmetic-neon-rush,
+.wv-ghost-solid.cosmetic-neon-rush {
+  background-image: linear-gradient(90deg, #ff007f, #7928ca, #00dfd8, #ff007f);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Bubblegum */
+.event-chip.cosmetic-bubblegum,
+.span-seg.cosmetic-bubblegum,
+.cosmetic-swatch.cosmetic-bubblegum,
+.wv-block.cosmetic-bubblegum,
+.wv-allday-bar.cosmetic-bubblegum,
+.wv-ghost-solid.cosmetic-bubblegum {
+  background-image: linear-gradient(90deg, #ff9a9e, #fecfef, #a1c4fd, #ff9a9e);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Retro Sunset */
+.event-chip.cosmetic-retro-sunset,
+.span-seg.cosmetic-retro-sunset,
+.cosmetic-swatch.cosmetic-retro-sunset,
+.wv-block.cosmetic-retro-sunset,
+.wv-allday-bar.cosmetic-retro-sunset,
+.wv-ghost-solid.cosmetic-retro-sunset {
+  background-image: linear-gradient(90deg, #f4a261, #e76f51, #2a9d8f, #e9c46a, #f4a261);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+
+/* Forest Moss */
+.event-chip.cosmetic-forest-moss,
+.span-seg.cosmetic-forest-moss,
+.cosmetic-swatch.cosmetic-forest-moss,
+.wv-block.cosmetic-forest-moss,
+.wv-allday-bar.cosmetic-forest-moss,
+.wv-ghost-solid.cosmetic-forest-moss {
+  background-image: linear-gradient(90deg, #114b3e, #2a9d8f, #e9c46a, #2a9d8f, #114b3e);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Nebula */
+.event-chip.cosmetic-nebula,
+.span-seg.cosmetic-nebula,
+.cosmetic-swatch.cosmetic-nebula,
+.wv-block.cosmetic-nebula,
+.wv-allday-bar.cosmetic-nebula,
+.wv-ghost-solid.cosmetic-nebula {
+  background-image: linear-gradient(90deg, #090979, #790979, #ff007f, #790979, #090979);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Lava Flow */
+.event-chip.cosmetic-lava-flow,
+.span-seg.cosmetic-lava-flow,
+.cosmetic-swatch.cosmetic-lava-flow,
+.wv-block.cosmetic-lava-flow,
+.wv-allday-bar.cosmetic-lava-flow,
+.wv-ghost-solid.cosmetic-lava-flow {
+  background-image: linear-gradient(90deg, #e65c00, #f9d423, #ff0000, #e65c00);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite;
+}
+
+/* Holo Prism */
+.event-chip.cosmetic-holo-prism,
+.span-seg.cosmetic-holo-prism,
+.cosmetic-swatch.cosmetic-holo-prism,
+.wv-block.cosmetic-holo-prism,
+.wv-allday-bar.cosmetic-holo-prism,
+.wv-ghost-solid.cosmetic-holo-prism {
+  background-image: linear-gradient(90deg, #e0c3fc, #8ec5fc, #fbc2eb, #e0c3fc);
+  background-size: 300% 100%;
+  animation: cos-flow 5s linear infinite;
+}
+
+/* Cyberpunk */
+.event-chip.cosmetic-cyberpunk,
+.span-seg.cosmetic-cyberpunk,
+.cosmetic-swatch.cosmetic-cyberpunk,
+.wv-block.cosmetic-cyberpunk,
+.wv-allday-bar.cosmetic-cyberpunk,
+.wv-ghost-solid.cosmetic-cyberpunk {
+  background-image: linear-gradient(90deg, #ffe600, #ff0055, #00ffff, #ffe600);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite;
+}
+.event-chip.cosmetic-cyberpunk,
+.span-seg.cosmetic-cyberpunk,
+.wv-block.cosmetic-cyberpunk,
+.wv-allday-bar.cosmetic-cyberpunk,
+.wv-ghost-solid.cosmetic-cyberpunk {
+  color: #1a1a1a;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+.event-chip.cosmetic-cyberpunk .event-time {
+  color: inherit;
+}
+
+/* Glacier */
+.event-chip.cosmetic-glacier,
+.span-seg.cosmetic-glacier,
+.cosmetic-swatch.cosmetic-glacier,
+.wv-block.cosmetic-glacier,
+.wv-allday-bar.cosmetic-glacier,
+.wv-ghost-solid.cosmetic-glacier {
+  background-image: linear-gradient(90deg, #185fa5, #85b7eb, #ffffff, #85b7eb, #185fa5);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+.event-chip.cosmetic-glacier,
+.span-seg.cosmetic-glacier,
+.wv-block.cosmetic-glacier,
+.wv-allday-bar.cosmetic-glacier,
+.wv-ghost-solid.cosmetic-glacier {
+  color: #0b2b4d;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+.event-chip.cosmetic-glacier .event-time {
+  color: inherit;
+}
+
+/* Stripes */
+.event-chip.cosmetic-stripes,
+.span-seg.cosmetic-stripes,
+.cosmetic-swatch.cosmetic-stripes,
+.wv-block.cosmetic-stripes,
+.wv-allday-bar.cosmetic-stripes,
+.wv-ghost-solid.cosmetic-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    #457b9d,
+    #457b9d 10px,
+    #a8dadc 10px,
+    #a8dadc 20px
+  );
+  background-size: 28px 28px;
+  animation: cos-stripes-move 3s linear infinite;
+}
+.event-chip.cosmetic-stripes,
+.span-seg.cosmetic-stripes,
+.wv-block.cosmetic-stripes,
+.wv-allday-bar.cosmetic-stripes,
+.wv-ghost-solid.cosmetic-stripes {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  border-left: none;
+}
+.event-chip.cosmetic-stripes .event-time {
+  color: inherit;
+}
+
+/* Golden Hour */
+.event-chip.cosmetic-golden-hour,
+.span-seg.cosmetic-golden-hour,
+.cosmetic-swatch.cosmetic-golden-hour,
+.wv-block.cosmetic-golden-hour,
+.wv-allday-bar.cosmetic-golden-hour,
+.wv-ghost-solid.cosmetic-golden-hour {
+  background-image: linear-gradient(90deg, #ff9f1c, #ffbf69, #ffffff, #ffbf69, #ff9f1c);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-golden-hour,
+.span-seg.cosmetic-golden-hour,
+.wv-block.cosmetic-golden-hour,
+.wv-allday-bar.cosmetic-golden-hour,
+.wv-ghost-solid.cosmetic-golden-hour {
+  color: #3a2a06;
+  text-shadow: none;
+}
+.event-chip.cosmetic-golden-hour .event-time {
+  color: inherit;
+}
+
+/* Cyber Green */
+.event-chip.cosmetic-cyber-green,
+.span-seg.cosmetic-cyber-green,
+.cosmetic-swatch.cosmetic-cyber-green,
+.wv-block.cosmetic-cyber-green,
+.wv-allday-bar.cosmetic-cyber-green,
+.wv-ghost-solid.cosmetic-cyber-green {
+  background-image: linear-gradient(90deg, #00ff66, #003311, #00ff66);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Cotton Candy */
+.event-chip.cosmetic-cotton-candy,
+.span-seg.cosmetic-cotton-candy,
+.cosmetic-swatch.cosmetic-cotton-candy,
+.wv-block.cosmetic-cotton-candy,
+.wv-allday-bar.cosmetic-cotton-candy,
+.wv-ghost-solid.cosmetic-cotton-candy {
+  background-image: linear-gradient(90deg, #ffb3c6, #ffe5ec, #ffc8dd, #ffb3c6);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+.event-chip.cosmetic-cotton-candy,
+.span-seg.cosmetic-cotton-candy,
+.wv-block.cosmetic-cotton-candy,
+.wv-allday-bar.cosmetic-cotton-candy,
+.wv-ghost-solid.cosmetic-cotton-candy {
+  color: #3a1c22;
+  text-shadow: none;
+}
+.event-chip.cosmetic-cotton-candy .event-time {
+  color: inherit;
+}
+
+/* Electric Indigo */
+.event-chip.cosmetic-electric-indigo,
+.span-seg.cosmetic-electric-indigo,
+.cosmetic-swatch.cosmetic-electric-indigo,
+.wv-block.cosmetic-electric-indigo,
+.wv-allday-bar.cosmetic-electric-indigo,
+.wv-ghost-solid.cosmetic-electric-indigo {
+  background-image: linear-gradient(90deg, #4d00ff, #00f0ff, #4d00ff);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite;
+}
+
+/* Ruby Gem */
+.event-chip.cosmetic-ruby-gem,
+.span-seg.cosmetic-ruby-gem,
+.cosmetic-swatch.cosmetic-ruby-gem,
+.wv-block.cosmetic-ruby-gem,
+.wv-allday-bar.cosmetic-ruby-gem,
+.wv-ghost-solid.cosmetic-ruby-gem {
+  background-image: linear-gradient(90deg, #800000, #d90429, #ef233c, #800000);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite;
+}
+
+/* Acid Lime */
+.event-chip.cosmetic-acid-lime,
+.span-seg.cosmetic-acid-lime,
+.cosmetic-swatch.cosmetic-acid-lime,
+.wv-block.cosmetic-acid-lime,
+.wv-allday-bar.cosmetic-acid-lime,
+.wv-ghost-solid.cosmetic-acid-lime {
+  background-image: linear-gradient(90deg, #adff2f, #7fff00, #00ff00, #adff2f);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-acid-lime,
+.span-seg.cosmetic-acid-lime,
+.wv-block.cosmetic-acid-lime,
+.wv-allday-bar.cosmetic-acid-lime,
+.wv-ghost-solid.cosmetic-acid-lime {
+  color: #1e3a00;
+  text-shadow: none;
+}
+.event-chip.cosmetic-acid-lime .event-time {
+  color: inherit;
+}
+
+/* Bronze Metal */
+.event-chip.cosmetic-bronze-metal,
+.span-seg.cosmetic-bronze-metal,
+.cosmetic-swatch.cosmetic-bronze-metal,
+.wv-block.cosmetic-bronze-metal,
+.wv-allday-bar.cosmetic-bronze-metal,
+.wv-ghost-solid.cosmetic-bronze-metal {
+  background-image: linear-gradient(90deg, #cd7f32, #8c5a2b, #b87333, #cd7f32);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+
+/* Deep Abyss */
+.event-chip.cosmetic-deep-abyss,
+.span-seg.cosmetic-deep-abyss,
+.cosmetic-swatch.cosmetic-deep-abyss,
+.wv-block.cosmetic-deep-abyss,
+.wv-allday-bar.cosmetic-deep-abyss,
+.wv-ghost-solid.cosmetic-deep-abyss {
+  background-image: linear-gradient(90deg, #03001e, #7303c0, #ec38bc, #03001e);
+  background-size: 300% 100%;
+  animation: cos-flow 9s linear infinite;
+}
+
+/* Candy Cane */
+.event-chip.cosmetic-candy-cane,
+.span-seg.cosmetic-candy-cane,
+.cosmetic-swatch.cosmetic-candy-cane,
+.wv-block.cosmetic-candy-cane,
+.wv-allday-bar.cosmetic-candy-cane,
+.wv-ghost-solid.cosmetic-candy-cane {
+  background-image: repeating-linear-gradient(45deg, #e63946, #e63946 10px, #ffffff 10px, #ffffff 20px);
+  background-size: 28px 28px;
+  animation: cos-stripes-move 3s linear infinite;
+}
+.event-chip.cosmetic-candy-cane,
+.span-seg.cosmetic-candy-cane,
+.wv-block.cosmetic-candy-cane,
+.wv-allday-bar.cosmetic-candy-cane,
+.wv-ghost-solid.cosmetic-candy-cane {
+  color: #e63946;
+  text-shadow: 0 1px 1px #ffffff;
+  border-left: none;
+}
+.event-chip.cosmetic-candy-cane .event-time {
+  color: inherit;
+}
+
+/* Peach Cream */
+.event-chip.cosmetic-peach-cream,
+.span-seg.cosmetic-peach-cream,
+.cosmetic-swatch.cosmetic-peach-cream,
+.wv-block.cosmetic-peach-cream,
+.wv-allday-bar.cosmetic-peach-cream,
+.wv-ghost-solid.cosmetic-peach-cream {
+  background-image: linear-gradient(90deg, #ffcad4, #ffe5ec, #f7d1cd, #ffcad4);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+.event-chip.cosmetic-peach-cream,
+.span-seg.cosmetic-peach-cream,
+.wv-block.cosmetic-peach-cream,
+.wv-allday-bar.cosmetic-peach-cream,
+.wv-ghost-solid.cosmetic-peach-cream {
+  color: #4a2d33;
+  text-shadow: none;
+}
+.event-chip.cosmetic-peach-cream .event-time {
+  color: inherit;
+}
+
+/* Cosmic Dust */
+.event-chip.cosmetic-cosmic-dust,
+.span-seg.cosmetic-cosmic-dust,
+.cosmetic-swatch.cosmetic-cosmic-dust,
+.wv-block.cosmetic-cosmic-dust,
+.wv-allday-bar.cosmetic-cosmic-dust,
+.wv-ghost-solid.cosmetic-cosmic-dust {
+  background-image: linear-gradient(90deg, #614385, #516395, #c33764, #1d2671, #614385);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Frozen Fire */
+.event-chip.cosmetic-frozen-fire,
+.span-seg.cosmetic-frozen-fire,
+.cosmetic-swatch.cosmetic-frozen-fire,
+.wv-block.cosmetic-frozen-fire,
+.wv-allday-bar.cosmetic-frozen-fire,
+.wv-ghost-solid.cosmetic-frozen-fire {
+  background-image: linear-gradient(90deg, #00c6ff, #0072ff, #f857a6, #ff5858, #00c6ff);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Emerald Glow */
+.event-chip.cosmetic-emerald-glow,
+.span-seg.cosmetic-emerald-glow,
+.cosmetic-swatch.cosmetic-emerald-glow,
+.wv-block.cosmetic-emerald-glow,
+.wv-allday-bar.cosmetic-emerald-glow,
+.wv-ghost-solid.cosmetic-emerald-glow {
+  background-image: linear-gradient(90deg, #11998e, #38ef7d, #00b4db, #11998e);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Sweet Lavender */
+.event-chip.cosmetic-sweet-lavender,
+.span-seg.cosmetic-sweet-lavender,
+.cosmetic-swatch.cosmetic-sweet-lavender,
+.wv-block.cosmetic-sweet-lavender,
+.wv-allday-bar.cosmetic-sweet-lavender,
+.wv-ghost-solid.cosmetic-sweet-lavender {
+  background-image: linear-gradient(90deg, #e1eec3, #f05053, #a18cd1, #fbc2eb, #e1eec3);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+.event-chip.cosmetic-sweet-lavender,
+.span-seg.cosmetic-sweet-lavender,
+.wv-block.cosmetic-sweet-lavender,
+.wv-allday-bar.cosmetic-sweet-lavender,
+.wv-ghost-solid.cosmetic-sweet-lavender {
+  color: #3b2b54;
+  text-shadow: none;
+}
+.event-chip.cosmetic-sweet-lavender .event-time {
+  color: inherit;
+}
+
+/* Solar Flare */
+.event-chip.cosmetic-solar-flare,
+.span-seg.cosmetic-solar-flare,
+.cosmetic-swatch.cosmetic-solar-flare,
+.wv-block.cosmetic-solar-flare,
+.wv-allday-bar.cosmetic-solar-flare,
+.wv-ghost-solid.cosmetic-solar-flare {
+  background-image: linear-gradient(90deg, #f12711, #f5af19, #f80759, #f12711);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Deep Space */
+.event-chip.cosmetic-deep-space,
+.span-seg.cosmetic-deep-space,
+.cosmetic-swatch.cosmetic-deep-space,
+.wv-block.cosmetic-deep-space,
+.wv-allday-bar.cosmetic-deep-space,
+.wv-ghost-solid.cosmetic-deep-space {
+  background-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364, #0f2027);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Mermaid Shell */
+.event-chip.cosmetic-mermaid-shell,
+.span-seg.cosmetic-mermaid-shell,
+.cosmetic-swatch.cosmetic-mermaid-shell,
+.wv-block.cosmetic-mermaid-shell,
+.wv-allday-bar.cosmetic-mermaid-shell,
+.wv-ghost-solid.cosmetic-mermaid-shell {
+  background-image: linear-gradient(90deg, #a1c4fd, #c2e9fb, #ffdde1, #ee9ca7, #a1c4fd);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-mermaid-shell,
+.span-seg.cosmetic-mermaid-shell,
+.wv-block.cosmetic-mermaid-shell,
+.wv-allday-bar.cosmetic-mermaid-shell,
+.wv-ghost-solid.cosmetic-mermaid-shell {
+  color: #2c3e50;
+  text-shadow: none;
+}
+.event-chip.cosmetic-mermaid-shell .event-time {
+  color: inherit;
+}
+
+/* Cherry Blossom */
+.event-chip.cosmetic-cherry-blossom,
+.span-seg.cosmetic-cherry-blossom,
+.cosmetic-swatch.cosmetic-cherry-blossom,
+.wv-block.cosmetic-cherry-blossom,
+.wv-allday-bar.cosmetic-cherry-blossom,
+.wv-ghost-solid.cosmetic-cherry-blossom {
+  background-image: linear-gradient(90deg, #ff9a9e, #fecfef, #ffffff, #fecfef, #ff9a9e);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-cherry-blossom,
+.span-seg.cosmetic-cherry-blossom,
+.wv-block.cosmetic-cherry-blossom,
+.wv-allday-bar.cosmetic-cherry-blossom,
+.wv-ghost-solid.cosmetic-cherry-blossom {
+  color: #4a2d33;
+  text-shadow: none;
+}
+.event-chip.cosmetic-cherry-blossom .event-time {
+  color: inherit;
+}
+
+/* Electric Crimson */
+.event-chip.cosmetic-electric-crimson,
+.span-seg.cosmetic-electric-crimson,
+.cosmetic-swatch.cosmetic-electric-crimson,
+.wv-block.cosmetic-electric-crimson,
+.wv-allday-bar.cosmetic-electric-crimson,
+.wv-ghost-solid.cosmetic-electric-crimson {
+  background-image: linear-gradient(90deg, #800080, #ff007f, #ff0000, #800080);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite;
+}
+
+/* Matcha Latte */
+.event-chip.cosmetic-matcha-latte,
+.span-seg.cosmetic-matcha-latte,
+.cosmetic-swatch.cosmetic-matcha-latte,
+.wv-block.cosmetic-matcha-latte,
+.wv-allday-bar.cosmetic-matcha-latte,
+.wv-ghost-solid.cosmetic-matcha-latte {
+  background-image: linear-gradient(90deg, #556b2f, #8fbc8f, #f5f5dc, #8fbc8f, #556b2f);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-matcha-latte,
+.span-seg.cosmetic-matcha-latte,
+.wv-block.cosmetic-matcha-latte,
+.wv-allday-bar.cosmetic-matcha-latte,
+.wv-ghost-solid.cosmetic-matcha-latte {
+  color: #2f3e1b;
+  text-shadow: none;
+}
+.event-chip.cosmetic-matcha-latte .event-time {
+  color: inherit;
+}
+
+/* Neon Pulse */
+.event-chip.cosmetic-neon-pulse,
+.span-seg.cosmetic-neon-pulse,
+.cosmetic-swatch.cosmetic-neon-pulse,
+.wv-block.cosmetic-neon-pulse,
+.wv-allday-bar.cosmetic-neon-pulse,
+.wv-ghost-solid.cosmetic-neon-pulse {
+  background-image: linear-gradient(90deg, #ff007f, #00f0ff, #7928ca, #00f0ff, #ff007f);
+  background-size: 300% 100%;
+  animation: cos-flow 5s linear infinite, neon-pulse-glow 3s ease-in-out infinite;
+}
+
+/* Magical Amethyst */
+.event-chip.cosmetic-magical-amethyst,
+.span-seg.cosmetic-magical-amethyst,
+.cosmetic-swatch.cosmetic-magical-amethyst,
+.wv-block.cosmetic-magical-amethyst,
+.wv-allday-bar.cosmetic-magical-amethyst,
+.wv-ghost-solid.cosmetic-magical-amethyst {
+  background-image: linear-gradient(90deg, #4b0082, #9966cc, #d8bfd8, #9966cc, #4b0082);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+
+/* Cyber Inferno */
+.event-chip.cosmetic-cyber-inferno,
+.span-seg.cosmetic-cyber-inferno,
+.cosmetic-swatch.cosmetic-cyber-inferno,
+.wv-block.cosmetic-cyber-inferno,
+.wv-allday-bar.cosmetic-cyber-inferno,
+.wv-ghost-solid.cosmetic-cyber-inferno {
+  background-image: linear-gradient(90deg, #ff3300, #ff9900, #ffcc00, #ff3300);
+  background-size: 300% 100%;
+  animation: cos-flow 4s linear infinite, cyber-inferno-glow 2.5s ease-in-out infinite;
+}
+
+/* Aurora Borealis */
+.event-chip.cosmetic-aurora-borealis,
+.span-seg.cosmetic-aurora-borealis,
+.cosmetic-swatch.cosmetic-aurora-borealis,
+.wv-block.cosmetic-aurora-borealis,
+.wv-allday-bar.cosmetic-aurora-borealis,
+.wv-ghost-solid.cosmetic-aurora-borealis {
+  background-image: linear-gradient(90deg, #00ffc4, #00b4db, #9b59b6, #00ffc4);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+
+/* Frozen Tundra */
+.event-chip.cosmetic-frozen-tundra,
+.span-seg.cosmetic-frozen-tundra,
+.cosmetic-swatch.cosmetic-frozen-tundra,
+.wv-block.cosmetic-frozen-tundra,
+.wv-allday-bar.cosmetic-frozen-tundra,
+.wv-ghost-solid.cosmetic-frozen-tundra {
+  background-image: linear-gradient(90deg, #cce6ff, #e6f2ff, #ffffff, #cce6ff);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+.event-chip.cosmetic-frozen-tundra,
+.span-seg.cosmetic-frozen-tundra,
+.wv-block.cosmetic-frozen-tundra,
+.wv-allday-bar.cosmetic-frozen-tundra,
+.wv-ghost-solid.cosmetic-frozen-tundra {
+  color: #1a3a5c;
+  text-shadow: none;
+}
+.event-chip.cosmetic-frozen-tundra .event-time {
+  color: inherit;
+}
+
+/* Vintage Velvet */
+.event-chip.cosmetic-vintage-velvet,
+.span-seg.cosmetic-vintage-velvet,
+.cosmetic-swatch.cosmetic-vintage-velvet,
+.wv-block.cosmetic-vintage-velvet,
+.wv-allday-bar.cosmetic-vintage-velvet,
+.wv-ghost-solid.cosmetic-vintage-velvet {
+  background-image: linear-gradient(90deg, #800020, #b8860b, #4a0404, #b8860b, #800020);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+
+/* Acid Techno */
+.event-chip.cosmetic-acid-techno,
+.span-seg.cosmetic-acid-techno,
+.cosmetic-swatch.cosmetic-acid-techno,
+.wv-block.cosmetic-acid-techno,
+.wv-allday-bar.cosmetic-acid-techno,
+.wv-ghost-solid.cosmetic-acid-techno {
+  background-image: linear-gradient(90deg, #ccff00, #39ff14, #1a1a1a, #39ff14, #ccff00);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite;
+}
+.event-chip.cosmetic-acid-techno,
+.span-seg.cosmetic-acid-techno,
+.wv-block.cosmetic-acid-techno,
+.wv-allday-bar.cosmetic-acid-techno,
+.wv-ghost-solid.cosmetic-acid-techno {
+  color: #ffffff;
+  text-shadow: 0 1px 2px #000;
+}
+.event-chip.cosmetic-acid-techno .event-time {
+  color: inherit;
+}
+
+/* Starlight Glow */
+.event-chip.cosmetic-starlight-glow,
+.span-seg.cosmetic-starlight-glow,
+.cosmetic-swatch.cosmetic-starlight-glow,
+.wv-block.cosmetic-starlight-glow,
+.wv-allday-bar.cosmetic-starlight-glow,
+.wv-ghost-solid.cosmetic-starlight-glow {
+  background-image: linear-gradient(90deg, #e6f2ff, #ffffff, #b3d1ff, #e6f2ff);
+  background-size: 300% 100%;
+  animation: cos-flow 9s linear infinite, starlight-breathing 4s ease-in-out infinite;
+}
+.event-chip.cosmetic-starlight-glow,
+.span-seg.cosmetic-starlight-glow,
+.wv-block.cosmetic-starlight-glow,
+.wv-allday-bar.cosmetic-starlight-glow,
+.wv-ghost-solid.cosmetic-starlight-glow {
+  color: #2c3e50;
+  text-shadow: none;
+}
+.event-chip.cosmetic-starlight-glow .event-time {
+  color: inherit;
+}
+
+/* Supernova Spark */
+.event-chip.cosmetic-supernova-spark,
+.span-seg.cosmetic-supernova-spark,
+.cosmetic-swatch.cosmetic-supernova-spark,
+.wv-block.cosmetic-supernova-spark,
+.wv-allday-bar.cosmetic-supernova-spark,
+.wv-ghost-solid.cosmetic-supernova-spark {
+  background-image: linear-gradient(90deg, #ff00cc, #ffcc00, #00ffff, #ff00cc);
+  background-size: 300% 100%;
+  animation: cos-flow 4s linear infinite;
+}
+
+/* Luminous Teal */
+.event-chip.cosmetic-luminous-teal,
+.span-seg.cosmetic-luminous-teal,
+.cosmetic-swatch.cosmetic-luminous-teal,
+.wv-block.cosmetic-luminous-teal,
+.wv-allday-bar.cosmetic-luminous-teal,
+.wv-ghost-solid.cosmetic-luminous-teal {
+  background-image: linear-gradient(90deg, #00e5ff, #0083b0, #00e5ff);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite, luminous-teal-glow 3s ease-in-out infinite;
+}
+
+/* Electric Violet */
+.event-chip.cosmetic-electric-violet,
+.span-seg.cosmetic-electric-violet,
+.cosmetic-swatch.cosmetic-electric-violet,
+.wv-block.cosmetic-electric-violet,
+.wv-allday-bar.cosmetic-electric-violet,
+.wv-ghost-solid.cosmetic-electric-violet {
+  background-image: linear-gradient(90deg, #6600ff, #00e5ff, #6600ff);
+  background-size: 300% 100%;
+  animation: cos-flow 5s linear infinite, electric-violet-glow 3s ease-in-out infinite;
+}
+
+/* Sunset Gold */
+.event-chip.cosmetic-sunset-gold,
+.span-seg.cosmetic-sunset-gold,
+.cosmetic-swatch.cosmetic-sunset-gold,
+.wv-block.cosmetic-sunset-gold,
+.wv-allday-bar.cosmetic-sunset-gold,
+.wv-ghost-solid.cosmetic-sunset-gold {
+  background-image: linear-gradient(90deg, #ff9900, #ffd700, #ff5500, #ffd700, #ff9900);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-sunset-gold,
+.span-seg.cosmetic-sunset-gold,
+.wv-block.cosmetic-sunset-gold,
+.wv-allday-bar.cosmetic-sunset-gold,
+.wv-ghost-solid.cosmetic-sunset-gold {
+  color: #4a2a00;
+  text-shadow: none;
+}
+.event-chip.cosmetic-sunset-gold .event-time {
+  color: inherit;
+}
+
+/* Midnight Neon */
+.event-chip.cosmetic-midnight-neon,
+.span-seg.cosmetic-midnight-neon,
+.cosmetic-swatch.cosmetic-midnight-neon,
+.wv-block.cosmetic-midnight-neon,
+.wv-allday-bar.cosmetic-midnight-neon,
+.wv-ghost-solid.cosmetic-midnight-neon {
+  background-image: linear-gradient(90deg, #001133, #00ff00, #002266, #00ff00, #001133);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+
+/* Glitch Matrix. The stripe pattern repeats every 4px, so the tile is sized to
+   an exact multiple of that and scrolled by whole periods (28px = 7 of them per
+   cos-stripes-move cycle) — any other size/offset pairing snaps at the loop. */
+.event-chip.cosmetic-glitch-matrix,
+.span-seg.cosmetic-glitch-matrix,
+.cosmetic-swatch.cosmetic-glitch-matrix,
+.wv-block.cosmetic-glitch-matrix,
+.wv-allday-bar.cosmetic-glitch-matrix,
+.wv-ghost-solid.cosmetic-glitch-matrix {
+  background-image: repeating-linear-gradient(90deg, #000, #000 2px, #00ff00 2px, #00ff00 4px);
+  background-size: 8px 100%;
+  animation: cos-stripes-move 1.5s linear infinite, matrix-flicker 5s infinite;
+}
+
+/* Holographic Pearl */
+.event-chip.cosmetic-holographic-pearl,
+.span-seg.cosmetic-holographic-pearl,
+.cosmetic-swatch.cosmetic-holographic-pearl,
+.wv-block.cosmetic-holographic-pearl,
+.wv-allday-bar.cosmetic-holographic-pearl,
+.wv-ghost-solid.cosmetic-holographic-pearl {
+  background-image: linear-gradient(90deg, #ffffff, #fbc2eb, #a6c1ee, #fbc2eb, #ffffff);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+.event-chip.cosmetic-holographic-pearl,
+.span-seg.cosmetic-holographic-pearl,
+.wv-block.cosmetic-holographic-pearl,
+.wv-allday-bar.cosmetic-holographic-pearl,
+.wv-ghost-solid.cosmetic-holographic-pearl {
+  color: #3b3b3b;
+  text-shadow: none;
+}
+.event-chip.cosmetic-holographic-pearl .event-time {
+  color: inherit;
+}
+
+/* Tempting Tangerine */
+.event-chip.cosmetic-tempting-tangerine,
+.span-seg.cosmetic-tempting-tangerine,
+.cosmetic-swatch.cosmetic-tempting-tangerine,
+.wv-block.cosmetic-tempting-tangerine,
+.wv-allday-bar.cosmetic-tempting-tangerine,
+.wv-ghost-solid.cosmetic-tempting-tangerine {
+  background-image: linear-gradient(90deg, #ff5500, #ffaa00, #ff5500);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite;
+}
+
+/* Neon Lime */
+.event-chip.cosmetic-neon-lime,
+.span-seg.cosmetic-neon-lime,
+.cosmetic-swatch.cosmetic-neon-lime,
+.wv-block.cosmetic-neon-lime,
+.wv-allday-bar.cosmetic-neon-lime,
+.wv-ghost-solid.cosmetic-neon-lime {
+  background-image: linear-gradient(90deg, #39ff14, #00ff66, #39ff14);
+  background-size: 300% 100%;
+  animation: cos-flow 5s linear infinite, neon-lime-glow 3s ease-in-out infinite;
+}
+.event-chip.cosmetic-neon-lime,
+.span-seg.cosmetic-neon-lime,
+.wv-block.cosmetic-neon-lime,
+.wv-allday-bar.cosmetic-neon-lime,
+.wv-ghost-solid.cosmetic-neon-lime {
+  color: #0b3a00;
+  text-shadow: none;
+}
+.event-chip.cosmetic-neon-lime .event-time {
+  color: inherit;
+}
+
+/* Plasma Wave */
+.event-chip.cosmetic-plasma-wave,
+.span-seg.cosmetic-plasma-wave,
+.cosmetic-swatch.cosmetic-plasma-wave,
+.wv-block.cosmetic-plasma-wave,
+.wv-allday-bar.cosmetic-plasma-wave,
+.wv-ghost-solid.cosmetic-plasma-wave {
+  background-image: linear-gradient(90deg, #ff0055, #7928ca, #ffaa00, #ff0055);
+  background-size: 300% 100%;
+  animation: cos-flow 5s linear infinite;
+}
+
+/* Boreal Forest */
+.event-chip.cosmetic-boreal-forest,
+.span-seg.cosmetic-boreal-forest,
+.cosmetic-swatch.cosmetic-boreal-forest,
+.wv-block.cosmetic-boreal-forest,
+.wv-allday-bar.cosmetic-boreal-forest,
+.wv-ghost-solid.cosmetic-boreal-forest {
+  background-image: linear-gradient(90deg, #228b22, #556b2f, #cd7f32, #228b22);
+  background-size: 300% 100%;
+  animation: cos-flow 8s linear infinite;
+}
+
+/* Cotton Candy Swirl */
+.event-chip.cosmetic-cotton-candy-swirl,
+.span-seg.cosmetic-cotton-candy-swirl,
+.cosmetic-swatch.cosmetic-cotton-candy-swirl,
+.wv-block.cosmetic-cotton-candy-swirl,
+.wv-allday-bar.cosmetic-cotton-candy-swirl,
+.wv-ghost-solid.cosmetic-cotton-candy-swirl {
+  background-image: linear-gradient(90deg, #ffc0cb, #e0b0ff, #80daeb, #ffc0cb);
+  background-size: 300% 100%;
+  animation: cos-flow 7s linear infinite;
+}
+.event-chip.cosmetic-cotton-candy-swirl,
+.span-seg.cosmetic-cotton-candy-swirl,
+.wv-block.cosmetic-cotton-candy-swirl,
+.wv-allday-bar.cosmetic-cotton-candy-swirl,
+.wv-ghost-solid.cosmetic-cotton-candy-swirl {
+  color: #3b2a3a;
+  text-shadow: none;
+}
+.event-chip.cosmetic-cotton-candy-swirl .event-time {
+  color: inherit;
+}
+
+/* AI gradients ----------------------------------------------------------- */
+/* The "AI gradient" rendered four ways, from a calm pastel haze up to a
+   rotating conic prism. The conic skins drive their angle off the registered
+   --ai-angle custom property (see the keyframes block). */
+
+/* AI Aura — soft pearlescent pastel haze (calm). */
+.event-chip.cosmetic-ai-aura,
+.span-seg.cosmetic-ai-aura,
+.cosmetic-swatch.cosmetic-ai-aura,
+.wv-block.cosmetic-ai-aura,
+.wv-allday-bar.cosmetic-ai-aura,
+.wv-ghost-solid.cosmetic-ai-aura {
+  background-image: linear-gradient(90deg, #c3b6ff, #e9d8ff, #b8e0ff, #ffd6f0, #c3b6ff);
+  background-size: 300% 100%;
+  animation: cos-flow 9s linear infinite;
+}
+.event-chip.cosmetic-ai-aura,
+.span-seg.cosmetic-ai-aura,
+.wv-block.cosmetic-ai-aura,
+.wv-allday-bar.cosmetic-ai-aura,
+.wv-ghost-solid.cosmetic-ai-aura {
+  color: #2e2a52;
+  text-shadow: none;
+}
+.event-chip.cosmetic-ai-aura .event-time {
+  color: inherit;
+}
+
+/* AI Glow — iridescent flow with a pulsing halo (glow). */
+.event-chip.cosmetic-ai-glow,
+.span-seg.cosmetic-ai-glow,
+.cosmetic-swatch.cosmetic-ai-glow,
+.wv-block.cosmetic-ai-glow,
+.wv-allday-bar.cosmetic-ai-glow,
+.wv-ghost-solid.cosmetic-ai-glow {
+  background-image: linear-gradient(90deg, #4d00ff, #00e5ff, #ff00d4, #7b6cff, #4d00ff);
+  background-size: 300% 100%;
+  animation: cos-flow 6s linear infinite, ai-glow-pulse 3s ease-in-out infinite;
+}
+
+/* AI Spin — rotating conic rainbow halo (flashy). */
+.event-chip.cosmetic-ai-spin,
+.span-seg.cosmetic-ai-spin,
+.cosmetic-swatch.cosmetic-ai-spin,
+.wv-block.cosmetic-ai-spin,
+.wv-allday-bar.cosmetic-ai-spin,
+.wv-ghost-solid.cosmetic-ai-spin {
+  background: conic-gradient(from var(--ai-angle), #ff007f, #ffae00, #00e5ff, #6e8bff, #ff007f);
+  animation: ai-spin-rot 4s linear infinite;
+}
+
+/* AI Prism — rotating conic plus a glow, the most premium of the set (flashy). */
+.event-chip.cosmetic-ai-prism,
+.span-seg.cosmetic-ai-prism,
+.cosmetic-swatch.cosmetic-ai-prism,
+.wv-block.cosmetic-ai-prism,
+.wv-allday-bar.cosmetic-ai-prism,
+.wv-ghost-solid.cosmetic-ai-prism {
+  background: conic-gradient(from var(--ai-angle), #6e8bff, #ff00d4, #00e5ff, #ffd000, #6e8bff);
+  animation: ai-spin-rot 6s linear infinite, ai-prism-glow 3s ease-in-out infinite;
+}
+
+/* Liquid gradients -------------------------------------------------------- */
+/* Blobs of colour that wander and diffuse into each other like ink in water —
+   no directional scroll at all. Each skin stacks translucent radial gradients
+   whose centres are the registered --lq-* custom properties; the cos-liquid
+   keyframes walk those centres along closed loops (0% == 100%), so the motion
+   is organic and seamless. Where @property is unsupported the blobs render at
+   their initial positions — a static but correct mesh. */
+
+/* AI Mesh — the Microsoft-AI-style mesh: azure, violet and pink blooms
+   diffusing over deep indigo. */
+.event-chip.cosmetic-ai-mesh,
+.span-seg.cosmetic-ai-mesh,
+.cosmetic-swatch.cosmetic-ai-mesh,
+.wv-block.cosmetic-ai-mesh,
+.wv-allday-bar.cosmetic-ai-mesh,
+.wv-ghost-solid.cosmetic-ai-mesh {
+  background-image:
+    radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(99, 132, 255, 0.9) 0%, transparent 62%),
+    radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(255, 110, 199, 0.8) 0%, transparent 58%),
+    radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(64, 224, 255, 0.75) 0%, transparent 60%),
+    linear-gradient(#191645, #191645);
+  animation: cos-liquid-a 11s ease-in-out infinite;
+}
+
+/* Liquid Dream — pastel lilac/sky/rose diffusing on porcelain (dark text). */
+.event-chip.cosmetic-liquid-dream,
+.span-seg.cosmetic-liquid-dream,
+.cosmetic-swatch.cosmetic-liquid-dream,
+.wv-block.cosmetic-liquid-dream,
+.wv-allday-bar.cosmetic-liquid-dream,
+.wv-ghost-solid.cosmetic-liquid-dream {
+  background-image:
+    radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(165, 184, 255, 0.85) 0%, transparent 60%),
+    radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(255, 190, 226, 0.8) 0%, transparent 58%),
+    radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(174, 233, 255, 0.8) 0%, transparent 60%),
+    linear-gradient(#eef0fb, #eef0fb);
+  animation: cos-liquid-b 13s ease-in-out infinite;
+}
+.event-chip.cosmetic-liquid-dream,
+.span-seg.cosmetic-liquid-dream,
+.wv-block.cosmetic-liquid-dream,
+.wv-allday-bar.cosmetic-liquid-dream,
+.wv-ghost-solid.cosmetic-liquid-dream {
+  color: #33325e;
+  text-shadow: none;
+}
+.event-chip.cosmetic-liquid-dream .event-time {
+  color: inherit;
+}
+
+/* Ink Bloom — teal and violet ink blooming through near-black water. */
+.event-chip.cosmetic-ink-bloom,
+.span-seg.cosmetic-ink-bloom,
+.cosmetic-swatch.cosmetic-ink-bloom,
+.wv-block.cosmetic-ink-bloom,
+.wv-allday-bar.cosmetic-ink-bloom,
+.wv-ghost-solid.cosmetic-ink-bloom {
+  background-image:
+    radial-gradient(120% 150% at var(--lq-x1) var(--lq-y1), rgba(38, 198, 218, 0.75) 0%, transparent 55%),
+    radial-gradient(130% 130% at var(--lq-x2) var(--lq-y2), rgba(124, 77, 255, 0.7) 0%, transparent 58%),
+    radial-gradient(150% 120% at var(--lq-x3) var(--lq-y3), rgba(21, 101, 192, 0.8) 0%, transparent 62%),
+    linear-gradient(#0b1026, #0b1026);
+  animation: cos-liquid-b 15s ease-in-out infinite reverse;
+}
+
+/* Lava Lamp — warm magenta/amber blobs slowly morphing over plum. */
+.event-chip.cosmetic-lava-lamp,
+.span-seg.cosmetic-lava-lamp,
+.cosmetic-swatch.cosmetic-lava-lamp,
+.wv-block.cosmetic-lava-lamp,
+.wv-allday-bar.cosmetic-lava-lamp,
+.wv-ghost-solid.cosmetic-lava-lamp {
+  background-image:
+    radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(255, 78, 138, 0.9) 0%, transparent 58%),
+    radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(255, 158, 68, 0.85) 0%, transparent 55%),
+    radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(222, 49, 99, 0.8) 0%, transparent 60%),
+    linear-gradient(#3d0a33, #3d0a33);
+  animation: cos-liquid-a 9s ease-in-out infinite reverse;
+}
+
+/* Deep Current — cold open-water blues with a drifting shaft of light. */
+.event-chip.cosmetic-deep-current,
+.span-seg.cosmetic-deep-current,
+.cosmetic-swatch.cosmetic-deep-current,
+.wv-block.cosmetic-deep-current,
+.wv-allday-bar.cosmetic-deep-current,
+.wv-ghost-solid.cosmetic-deep-current {
+  background-image:
+    radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(14, 116, 144, 0.9) 0%, transparent 60%),
+    radial-gradient(110% 130% at var(--lq-x2) var(--lq-y2), rgba(125, 211, 252, 0.55) 0%, transparent 50%),
+    radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(13, 148, 136, 0.7) 0%, transparent 58%),
+    linear-gradient(#04263c, #04263c);
+  animation: cos-liquid-b 17s ease-in-out infinite;
+}
+
+/* Opal Drift — pearlescent mint/lavender/blush sheens on ivory (dark text). */
+.event-chip.cosmetic-opal-drift,
+.span-seg.cosmetic-opal-drift,
+.cosmetic-swatch.cosmetic-opal-drift,
+.wv-block.cosmetic-opal-drift,
+.wv-allday-bar.cosmetic-opal-drift,
+.wv-ghost-solid.cosmetic-opal-drift {
+  background-image:
+    radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(191, 231, 215, 0.9) 0%, transparent 58%),
+    radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(220, 210, 245, 0.9) 0%, transparent 58%),
+    radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(250, 214, 214, 0.85) 0%, transparent 60%),
+    linear-gradient(#f6f2ee, #f6f2ee);
+  animation: cos-liquid-a 14s ease-in-out infinite;
+}
+.event-chip.cosmetic-opal-drift,
+.span-seg.cosmetic-opal-drift,
+.wv-block.cosmetic-opal-drift,
+.wv-allday-bar.cosmetic-opal-drift,
+.wv-ghost-solid.cosmetic-opal-drift {
+  color: #4b4257;
+  text-shadow: none;
+}
+.event-chip.cosmetic-opal-drift .event-time {
+  color: inherit;
+}
+
+/* Colour-derived effects ------------------------------------------------- */
+.event-chip.cosmetic-shimmer,
+.span-seg.cosmetic-shimmer,
+.cosmetic-swatch.cosmetic-shimmer,
+.wv-block.cosmetic-shimmer,
+.wv-allday-bar.cosmetic-shimmer,
+.wv-ghost-solid.cosmetic-shimmer {
+  background: var(--event-color, var(--color-accent));
+}
+.event-chip.cosmetic-shimmer,
+.span-seg.cosmetic-shimmer,
+.wv-block.cosmetic-shimmer,
+.wv-allday-bar.cosmetic-shimmer,
+.wv-ghost-solid.cosmetic-shimmer {
+  color: var(--event-text-color, #fff);
+  border-left: none;
+}
+.event-chip.cosmetic-shimmer .event-time {
+  color: inherit;
+}
+.event-chip.cosmetic-shimmer::after,
+.span-seg.cosmetic-shimmer::after,
+.cosmetic-swatch.cosmetic-shimmer::after,
+.wv-block.cosmetic-shimmer::after,
+.wv-allday-bar.cosmetic-shimmer::after,
+.wv-ghost-solid.cosmetic-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: cos-shimmer 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.event-chip.cosmetic-glow,
+.span-seg.cosmetic-glow,
+.cosmetic-swatch.cosmetic-glow,
+.wv-block.cosmetic-glow,
+.wv-allday-bar.cosmetic-glow,
+.wv-ghost-solid.cosmetic-glow {
+  background: var(--event-color, var(--color-accent));
+  animation: cos-glow 2.6s ease-in-out infinite;
+}
+.event-chip.cosmetic-glow,
+.span-seg.cosmetic-glow,
+.wv-block.cosmetic-glow,
+.wv-allday-bar.cosmetic-glow,
+.wv-ghost-solid.cosmetic-glow {
+  color: var(--event-text-color, #fff);
+  border-left: none;
+}
+.event-chip.cosmetic-glow .event-time {
+  color: inherit;
+}
+
+.event-chip.cosmetic-sheen,
+.span-seg.cosmetic-sheen,
+.cosmetic-swatch.cosmetic-sheen,
+.wv-block.cosmetic-sheen,
+.wv-allday-bar.cosmetic-sheen,
+.wv-ghost-solid.cosmetic-sheen {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--event-color, var(--color-accent)) 78%, #000),
+    var(--event-color, var(--color-accent)),
+    color-mix(in srgb, var(--event-color, var(--color-accent)) 70%, #fff),
+    var(--event-color, var(--color-accent)),
+    color-mix(in srgb, var(--event-color, var(--color-accent)) 78%, #000)
+  );
+  background-size: 300% 100%;
+  animation: cos-flow 5s linear infinite;
+}
+.event-chip.cosmetic-sheen,
+.span-seg.cosmetic-sheen,
+.wv-block.cosmetic-sheen,
+.wv-allday-bar.cosmetic-sheen,
+.wv-ghost-solid.cosmetic-sheen {
+  color: var(--event-text-color, #fff);
+  border-left: none;
+}
+.event-chip.cosmetic-sheen .event-time {
+  color: inherit;
+}
+
+/* Stardust — keeps the event colour and dusts it with twinkling specks. The
+   idle look is pure CSS; hovering hands over to the particle engine
+   (src/ui/cosmeticParticles.ts), which scatters live dust away from the cursor
+   and springs it back home. */
+.event-chip.cosmetic-stardust,
+.span-seg.cosmetic-stardust,
+.cosmetic-swatch.cosmetic-stardust,
+.wv-block.cosmetic-stardust,
+.wv-allday-bar.cosmetic-stardust,
+.wv-ghost-solid.cosmetic-stardust {
+  background: var(--event-color, var(--color-accent));
+}
+.event-chip.cosmetic-stardust,
+.span-seg.cosmetic-stardust,
+.wv-block.cosmetic-stardust,
+.wv-allday-bar.cosmetic-stardust,
+.wv-ghost-solid.cosmetic-stardust {
+  color: var(--event-text-color, #fff);
+  border-left: none;
+}
+.event-chip.cosmetic-stardust .event-time {
+  color: inherit;
+}
+.event-chip.cosmetic-stardust::after,
+.span-seg.cosmetic-stardust::after,
+.cosmetic-swatch.cosmetic-stardust::after,
+.wv-block.cosmetic-stardust::after,
+.wv-allday-bar.cosmetic-stardust::after,
+.wv-ghost-solid.cosmetic-stardust::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 30%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 30% 68%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 46% 22%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 58% 74%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.5px 1.5px at 72% 40%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 86% 64%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 93% 18%, rgba(255, 255, 255, 0.8), transparent);
+  animation: stardust-twinkle 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ---- Hover: keep the gradient alive, lift it, and track the pointer ---- */
+.event-chip[class*='cosmetic-']:hover,
+.span-seg[class*='cosmetic-']:hover,
+.wv-block[class*='cosmetic-']:hover,
+.wv-allday-bar[class*='cosmetic-']:hover,
+.wv-ghost-solid[class*='cosmetic-']:hover {
+  filter: brightness(1.06) saturate(1.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+}
+/* NOTE: no animation-duration change on hover — retiming a running CSS
+   animation rescales its elapsed time, which teleports the gradient phase on
+   every hover in/out. The brightness lift + spotlight carry the hover state. */
+
+/* A glossy spotlight that follows the cursor. JS sets --mx/--my (percentages);
+   it sits above the gradient but below the chip text. */
+.event-chip[class*='cosmetic-']::before,
+.span-seg[class*='cosmetic-']::before,
+.wv-block[class*='cosmetic-']::before,
+.wv-allday-bar[class*='cosmetic-']::before,
+.wv-ghost-solid[class*='cosmetic-']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      36px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0) 70%
+    ),
+    radial-gradient(
+      110px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.28),
+      rgba(255, 255, 255, 0) 65%
+    );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.event-chip[class*='cosmetic-']:hover::before,
+.span-seg[class*='cosmetic-']:hover::before,
+.wv-block[class*='cosmetic-']:hover::before,
+.wv-allday-bar[class*='cosmetic-']:hover::before,
+.wv-ghost-solid[class*='cosmetic-']:hover::before {
+  opacity: 1;
+}
+
+/* ---- Keyframes ---- */
+/* With background-size 300% 100%, a 0% → 300% scroll is exactly two tile
+   widths, so frame N of one cycle equals frame N of the next — endless loop. */
+@keyframes cos-flow {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 300% 50%;
+  }
+}
+@keyframes cos-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  60%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+@keyframes cos-glow {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    filter: brightness(1.18);
+    box-shadow: 0 0 10px 1px color-mix(in srgb, var(--event-color, var(--color-accent)) 70%, transparent);
+  }
+}
+@keyframes cos-stripes-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
+  }
+}
+
+@keyframes neon-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(255, 0, 127, 0.4), inset 0 0 4px rgba(0, 240, 255, 0.4);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(255, 0, 127, 0.8), inset 0 0 8px rgba(0, 240, 255, 0.8);
+    filter: brightness(1.18);
+  }
+}
+
+@keyframes cyber-inferno-glow {
+  0%, 100% {
+    box-shadow: 0 0 3px #ff3300;
+    filter: brightness(0.95);
+  }
+  50% {
+    box-shadow: 0 0 14px #ff9900;
+    filter: brightness(1.22);
+  }
+}
+
+@keyframes starlight-breathing {
+  0%, 100% {
+    opacity: 0.9;
+    box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  }
+}
+
+@keyframes luminous-teal-glow {
+  0%, 100% {
+    box-shadow: 0 0 3px #00e5ff;
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 12px #0083b0;
+    filter: brightness(1.15);
+  }
+}
+
+@keyframes electric-violet-glow {
+  0%, 100% {
+    box-shadow: 0 0 3px #6600ff;
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 12px #00e5ff;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes neon-lime-glow {
+  0%, 100% {
+    box-shadow: 0 0 3px #39ff14;
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 12px #00ff66;
+    filter: brightness(1.15);
+  }
+}
+
+@keyframes matrix-flicker {
+  0%, 100%, 30%, 34%, 38%, 42%, 70%, 72%, 74% {
+    opacity: 1;
+  }
+  32%, 40%, 71%, 73% {
+    opacity: 0.82;
+  }
+}
+
+@keyframes stardust-twinkle {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Liquid-gradient engine: registered blob centres so the radial gradients can
+   drift smoothly. Two wander paths (a/b); skins mix duration and direction so
+   no two liquids move in sync. Both loops close (0% == 100%) and every leg is
+   eased, so the blobs glide — never snap. */
+@property --lq-x1 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 18%;
+}
+@property --lq-y1 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 24%;
+}
+@property --lq-x2 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 82%;
+}
+@property --lq-y2 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 30%;
+}
+@property --lq-x3 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 52%;
+}
+@property --lq-y3 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 82%;
+}
+@keyframes cos-liquid-a {
+  0%,
+  100% {
+    --lq-x1: 18%;
+    --lq-y1: 24%;
+    --lq-x2: 82%;
+    --lq-y2: 30%;
+    --lq-x3: 52%;
+    --lq-y3: 82%;
+  }
+  25% {
+    --lq-x1: 58%;
+    --lq-y1: 42%;
+    --lq-x2: 34%;
+    --lq-y2: 72%;
+    --lq-x3: 78%;
+    --lq-y3: 38%;
+  }
+  50% {
+    --lq-x1: 80%;
+    --lq-y1: 72%;
+    --lq-x2: 14%;
+    --lq-y2: 46%;
+    --lq-x3: 28%;
+    --lq-y3: 20%;
+  }
+  75% {
+    --lq-x1: 36%;
+    --lq-y1: 58%;
+    --lq-x2: 62%;
+    --lq-y2: 16%;
+    --lq-x3: 58%;
+    --lq-y3: 62%;
+  }
+}
+@keyframes cos-liquid-b {
+  0%,
+  100% {
+    --lq-x1: 74%;
+    --lq-y1: 26%;
+    --lq-x2: 22%;
+    --lq-y2: 64%;
+    --lq-x3: 60%;
+    --lq-y3: 78%;
+  }
+  33% {
+    --lq-x1: 40%;
+    --lq-y1: 70%;
+    --lq-x2: 68%;
+    --lq-y2: 30%;
+    --lq-x3: 18%;
+    --lq-y3: 32%;
+  }
+  66% {
+    --lq-x1: 20%;
+    --lq-y1: 34%;
+    --lq-x2: 84%;
+    --lq-y2: 68%;
+    --lq-x3: 76%;
+    --lq-y3: 24%;
+  }
+}
+
+/* Registered so the conic AI skins can animate their start angle smoothly.
+   Where @property is unsupported the conic just renders at the initial angle. */
+@property --ai-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes ai-spin-rot {
+  to {
+    --ai-angle: 360deg;
+  }
+}
+@keyframes ai-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(77, 0, 255, 0.4), inset 0 0 4px rgba(0, 229, 255, 0.4);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(255, 0, 212, 0.8), inset 0 0 8px rgba(0, 229, 255, 0.8);
+    filter: brightness(1.18);
+  }
+}
+@keyframes ai-prism-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(110, 139, 255, 0.5);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 0, 212, 0.8);
+    filter: brightness(1.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-chip[class*='cosmetic-'],
+  .span-seg[class*='cosmetic-'],
+  .cosmetic-swatch,
+  .event-chip[class*='cosmetic-']::after,
+  .span-seg[class*='cosmetic-']::after,
+  .cosmetic-swatch::after,
+.wv-block[class*='cosmetic-'],
+.wv-allday-bar[class*='cosmetic-'],
+.wv-ghost-solid[class*='cosmetic-'],
+.wv-block[class*='cosmetic-']::after,
+.wv-allday-bar[class*='cosmetic-']::after,
+.wv-ghost-solid[class*='cosmetic-']::after {
+    animation: none;
+  }
+}
+
+/* Matched-category events: the chip carries the category's own gradient inline
+   (backgroundImage via getMatchedEventStyle); this class adds the slow drift. */
+@keyframes event-match-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+.event-match-gradient {
+  animation: event-match-shift 6s linear infinite;
+}
+
+/* The matched-category drift was left out of the reduced-motion block above
+   because it is applied by an inline style rather than a cosmetic- class. */
+@media (prefers-reduced-motion: reduce) {
+  .event-match-gradient {
+    animation: none;
+  }
+}

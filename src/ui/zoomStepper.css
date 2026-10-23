@@ -1,0 +1,35 @@
+.zoomstep { display: inline-flex; align-items: center; gap: 6px; }
+.zoomstep-cap {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  border: 0.5px solid var(--color-border);
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.zoomstep-btn {
+  width: 28px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.13s ease, color 0.13s ease;
+}
+.zoomstep-btn:hover:not(:disabled) { background: var(--color-surface); color: var(--color-text); }
+.zoomstep-btn:disabled { opacity: 0.4; cursor: default; }
+.zoomstep-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+  min-width: 38px;
+  text-align: center;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 0.5px solid var(--color-border);
+  border-right: 0.5px solid var(--color-border);
+}

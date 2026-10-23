@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+mcp-server/node_modules/
+
+# Build output: CI rebuilds these from source (see .github/workflows/pages.yml
+# and tauri.conf.json's beforeBuildCommand), so they never need committing.
+dist/
+mcp-server/dist/
+src-tauri/target/
+src-tauri/gen/
+coverage/
+
+# Local tool and agent folders
+.claude/
+.superpowers/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+!.env.noauth
+.envrc
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+secrets.*
+
+# Editor + OS junk
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log

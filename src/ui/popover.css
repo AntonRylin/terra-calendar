@@ -1,0 +1,74 @@
+.popover {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: var(--space-3);
+  min-width: 260px;
+  /* Above the settings modal (300) so popovers opened from inside it (e.g. the
+     cosmetic "All styles" menu) stay visible; below confirm dialogs (2000). */
+  z-index: 350;
+  /* Never let a tall popover (e.g. the event editor) exceed the visible window.
+     vh ignores the interface-scale zoom, so divide by --font-scale to cap to the
+     real window height; the body scrolls inside. No-op at scale 1. */
+  max-height: calc((100vh - 2 * var(--space-4)) / var(--font-scale, 1));
+  overflow-y: auto;
+}
+
+/* ---- Mobile: render overlays as a bottom sheet ---- */
+.popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  animation: sheetBackdropIn 0.2s ease forwards;
+}
+
+.popover.popover-sheet {
+  width: 100%;
+  max-width: 520px;
+  min-width: 0;
+  max-height: 90dvh;
+  overflow-y: auto;
+  border: none;
+  border-radius: 18px 18px 0 0;
+  padding: var(--space-3) var(--space-4)
+    calc(var(--space-4) + env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.22);
+  animation: sheetUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sheet-grabber {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+  margin: 2px auto var(--space-3);
+}
+
+/* The forms set fixed widths for the desktop popover; let them fill the sheet. */
+.popover-sheet .event-editor,
+.popover-sheet .quick-entry,
+.popover-sheet .delete-choices-container {
+  width: 100%;
+}
+
+@keyframes sheetBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popover.popover-sheet,
+  .popover-backdrop {
+    animation: none;
+  }
+}

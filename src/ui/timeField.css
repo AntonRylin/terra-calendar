@@ -1,0 +1,161 @@
+/* Typeable time field + quick time-list dropdown. The input inherits the
+   editor's input styling (.event-editor input); only the trailing clock and the
+   list are defined here. */
+.time-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.time-field-input {
+  width: 100%;
+  padding-right: 28px !important;
+}
+
+.time-field-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.time-field-icon:hover {
+  color: var(--color-accent);
+  background: var(--color-muted-bg);
+}
+
+/* Share the editor row like the native time inputs did. */
+.editor-row > .time-field {
+  flex: 1;
+}
+
+/* When the field sits next to a label (e.g. a span day's "Time"), keep it
+   compact — the value is only "HH:MM", so it needn't fill the row. */
+.editor-label > .time-field {
+  flex: 0 0 auto;
+  width: 96px;
+}
+
+/* ---- Time list popover ---- */
+.popover.time-popover {
+  min-width: 0;
+  padding: var(--space-1);
+  overflow: visible;
+}
+
+.tp {
+  width: 150px;
+}
+
+.tp-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.tp-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 90ms ease, color 90ms ease;
+}
+
+.tp-option:hover:not(.selected) {
+  background: var(--color-muted-bg);
+}
+
+.tp-option.selected {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.tp-time {
+  font-variant-numeric: tabular-nums;
+}
+
+.tp-hint {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.tp-option.selected .tp-hint {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tp-empty {
+  padding: var(--space-2);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.tp-foot {
+  margin-top: 2px;
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--color-border);
+}
+
+.tp-clear-btn {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.tp-clear-btn:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+  .tp {
+    width: 100%;
+  }
+
+  .tp-option {
+    font-size: 15px;
+    padding: 10px 12px;
+  }
+
+  .tp-hint {
+    font-size: 12px;
+  }
+
+  .tp-clear-btn {
+    font-size: 15px;
+    padding: 10px;
+  }
+}

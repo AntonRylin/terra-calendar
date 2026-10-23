@@ -1,0 +1,134 @@
+/* Tab switcher row between the month header and the weekday row. */
+.habit-tab-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.habit-tab-row::-webkit-scrollbar {
+  display: none;
+}
+
+.habit-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.habit-tab:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+.habit-tab.is-active {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.habit-tab svg {
+  flex-shrink: 0;
+}
+
+/* Per-day habit content inside a month-grid tile. */
+.habit-day-content {
+  position: absolute;
+  inset: 26px 4px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none; /* the tile itself handles clicks */
+}
+
+.habit-day-content.habit-day-content-text {
+  position: absolute;
+  inset: 26px 8px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.habit-day-check {
+  color: var(--color-accent);
+}
+
+.habit-day-number {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-accent);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.habit-day-text {
+  display: block;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-text);
+  border: none;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 4px;
+  padding: calc(4px * var(--effective-tile-scale)) calc(6px * var(--effective-tile-scale));
+  font-size: calc(11px * var(--effective-tile-scale));
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Editor popover for text/number tabs. */
+.habit-entry-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  width: 240px;
+}
+
+.habit-entry-editor-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.habit-entry-editor textarea,
+.habit-entry-editor input {
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  resize: vertical;
+}
+.habit-entry-editor textarea {
+  min-height: 72px;
+}
+.habit-entry-editor textarea:focus,
+.habit-entry-editor input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.habit-entry-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}

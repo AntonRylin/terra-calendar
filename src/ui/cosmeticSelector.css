@@ -1,0 +1,216 @@
+.cosmetic-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.cosmetic-swatch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  cursor: pointer;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.cosmetic-swatch:hover {
+  transform: scale(1.08);
+}
+
+.cosmetic-swatch.selected {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+.cosmetic-none-slash {
+  width: 80%;
+  height: 1.5px;
+  background: var(--color-text-secondary);
+  transform: rotate(-20deg);
+  display: block;
+}
+
+.cosmetic-more {
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.cosmetic-more:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Sub-modal Popover Styling */
+.more-styles-popover {
+  max-width: 260px;
+}
+
+.more-styles-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  user-select: none;
+}
+
+.more-styles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-2);
+}
+
+.more-styles-header h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.more-styles-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 120ms ease;
+}
+
+.more-styles-close:hover {
+  color: var(--color-text);
+}
+
+/* User-saved styles: a swatch with a small delete badge revealed on hover. */
+.custom-swatch-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.custom-swatch-del {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  z-index: 2;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.custom-swatch-wrap:hover .custom-swatch-del {
+  opacity: 1;
+}
+
+.custom-swatch-del:hover {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+/* Scroll container holding the grouped sections. */
+.more-styles-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: min(440px, 70vh);
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+.more-styles-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* "All Styles" lists every skin at once — ~80 swatches, each running an
+     infinite gradient or glow animation inside a 440px-tall scroller. Skipping
+     the family sections that are scrolled out of view stops their animations
+     too, so the picker only animates what you can actually see. Sections vary
+     in height, hence `auto` — the browser remembers each one's last rendered
+     size instead of guessing. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 140px;
+}
+
+.more-styles-section-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.more-styles-section-hint {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.7;
+  color: var(--color-text-secondary);
+}
+
+.more-styles-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-2);
+}
+
+/* Custom scrollbar for the scroll container */
+.more-styles-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.more-styles-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.more-styles-body::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.more-styles-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Premium cosmetic locked behind the $3.99 unlock: a dimming overlay + lock. */
+.cosmetic-lock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+}

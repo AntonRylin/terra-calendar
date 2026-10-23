@@ -1,0 +1,33 @@
+.popover--menu {
+  min-width: 160px;
+  padding: var(--space-1);
+}
+
+.context-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.context-menu-item:hover,
+.context-menu-item:focus-visible {
+  background: var(--color-muted-bg);
+  outline: none;
+}
+
+.context-menu-item.is-danger {
+  color: var(--color-danger);
+}

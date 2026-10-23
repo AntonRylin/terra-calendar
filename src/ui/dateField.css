@@ -1,0 +1,321 @@
+/* Typeable date field + custom calendar dropdown. The text input inherits the
+   editor's input styling (.event-editor input); only the trailing calendar
+   affordance and the popover are defined here. */
+.date-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.date-field-input {
+  width: 100%;
+  padding-right: 30px !important;
+}
+
+.date-field-icon {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.date-field-icon:hover {
+  color: var(--color-accent);
+  background: var(--color-muted-bg);
+}
+
+/* Let the field grow like the native date input did in the editor row. */
+.editor-row > .date-field {
+  flex: 1.25;
+}
+
+.span-date-row .date-field {
+  flex: 1;
+}
+
+/* When the field sits next to a label (task "Set date"), fill the rest of the
+   row but keep a workable minimum so a long label can't crush it. */
+.editor-label > .date-field {
+  flex: 1;
+  min-width: 104px;
+}
+
+/* ---- Calendar popover ---- */
+.popover.date-popover {
+  min-width: 0;
+  padding: var(--space-3);
+  overflow: visible;
+}
+
+.dp {
+  width: 244px;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .dp {
+    width: 100%;
+  }
+}
+
+.dp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.dp-title,
+.dp-title-static {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.dp-title {
+  border: none;
+  background: none;
+  font-family: inherit;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.dp-title:hover {
+  background: var(--color-muted-bg);
+}
+
+.dp-title-static {
+  padding: 4px 8px;
+}
+
+.dp-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.dp-nav:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.dp-weekdays span {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-text-faint);
+  padding: 2px 0;
+}
+
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  /* Subtle month-change fade — snappy, and off under reduced motion. */
+  animation: dpFade 110ms ease;
+}
+
+@keyframes dpFade {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+
+.dp-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+.dp-day:hover:not(:disabled):not(.selected) {
+  background: var(--color-muted-bg);
+}
+
+.dp-day.weekend {
+  color: var(--color-text-secondary);
+}
+
+.dp-day.out {
+  color: var(--color-text-faint);
+}
+
+/* Today: an accent ring; becomes a filled dot under the number when selected. */
+.dp-day.today:not(.selected) {
+  box-shadow: inset 0 0 0 1.5px var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.dp-day.selected {
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.dp-day:disabled {
+  color: var(--color-text-faint);
+  opacity: 0.4;
+  cursor: default;
+}
+
+.dp-day:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-accent);
+}
+
+/* ---- Month overview ---- */
+.dp-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.dp-month {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-muted-bg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+.dp-month:hover:not(.selected) {
+  background: var(--color-border);
+}
+
+.dp-month.today:not(.selected) {
+  box-shadow: inset 0 0 0 1.5px var(--color-accent);
+  color: var(--color-accent);
+}
+
+.dp-month.selected {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* ---- Footer ---- */
+.dp-foot {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.dp-foot-split {
+  justify-content: space-between;
+}
+
+.dp-today-btn,
+.dp-clear-btn {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.dp-today-btn {
+  color: var(--color-accent);
+}
+
+.dp-today-btn:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+}
+
+.dp-today-btn:disabled {
+  color: var(--color-text-faint);
+  cursor: default;
+}
+
+.dp-clear-btn {
+  color: var(--color-text-secondary);
+}
+
+.dp-clear-btn:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-grid {
+    animation: none;
+  }
+}
+
+/* Roomier targets on touch. */
+@media (max-width: 768px) {
+  .dp-day {
+    font-size: 15px;
+  }
+
+  .dp-weekdays span {
+    font-size: 12px;
+  }
+
+  .dp-month {
+    height: 54px;
+    font-size: 15px;
+  }
+
+  .dp-nav {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dp-today-btn {
+    font-size: 15px;
+    padding: 8px 16px;
+  }
+}

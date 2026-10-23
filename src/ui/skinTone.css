@@ -1,0 +1,99 @@
+/*
+ * Dark-mode toning for decorative fills.
+ *
+ * Every cosmetic skin — the day-tile styles from the right-click "Style this
+ * day" panel, event-chip skins, matched category gradients, day-background
+ * images and custom CSS — was authored against the light theme, where the page
+ * is #fafafa and a bright fill reads as coloured paper on white paper. Dropped
+ * unchanged onto the dark theme's #1c1c1e they become glare: a neon block
+ * punched into a dark UI, far brighter than anything around it.
+ *
+ * The fix is one multiply pass over the *background* of those surfaces. Why
+ * multiply and not `filter: brightness()`:
+ *  - It touches the background only, so an event chip sitting inside a styled
+ *    day tile isn't dimmed twice.
+ *  - Several skins animate `filter` themselves (the glow/pulse families, and
+ *    the custom-style "pulse" recipe). An animation beats a static declaration
+ *    in the cascade, so a `filter` here would silently do nothing on exactly
+ *    the loudest skins. Nothing animates `background-blend-mode`. Those skins
+ *    still end up brighter than the rest — their halo multiplies back up by as
+ *    much as 1.2 — but that is the "pulsing halo" family doing what it says.
+ *  - Multiplying is proportional: it scales bright skins down hard while a
+ *    near-black skin (Deep Space, Ink Bloom) barely moves — those already suit
+ *    a dark UI and should be left alone.
+ *
+ * Because the fills come down in luminance, the day numbers and chip labels
+ * that pale skins hand-picked as *dark* text (readable on #f6f2ee, not on its
+ * dimmed form) are flipped back to light here, in one rule rather than ~20.
+ *
+ * Gated on `data-dim-skins="on"` (Settings → Appearance), so anyone who wants
+ * the full-strength look can have it back. skinTone.test.ts checks every
+ * gradient host stays covered.
+ */
+
+:root[data-theme='dark'] {
+  /* Multiplier for decorative fills: #ffffff is a no-op, black is full dark.
+     ~0.66 lands bright skins inside the dark UI's luminance range while
+     keeping their hue and chroma — desaturating instead reads as muddy.
+     Lower starts looking drab; higher lets the neon skins glare again. */
+  --skin-dim: #a8a8a8;
+  /* Text on a dimmed fill. Every skin's own colour choice was made for the
+     undimmed, light-mode version. */
+  --skin-dim-text: #f5f5f7;
+  --skin-dim-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+/* ---- The fills ---------------------------------------------------------- */
+
+/* `background-color` is !important because a few skins (AI Spin, AI Prism, raw
+   custom styles) set the `background` shorthand with !important, which forces
+   `background-color: transparent` along with it. */
+:root[data-theme='dark'][data-dim-skins='on'] .day-tile[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .day-fill,
+:root[data-theme='dark'][data-dim-skins='on'] .event-chip[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .span-seg[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .wv-block[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .wv-allday-bar[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .wv-ghost-solid[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .event-match-gradient,
+:root[data-theme='dark'][data-dim-skins='on'] .cosmetic-swatch {
+  background-color: var(--skin-dim) !important;
+  background-blend-mode: multiply;
+}
+
+/* A video day background paints *on top* of its layer rather than into its
+   background, so the multiply pass above can't reach it. `filter` is the only
+   way in — safe here for the same reason it isn't above: a <video> element
+   never animates its own filter, so nothing outranks this. brightness(0.66)
+   matches what multiplying by --skin-dim (#a8a8a8) does to the skins. */
+:root[data-theme='dark'][data-dim-skins='on'] .day-fill-video {
+  filter: brightness(0.66);
+}
+
+/* ---- The text that sits on them ----------------------------------------- */
+
+/* Pale skins set a dark day number for their light-mode selves; on the dimmed
+   fill that inverts into the unreadable pairing. One light rule covers every
+   skin, pale or not, and beats the per-skin !important by specificity. */
+:root[data-theme='dark'][data-dim-skins='on'] .day-tile[class*='cosmetic-'] .day-number {
+  color: var(--skin-dim-text) !important;
+  text-shadow: var(--skin-dim-text-shadow) !important;
+}
+
+:root[data-theme='dark'][data-dim-skins='on'] .event-chip[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .span-seg[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .wv-block[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .wv-allday-bar[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .wv-ghost-solid[class*='cosmetic-'],
+:root[data-theme='dark'][data-dim-skins='on'] .event-match-gradient {
+  color: var(--skin-dim-text) !important;
+  text-shadow: var(--skin-dim-text-shadow) !important;
+}
+
+/* The time prefix defaults to the event's own colour, which for a gradient is
+   no colour at all — it falls back to the accent blue and lands unreadable on
+   top of the fill. Gradient cosmetics already opt into `inherit` one by one;
+   matched category gradients never did. */
+.event-match-gradient .event-time {
+  color: inherit;
+}

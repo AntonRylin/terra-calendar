@@ -1,0 +1,507 @@
+.year-circle-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  /* One offset for the whole header row — label, layout toggle, gear — so they
+     stay on the same line wherever the panel sits. */
+  --minimap-chrome-top: var(--space-1);
+}
+
+/* One row across the top of the panel, out of the flow so the wheel centres in
+   the whole of it. What is on the left is the view's own — the month and its
+   arrows, or the panel's name where there is no month to show. */
+.minimap-chrome {
+  position: absolute;
+  top: var(--minimap-chrome-top);
+  left: var(--space-4);
+  right: var(--space-3);
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  z-index: 2;
+}
+
+/* The toggle and the gear are for setting the panel up, not for reading it, so
+   they keep out of the way until the pointer is in the panel. */
+.minimap-chrome-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.year-circle-panel:hover .minimap-chrome-right,
+.minimap-chrome-right:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The wheel has no month to name itself with, so it falls back to the label —
+   which, like the controls, is only there while the pointer is. */
+.year-circle-panel .minimap-label {
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.year-circle-panel:hover .minimap-label {
+  opacity: 1;
+}
+
+.year-settings {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.year-settings:hover {
+  color: var(--color-text);
+  background: var(--color-muted-bg);
+}
+
+.year-circle-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: var(--space-2) var(--space-4) var(--space-4);
+  position: relative;
+}
+
+.year-circle-svg {
+  height: 100%;
+  width: 100%;
+  max-height: calc(448px * var(--minimap-scale, 1));
+  max-width: calc(448px * var(--minimap-scale, 1));
+  cursor: pointer;
+  transition: max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.year-ring {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.5;
+}
+
+.month-tick {
+  fill: var(--color-text-faint);
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.today-marker {
+  fill: var(--color-accent);
+}
+
+.today-arrow {
+  fill: var(--color-accent);
+}
+
+.viewed-arrow {
+  fill: var(--color-text-faint);
+}
+
+/* Rotate the viewed-week arrow smoothly around the ring center instead of
+   teleporting it to each new week position. */
+.viewed-arrow-group {
+  transform-box: view-box;
+  transform-origin: 130px 130px;
+  transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.viewed-arrow-group.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewed-arrow-group {
+    transition: none;
+  }
+}
+
+.year-tick-line {
+  stroke: var(--color-text);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  cursor: pointer;
+}
+
+.year-tick-line:hover {
+  stroke: var(--color-accent);
+}
+
+/* Multi-day spans: a thick arc band hugging the ring. */
+.year-band {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 6px;
+  stroke-linecap: round;
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+.year-band:hover {
+  opacity: 1;
+  stroke-width: 7px;
+}
+
+.year-label {
+  fill: var(--color-text);
+  font-size: 20px;
+  font-weight: 600;
+  text-anchor: middle;
+  cursor: pointer;
+  transition: fill 120ms ease;
+}
+
+.year-label:hover {
+  fill: var(--color-accent);
+}
+
+.year-input {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  padding: var(--space-1) var(--space-2);
+  outline: none;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.year-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.15);
+}
+
+/* Wheel / month-days layout switch. */
+.minimap-mode-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--color-muted-bg);
+}
+
+.minimap-mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.minimap-mode-btn:hover {
+  color: var(--color-text);
+}
+
+.minimap-mode-btn.is-active {
+  background: var(--color-bg);
+  color: var(--color-accent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Month-days view: a month of numbered days, Notion-style. */
+.minimap-days-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 0;
+  /* The band at the top belongs to the hover chrome — the label, the layout
+     toggle, the gear — whether or not it is showing. The month is drawn in what
+     is left, so the chrome fades in over space already set aside for it:
+     nothing is covered, and nothing moves under the pointer. */
+  padding: calc(var(--space-3) + 28px) var(--space-4) var(--space-4);
+  container-type: size;
+  /* A day is a shade wider than it is tall, the proportion a wall calendar
+     keeps. Everything follows from that: the block takes the width of the pane
+     unless the height left cannot seat that many rows at the proportion, and
+     then the width gives way so the month shrinks whole rather than flattening.
+     30px is the weekday row and the gaps between rows — all of the block that
+     is not a day. `--minimap-day-rows` is set on the body, which is what the
+     height left has to be divided by. */
+  --minimap-day-aspect: 1.15;
+  --minimap-block-width: min(
+    100%,
+    calc(
+      (100cqh - 30px) * 7 / var(--minimap-day-rows, 6) * var(--minimap-day-aspect)
+    )
+  );
+}
+
+/* The month and its arrows, sat in the header row rather than on a line of
+   their own — the panel gets that line back for days. */
+.minimap-days-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.minimap-days-title {
+  padding: 2px var(--space-1);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.minimap-days-title:hover {
+  color: var(--color-accent);
+}
+
+.minimap-days-year {
+  color: var(--color-text-faint);
+  font-weight: 500;
+}
+
+.minimap-days-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.minimap-days-step:hover {
+  color: var(--color-text);
+  background: var(--color-muted-bg);
+}
+
+.minimap-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  width: 100%;
+  max-width: var(--minimap-block-width);
+  align-self: center;
+  /* The grid is its own container so a cell can be measured against the width
+     the block actually came out at, not the pane it is centred in. */
+  container-type: inline-size;
+}
+
+/* The width one day comes out at: the seven columns less their six 2px gaps.
+   What is written in a cell is sized from it, so the numerals grow with the
+   panel without ever outgrowing the day they sit in. */
+.minimap-days-grid > * {
+  --minimap-cell: calc((100cqw - 12px) / 7);
+}
+
+.minimap-days-grid:focus {
+  outline: none;
+}
+
+.minimap-days-grid:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.minimap-days-weekday {
+  padding-bottom: 2px;
+  font-size: clamp(9px, calc(var(--minimap-cell) * 0.2), 11px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text-faint);
+  text-align: center;
+}
+
+.minimap-day {
+  position: relative;
+  /* Own stacking context, so the week band (z-index -1) sits above this day's
+     own background and ring but below its number. */
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: var(--minimap-day-aspect);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  /* The cell grows with the panel, so the numeral does too — up to the point
+     where a bigger number would stop reading as a date. */
+  font-size: clamp(11px, calc(var(--minimap-cell) * 0.3), 16px);
+  cursor: pointer;
+}
+
+.minimap-day.is-outside {
+  color: var(--color-text-faint);
+}
+
+/* The week on screen in Week view: one continuous accent band across the row,
+   drawn behind the numbers so today and the selected day still read on top. */
+.minimap-day.is-in-week::before {
+  content: '';
+  position: absolute;
+  /* As tall as the discs it runs through, so the row reads as one pill drawn
+     through the numbers rather than a block behind them. */
+  top: calc(50% - 0.95em);
+  height: 1.9em;
+  /* Bleed into the 2px grid gap so the band reads as one unbroken pill. */
+  left: -2px;
+  right: -2px;
+  background: var(--color-accent-soft, rgba(10, 132, 255, 0.12));
+  z-index: -1;
+}
+
+.minimap-day.is-in-week.is-week-start::before {
+  left: 0;
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+}
+
+.minimap-day.is-in-week.is-week-end::before {
+  right: 0;
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+}
+
+.minimap-day.is-in-week {
+  color: var(--color-text);
+}
+
+/* Every mark a day carries — hover, selection, today — is a disc around the
+   numeral rather than a fill over the whole cell: a square day in a wide pane
+   is much bigger than the date written in it. */
+.minimap-day-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 999px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.minimap-day:hover .minimap-day-num,
+/* The day the pointer is on in the calendar reads exactly like a local hover. */
+.minimap-day.is-hovered .minimap-day-num {
+  background: var(--color-muted-bg);
+}
+
+/* The selected day — the one the calendar's own ring is on. */
+.minimap-day.is-selected .minimap-day-num {
+  box-shadow: inset 0 0 0 1.5px var(--color-accent);
+}
+
+.minimap-day.is-today .minimap-day-num,
+.minimap-day.is-today:hover .minimap-day-num {
+  color: #fff;
+  background: var(--color-accent);
+  font-weight: 600;
+}
+
+/* Today while it is also the selected day: the ring turns light so it reads
+   against the accent fill. */
+.minimap-day.is-today.is-selected .minimap-day-num {
+  box-shadow: inset 0 0 0 1.5px var(--color-bg);
+}
+
+
+@media (max-width: 768px) {
+  /* Tap targets are bigger here, so the header row needs a little more air. */
+  .year-circle-panel {
+    --minimap-chrome-top: var(--space-2);
+  }
+
+  /* No hover on touch, so the header row shows everything it has, and the row
+     grows to seat tap-sized controls. */
+  .minimap-chrome {
+    height: 40px;
+    right: var(--space-2);
+  }
+
+  .minimap-chrome-right {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .year-settings {
+    width: 40px;
+    height: 40px;
+  }
+
+  .year-settings svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Let the wheel use the full pane instead of being capped at 280px. */
+  .year-circle-svg {
+    max-height: min(70vh, 460px);
+  }
+
+  .month-tick {
+    font-size: 8px;
+  }
+
+  /* Fatter tick lines are easier to tap on the ring. */
+  .year-tick-line {
+    stroke-width: 3px;
+  }
+
+  /* The gear and toggle stay visible on touch, so leave room above the month. */
+  .minimap-days-body {
+    padding: calc(var(--space-2) + 44px) var(--space-3) var(--space-3);
+  }
+}
+
+/* On the frameless desktop build, drop the header row to the window's title-bar
+   line — but only when the minimap is the top panel. Lower in the sidebar there
+   is no window chrome to clear, so the inset would just be dead space. */
+.is-tauri-desktop .sidebar-top .year-circle-panel {
+  padding-top: 15px;
+  --minimap-chrome-top: calc(var(--space-1) + 15px);
+}

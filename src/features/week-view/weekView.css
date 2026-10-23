@@ -1,0 +1,627 @@
+/* Week planner view. Reuses .month-header / .month-nav from monthGrid.css so
+   the header matches the month views exactly. */
+
+.week-view {
+  /* --wv-hour is measured from the available grid height in WeekView. */
+  --wv-gutter: 56px;
+  /* Text follows the calendar panel's width while event rows stay compact. */
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-bg);
+  /* The way back to today floats over the grid — see .wv-today-fab. */
+  position: relative;
+}
+
+/* Shown only once today has been scrolled off: it sits on the side today lies
+   on and its arrow points that way, so the button says where, not just what. */
+.wv-today-fab {
+  position: absolute;
+  top: 50%;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-popover);
+  cursor: pointer;
+  transform: translateY(-50%);
+  animation: wv-today-fab-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Clear of the hour labels on the way back, of the scrollbar on the way on. */
+.wv-today-fab.is-back {
+  left: calc(var(--wv-gutter) + 10px);
+}
+
+.wv-today-fab.is-ahead {
+  right: 18px;
+  flex-direction: row-reverse;
+}
+
+.wv-today-fab:hover {
+  background: var(--color-muted-bg);
+}
+
+.wv-today-fab:active {
+  transform: translateY(-50%) scale(0.97);
+}
+
+.wv-today-fab:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@keyframes wv-today-fab-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wv-today-fab {
+    animation: none;
+  }
+}
+
+/* The month views take their inset from .month-grid's padding, but the week
+   grid runs edge to edge, so its header carries its own — without it the
+   side-panel toggle sits right on the edge of the panel it hides. */
+.week-view .month-header {
+  flex-shrink: 0;
+  padding-left: var(--space-5);
+  padding-right: var(--space-5);
+}
+
+.is-tauri-desktop .week-view .month-header {
+  padding-right: 116px;
+}
+
+.wv-range {
+  margin-left: 10px;
+  font-size: 0.6em;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* ---- day headers + all-day strip ---------------------------------------- */
+
+.wv-top {
+  flex-shrink: 0;
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+/* The tag labels the lanes, not the day headers above them, so the gutter
+   holds it at the bottom — clear of the 4px the lanes leave under themselves —
+   and the tag itself is given their height to centre in. */
+.wv-top-gutter {
+  width: var(--wv-gutter);
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 4px;
+  overflow: hidden;
+}
+
+/* Stacked rather than laid across a gutter too narrow for it, and sized like
+   the hours below, so the gutter reads as one column: the all-day lanes are
+   its first stop, then the day. */
+.wv-allday-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.wv-top-days {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* The day strip — headers, all-day lanes, hour columns. It is wider than its
+   track, carrying a spare day off each end, so it can rest between days with
+   part of one showing at either edge. --wv-pad parks it on the week; the scrub
+   offset rides on the `translate` property, written per frame in WeekView, and
+   stays wherever the scrolling left it. */
+.wv-strip {
+  width: var(--wv-strip-w, 100%);
+  transform: translate3d(var(--wv-pad, 0%), 0, 0);
+}
+
+.wv-day-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+/* Clicking a day is what lines the strip back up on whole days — a scroll
+   leaves it wherever it stops. */
+.wv-day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0 6px;
+  border: none;
+  border-left: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: clamp(14px, 0.8cqw, 18px);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.wv-day-head:hover {
+  background: var(--color-muted-bg);
+}
+
+.wv-day-head.is-selected {
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 -2px var(--color-accent);
+}
+
+.wv-day-head .wv-dom {
+  font-size: clamp(18px, 1.1cqw, 24px);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.wv-day-head.is-today .wv-dow {
+  color: var(--color-accent);
+}
+
+.wv-day-head.is-today .wv-dom {
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: 999px;
+  min-width: 1.5em;
+  height: 1.5em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.wv-lanes {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.wv-allday-bar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 6px; /* horizontal padding matches BAR_PAD in WeekView.tsx */
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--event-color, var(--color-muted-bg));
+  color: var(--event-text-color, var(--color-text));
+  font-size: clamp(18px, 1.25cqw, 24px);
+  line-height: 1.15;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+/* The title rides inside its bar rather than sitting at the start of it: a bar
+   longer than the week keeps its name at the near edge of what's on screen.
+   `translate` is written per frame by writeBarLabels in WeekView. */
+.wv-bar-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wv-allday-bar:hover {
+  filter: brightness(0.96);
+}
+
+/* Bar being carried across days: same look, lifted, ignores the pointer. */
+.wv-allday-ghost {
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
+}
+
+.wv-allday-ghost.is-held {
+  transform: scale(1.03);
+}
+
+/* ---- scrollable hour grid ------------------------------------------------ */
+
+.wv-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.wv-canvas {
+  display: flex;
+  min-width: 560px;
+}
+
+.wv-gutter {
+  width: var(--wv-gutter);
+  flex: none;
+  position: relative;
+  height: calc(var(--wv-hour) * 24);
+}
+
+.wv-hour-label {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: clamp(12px, 0.75cqw, 16px);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  user-select: none;
+}
+
+/* Holds the hour columns to the week's width while the strip slides inside. */
+.wv-cols-clip {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.wv-cols {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: calc(var(--wv-hour) * 24);
+  touch-action: pan-y;
+}
+
+/* Scrubbing weeks with a horizontal drag. (`grab`/`grabbing` are invisible in
+   WebView2 — see the .wv-block note — so use `move` here too.) */
+.wv-cols.is-panning {
+  cursor: move;
+}
+
+.wv-day {
+  position: relative;
+  /* A day arriving at one end of the strip must not cost a re-layout of the
+     blocks in the other eight columns. */
+  contain: layout;
+  border-left: 1px solid var(--color-border);
+  /* Hour lines. */
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-border) 0,
+    var(--color-border) 1px,
+    transparent 1px
+  );
+  background-size: 100% var(--wv-hour);
+}
+
+.wv-day.is-today {
+  background-color: var(--color-accent-soft);
+}
+
+/* ---- event blocks --------------------------------------------------------- */
+
+/* A block fills its slot exactly — the grid lines are its edges, so an hour
+   long event covers its hour and nothing shows between it and the grid. */
+.wv-block {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-radius: 0;
+  background: var(--event-color, var(--color-surface));
+  color: var(--event-text-color, var(--color-text));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+  line-height: 1.25;
+  overflow: hidden;
+  /* Compact time layouts use the block's height, never the title's size. */
+  container-type: size;
+  container-name: week-event;
+  /* `grab`/`grabbing` render as an invisible cursor in WebView2 (Tauri on
+     Windows) — stick to universally mapped cursors. */
+  cursor: pointer;
+  user-select: none;
+  /* Cascade stacking: later-starting overlap groups sit on top (see
+     layoutDayBlocks). Hover pulls a covered block forward to reveal it. */
+  z-index: var(--wv-z, 1);
+}
+
+.wv-block:hover {
+  z-index: 7;
+}
+
+.wv-block:active {
+  cursor: move;
+}
+
+.wv-block-content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px;
+  padding: 3px 6px;
+}
+
+/* Start follows the top edge; end follows the bottom edge of the event. */
+.wv-block-times {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+  padding-right: 6px;
+  border-right: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  font-size: 12px;
+  line-height: 1.1;
+  font-weight: 600;
+  opacity: 0.75;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.wv-block-title {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  overflow: hidden;
+}
+
+.wv-title-text {
+  display: block;
+  width: 100%;
+  font-size: 16px; /* WeekEventContent fits this to the actual text and box. */
+  line-height: 1.1;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@container week-event (min-height: 90px) {
+  .wv-block-times {
+    font-size: 14px;
+  }
+}
+
+/* Very short events cannot hold two time lines; keep both times in one line
+   beside the title without inflating the duration shown on the hour grid. */
+@container week-event (max-height: 30px) {
+  .wv-block-content {
+    gap: 4px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .wv-block-times {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2px;
+    padding-right: 4px;
+    font-size: 10px;
+  }
+  .wv-block-start::after {
+    content: '–';
+    margin-left: 2px;
+  }
+}
+
+@container week-event (max-width: 110px) {
+  .wv-block-content {
+    gap: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+  .wv-block-times {
+    padding-right: 3px;
+    font-size: 10px;
+  }
+}
+
+/* While a block is being moved, only the ghost under the cursor is visible —
+   no leftover copy at the original slot. */
+.wv-block.is-drag-source {
+  visibility: hidden;
+}
+
+.wv-block.is-resizing {
+  z-index: 7;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.wv-resize {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+/* Grip affordance so the resize zone is discoverable. */
+.wv-block:hover .wv-resize::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+/* Cosmetic-skinned blocks: the shared host reset in cosmetics.css is skipped
+   for week-view elements (it sets position: relative, which would break their
+   absolute positioning), so re-assert the parts that matter here. */
+.wv-block[class*='cosmetic-'],
+.wv-allday-bar[class*='cosmetic-'],
+.wv-ghost-solid[class*='cosmetic-'] {
+  overflow: hidden;
+}
+
+/* ---- drag ghost + create ghost + now line -------------------------------- */
+
+/* Moving: the block itself follows the cursor — same look, lifted shadow. */
+.wv-ghost-solid {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: var(--event-color, var(--color-surface));
+  color: var(--event-text-color, var(--color-text));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.22);
+  font-size: 12px;
+  line-height: 1.25;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 11;
+  /* Sized like the block it came from, so picking one up doesn't resize it. */
+  container-type: size;
+  container-name: week-event;
+}
+
+/* While held, the piece lifts slightly off the board. */
+.wv-ghost-solid.is-held {
+  transform: scale(1.03);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+/* The magnet slot the piece will land in: glides between snap positions. */
+.wv-snap-target {
+  position: absolute;
+  border: 1.5px dashed var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 9;
+  transition: left 0.15s ease-out, top 0.12s ease-out, height 0.12s ease-out;
+}
+
+.wv-ghost {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  border: 1.5px dashed var(--color-accent);
+  font-size: 12px;
+  line-height: 1.25;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+  /* The event being drawn out reads at the size it will settle into. */
+  container-type: size;
+  container-name: week-event;
+}
+
+/* ---- gap markers ---------------------------------------------------------- */
+
+/* Breathing room between events, drawn like a dimension line: a rule down
+   from the event above, the length of the opening, a rule on to the event
+   below. The marker itself never takes the pointer — creating and panning
+   work right through it — only the label does, for its right-click menu. */
+.wv-gap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.wv-gap::before,
+.wv-gap::after {
+  content: '';
+  flex: 1;
+  min-height: 0;
+  width: 1.5px;
+  background: var(--color-text-secondary);
+  opacity: 0.4;
+}
+
+.wv-gap-label {
+  flex: none;
+  padding: 1px 0;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  pointer-events: auto;
+  user-select: none;
+  cursor: context-menu;
+}
+
+.wv-now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 2px solid var(--color-danger);
+  z-index: 8;
+  pointer-events: none;
+}
+
+.wv-now-dot {
+  position: absolute;
+  left: -4px;
+  top: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger);
+}
+
+@media (max-width: 768px) {
+  .week-view .month-header {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+}
+
+@media (max-width: 640px) {
+  .week-view {
+    --wv-gutter: 40px;
+  }
+
+  .wv-day-head {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+}

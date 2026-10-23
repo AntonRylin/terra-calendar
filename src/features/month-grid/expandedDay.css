@@ -1,0 +1,72 @@
+/* Only the active row leaves paint containment. Its fixed height preserves
+   neighboring days while the original tile grows downward in its own column. */
+.month-grid .week-row:has(.day-tile.day-tile-expanded),
+.month-grid .week-row:has(.day-tile.day-tile-collapsing) {
+  content-visibility: visible;
+  grid-template-rows: minmax(0, 1fr);
+  position: relative;
+  z-index: 30;
+}
+
+.day-tile.day-tile-expanded,
+.day-tile.day-tile-collapsing {
+  align-self: start;
+  box-sizing: border-box;
+  z-index: 30;
+  overscroll-behavior: contain;
+  cursor: default;
+  outline: none;
+}
+
+.month-grid .day-tile.day-tile-expanded,
+.month-grid .day-tile.day-tile-expanded:hover {
+  box-shadow: 0 10px 24px rgb(0 0 0 / 12%), 0 2px 6px rgb(0 0 0 / 5%);
+}
+
+/* Keep the ordinary surface instead of the calendar's blue hover fill. */
+.grid-style-on .day-tile-expanded:not([class*='cosmetic-']):not(.is-custom-bg),
+.grid-style-on .day-tile-collapsing:not([class*='cosmetic-']):not(.is-custom-bg) {
+  background: var(--color-surface);
+}
+.grid-style-off .day-tile-expanded:not([class*='cosmetic-']):not(.is-custom-bg),
+.grid-style-off .day-tile-collapsing:not([class*='cosmetic-']):not(.is-custom-bg) {
+  background: var(--color-bg);
+}
+
+.day-tile-expanded > .event-chip,
+.day-tile-expanded > .span-seg {
+  flex-shrink: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.expanded-day-actions {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 8px;
+  padding-top: 6px;
+  margin-top: 4px;
+  border-top: 1px solid var(--color-border);
+}
+
+.expanded-day-add,
+.expanded-day-close {
+  border: none;
+  border-radius: 4px;
+  padding: 5px 6px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.expanded-day-close { font-size: 16px; line-height: 1; }
+.expanded-day-add:hover,
+.expanded-day-close:hover { color: var(--color-text); background: var(--color-muted-bg); }
+.expanded-day-close:focus-visible,
+.expanded-day-add:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }

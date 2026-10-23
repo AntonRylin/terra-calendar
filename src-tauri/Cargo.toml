@@ -1,0 +1,57 @@
+[package]
+name = "app"
+version = "0.3.10"
+description = "Terra Calendar: a minimalistic calendar you can make your own"
+authors = ["Anton Rylin"]
+license = "AGPL-3.0-only"
+repository = "https://github.com/AntonRylin/terra-calendar"
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+# `cdylib`/`staticlib` are only needed for mobile (iOS/Android) builds. On the
+# Windows GNU target, a cdylib re-exports every transitive symbol and overflows
+# the PE format's 65535 export-table limit. Desktop only needs the rlib linked
+# into the binary, so we keep just `lib` here. Re-add "cdylib"/"staticlib" when
+# adding mobile targets (which use the MSVC-equivalent toolchains).
+crate-type = ["lib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.11.2", features = [] }
+tauri-plugin-log = "2"
+tauri-plugin-fs = "2.5.1"
+# Native "Save as" dialog for the settings export (see save_text_file).
+tauri-plugin-dialog = "2"
+tauri-plugin-http = "2"
+tauri-plugin-notification = "2"
+# OS keychain for account secrets. windows-native covers this machine; macOS/
+# Linux builders should also enable "apple-native" / "sync-secret-service".
+keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
+# Build/parse the Google OAuth URLs and open the system browser for the
+# loopback consent flow (google_oauth command) and external links
+# (open_external command, e.g. Stripe Checkout).
+url = "2"
+open = "5"
+
+# Receive opencalendar:// deep links — the browser-based sign-in hands the
+# session back to the desktop app through this scheme.
+tauri-plugin-deep-link = "2"
+
+# Auto-update from GitHub Releases + relaunch after install. Desktop-only:
+# mobile updates go through the app stores.
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+# A deep-link click launches a second process; single-instance forwards its
+# argv (the opencalendar:// URL) to the running app instead ("deep-link"
+# feature) so sign-in lands in the open window.
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }

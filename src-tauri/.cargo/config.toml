@@ -1,0 +1,12 @@
+# On the Windows GNU target, link with LLD instead of the default BFD `ld`.
+# The Tauri/`windows`-crate dependency graph trips a BFD linker bug
+# ("export ordinal too large"); LLD links it cleanly. `ld.lld.exe` ships with
+# the rustup GNU toolchain under
+#   <toolchain>/lib/rustlib/x86_64-pc-windows-gnu/bin/gcc-ld
+# Put that directory (and a mingw-w64 `bin` providing gcc/dlltool, e.g. WinLibs)
+# on PATH so gcc can resolve `-fuse-ld=lld`. See README "Desktop prerequisites".
+#
+# This section is ignored on the MSVC target, so it is harmless for builders
+# using the recommended stable-msvc toolchain.
+[target.x86_64-pc-windows-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]

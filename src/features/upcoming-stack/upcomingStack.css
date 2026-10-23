@@ -1,0 +1,725 @@
+.upcoming-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+
+.upcoming-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px var(--space-4) var(--space-2);
+}
+
+.is-tauri-desktop .upcoming-header {
+  padding-top: 19px;
+}
+
+/* Live readout of what the panel is holding, in place of a static title. Numbers
+   are tabular so the row doesn't twitch as counts change. */
+.upcoming-count {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upcoming-count b {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.upcoming-count-sep {
+  color: var(--color-text-faint);
+  padding: 0 2px;
+}
+
+.upcoming-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
+
+}
+
+/* Apple-style auto-hiding scrollbar: a thin line, invisible until the pointer is
+   over the list (:hover) or the user is actively scrolling (.is-scrolling,
+   toggled by useAutoHideScrollbar), with no arrow buttons at the ends.
+
+   We deliberately use ONLY the ::-webkit-scrollbar pseudo-elements (Tauri runs
+   on a Chromium WebView). The standard `scrollbar-width`/`scrollbar-color`
+   properties are intentionally NOT set: when they are present Chromium ignores
+   every ::-webkit-scrollbar rule, including the button hiding below. */
+.upcoming-list::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* No up/down arrow buttons at the ends. */
+.upcoming-list::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.upcoming-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.upcoming-list::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s ease;
+}
+
+.upcoming-list:hover::-webkit-scrollbar-thumb,
+.upcoming-list.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-faint);
+}
+
+.upcoming-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-secondary);
+}
+
+.upcoming-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  cursor: pointer;
+  flex-shrink: 0;
+  /* Cards act as buttons; stop shift+click from selecting their text. */
+  user-select: none;
+}
+
+/* Rubber-band selection rectangle drawn while dragging over empty list space.
+   Fixed-positioned in viewport coords to match the intersection math. */
+.upcoming-marquee {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent-soft, rgba(10, 132, 255, 0.12));
+  border-radius: 2px;
+}
+
+.upcoming-card:hover {
+  border-color: var(--color-border-strong);
+}
+
+.upcoming-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.upcoming-date {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+}
+
+.upcoming-repeat {
+  color: var(--color-accent);
+}
+
+/* Span type label ("holiday", "vacation", …) shown like the repeat tag but
+   with an animated multi-colour gradient to set spans apart. */
+.upcoming-type {
+  font-weight: 600;
+  text-transform: capitalize;
+  background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899, #f59e0b, #6366f1);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: upcoming-type-shift 6s linear infinite;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.upcoming-type:hover {
+  opacity: 0.8;
+}
+
+@keyframes upcoming-type-shift {
+  to {
+    background-position: 300% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upcoming-type {
+    animation: none;
+  }
+}
+
+/* Bulk-select mode */
+.upcoming-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.upcoming-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.upcoming-card.is-selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft, rgba(10, 132, 255, 0.12));
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+.upcoming-empty {
+  font-size: 17px;
+  color: var(--color-text-faint);
+  padding: var(--space-2) 0;
+}
+
+/* Ongoing spans — shown above the upcoming list while in progress. */
+.ongoing-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-3);
+}
+
+.panel-sublabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.ongoing-card {
+  align-items: center;
+}
+
+.ongoing-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+/* In-progress spans breathe so they read as "live". Both animations share a
+   period so the dot and the card glow stay in step. Dropped by the Upcoming
+   settings toggle (which removes .is-pulsing) or by reduced motion. */
+.ongoing-card.is-pulsing {
+  animation: ongoing-card-pulse 3800ms ease-in-out infinite;
+}
+
+.ongoing-card.is-pulsing .ongoing-dot {
+  animation: ongoing-dot-pulse 3800ms ease-in-out infinite;
+}
+
+@keyframes ongoing-card-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 7%, transparent);
+  }
+}
+
+@keyframes ongoing-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.75;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ongoing-card.is-pulsing,
+  .ongoing-card.is-pulsing .ongoing-dot {
+    animation: none;
+  }
+}
+
+.upcoming-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  justify-content: flex-end;
+  margin-left: var(--space-3);
+}
+
+/* Filter popover reuses the day-editing popover's .sd-* control styles; this
+   only sizes the panel and lets a long category list scroll. */
+.upcoming-filter-panel {
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  /* overflow-y:auto promotes overflow-x to auto too; pin it hidden so a
+     sub-pixel overhang can't spawn a useless horizontal scrollbar. */
+  overflow-x: hidden;
+}
+
+/* The shared topbar uses negative side-margins to sit flush in the day
+   popover's padding; inside this scroll container they overflow and would
+   trigger a horizontal scrollbar, so cancel them here. */
+.upcoming-filter-panel .sd-topbar {
+  margin-inline: 0;
+}
+
+.upcoming-delete-btn {
+  margin-left: auto;
+  align-self: center;
+  opacity: 0;
+  pointer-events: none;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.upcoming-card:hover .upcoming-delete-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* In selection mode the button stays in the layout (so the card keeps its
+   height) but is never revealed and lets clicks fall through to the card so
+   the whole card toggles selection. Higher specificity beats the hover rule. */
+.upcoming-card:hover .upcoming-delete-btn.is-suppressed,
+.upcoming-card .upcoming-delete-btn.is-suppressed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.upcoming-delete-btn:hover {
+  color: var(--color-danger);
+  background-color: rgba(255, 59, 48, 0.1);
+}
+
+/* ---- Mobile: full-width tab pane ---- */
+@media (max-width: 768px) {
+  .upcoming-header {
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .upcoming-add,
+  .upcoming-filter-btn {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+  }
+
+  .upcoming-settings-btn {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .upcoming-add svg,
+  .upcoming-filter-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .upcoming-list {
+    gap: var(--space-2);
+    padding: 0 var(--space-4) var(--space-5);
+  }
+
+  .upcoming-card {
+    padding: var(--space-3);
+  }
+
+  .upcoming-title {
+    font-size: 15px;
+  }
+
+  .upcoming-date {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* The filter popover becomes a sheet — let the panel fill it and drop the
+     scroll cap so all controls are reachable. */
+  .popover-sheet .upcoming-filter-panel {
+    width: 100%;
+    max-height: none;
+  }
+}
+
+.upcoming-card.is-highlighted {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-soft) !important;
+  animation: highlight-pulse 2s ease-out;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 8px var(--color-accent-soft) !important;
+  }
+  100% {
+    box-shadow: 0 0 0 3px var(--color-accent-soft) !important;
+  }
+}
+
+/* Category grouping styles */
+.upcoming-category-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.upcoming-category-header {
+  padding: var(--space-2) 0 var(--space-1);
+  display: inline-block;
+  width: fit-content;
+}
+
+.upcoming-category-header[title] {
+  cursor: pointer;
+}
+
+.upcoming-category-header[title]:hover {
+  opacity: 0.8;
+}
+
+.upcoming-category-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Categories switch styles */
+.upcoming-switch-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  margin-right: var(--space-1);
+}
+
+.upcoming-switch-text {
+  font-weight: 500;
+}
+
+.upcoming-switch-label .ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+}
+
+.upcoming-switch-label .ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.upcoming-switch-label .ios-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-border-strong);
+  transition: 0.2s ease;
+  border-radius: 18px;
+}
+
+.upcoming-switch-label .ios-switch-slider::before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--color-surface);
+  transition: 0.2s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.upcoming-switch-label .ios-switch input:checked + .ios-switch-slider {
+  background-color: var(--color-accent);
+}
+
+.upcoming-switch-label .ios-switch input:checked + .ios-switch-slider::before {
+  transform: translateX(14px);
+}
+
+/* Settings button — anchors the far right of the action cluster. */
+.upcoming-settings-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: opacity 120ms ease;
+  line-height: 1;
+}
+
+.upcoming-settings-btn.active {
+  color: var(--color-accent);
+  background-color: var(--color-accent-soft);
+}
+
+.upcoming-settings-btn:hover {
+  color: var(--color-accent);
+  background-color: var(--color-muted-bg);
+}
+
+/* Visibility Segmented Popover (Apple-like segmented control) */
+.upcoming-settings-popover {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 220px;
+}
+
+.upcoming-settings-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.apple-segmented-control {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  background: var(--color-muted-bg);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.apple-segment-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: grab;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  user-select: none;
+}
+
+.apple-segment-btn:active {
+  cursor: grabbing;
+}
+
+.apple-segment-btn.dragging {
+  opacity: 0.4;
+  border: 1px dashed var(--color-border);
+  background: var(--color-muted-bg);
+}
+
+.drag-hint {
+  font-size: 9px;
+  text-transform: lowercase;
+  font-weight: normal;
+  opacity: 0.6;
+}
+
+.apple-segment-btn.active {
+  background: var(--color-surface);
+  color: var(--color-accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.apple-segment-btn:hover:not(.active) {
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Dark mode adjustment for hover overlay */
+@media (prefers-color-scheme: dark) {
+  .apple-segment-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+.upcoming-time-until {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.upcoming-detail-separator {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+}
+
+/* --- Compact View Mode --- */
+.upcoming-card.is-compact {
+  padding: 6px 12px;
+  align-items: center;
+}
+
+.upcoming-card.is-compact .upcoming-card-body {
+  flex: 1;
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.upcoming-card.is-compact .upcoming-title {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  max-width: 65%;
+  min-width: 0;
+}
+
+.upcoming-card.is-compact .upcoming-date {
+  font-size: 14px;
+  margin-top: 0;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Mobile compact adjustments */
+@media (max-width: 768px) {
+  .upcoming-card.is-compact {
+    padding: 6px 12px;
+  }
+  
+  .upcoming-card.is-compact .upcoming-title {
+    font-size: 14px;
+  }
+
+  .upcoming-card.is-compact .upcoming-date {
+    font-size: 12px;
+  }
+}
+
+.upcoming-density-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px;
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.upcoming-density-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 20px;
+}
+
+/* Track */
+.upcoming-density-row input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--color-border-strong);
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Thumb */
+.upcoming-density-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -6px; /* center the thumb */
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  height: 16px;
+  width: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.upcoming-density-row input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  border-color: var(--color-accent);
+}
+
+.upcoming-density-readout {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  width: 42px;
+  text-align: right;
+  padding-right: var(--space-2);
+  user-select: none;
+}
+
+/* Column alignment layout */
+.upcoming-date.has-columns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.upcoming-detail-cell {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.upcoming-detail-cell.time-until-column {
+  color: var(--color-accent);
+}
+
+
+

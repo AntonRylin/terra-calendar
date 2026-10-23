@@ -1,0 +1,602 @@
+.month-grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 6px var(--space-5) var(--space-4);
+  --effective-tile-scale: calc(var(--tile-scale, 1.0) * 1.6);
+}
+
+.month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+/* On the frameless desktop build, keep the toolbar clear of the fixed window
+   controls pinned to the window's top-right corner. */
+.is-tauri-desktop .month-header {
+  padding-top: 15px;
+  padding-right: 116px;
+}
+
+/* Title group: the side-panel toggle sits left of the month name, where the
+   sidebar it controls begins. */
+.month-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.month-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.month-year {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.month-nav { display: flex; align-items: center; gap: 6px; }
+.month-nav-sep { width: 0.5px; height: 22px; background: var(--color-border); margin: 0 2px; }
+.month-weather-glance {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 6px;
+  margin-right: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-stack);
+  font-size: 12px;
+  cursor: pointer;
+}
+.month-weather-glance:hover { color: var(--color-text); }
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-1);
+}
+
+.weekday-row > div {
+  padding: var(--space-1);
+}
+
+.week-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  /* We compensate scrollTop manually on prepend (fixed row height); the
+     browser's native scroll anchoring would double-correct, so disable it. */
+  overflow-anchor: none;
+}
+
+/* Apple-style auto-hiding scrollbar: a thin line, no arrow buttons, hidden until
+   the pointer is over the calendar (:hover) or it's actively scrolling
+   (.is-scrolling, toggled by useAutoHideScrollbar). webkit pseudo-elements only,
+   so the button hiding applies (see upcomingStack.css for the full rationale). */
+.week-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.week-scroll::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.week-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.week-scroll::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s ease;
+}
+
+.week-scroll:hover::-webkit-scrollbar-thumb,
+.week-scroll.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-faint);
+}
+
+.week-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-secondary);
+}
+
+.week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+  padding-bottom: var(--space-1);
+  /* The grid keeps a year of weeks mounted (~53 rows, only ~4 on screen), so
+     the vast majority of day tiles are offscreen. `content-visibility: auto`
+     lets the browser skip layout, paint, and — importantly — the infinite
+     cosmetic animations for rows outside the viewport, without unmounting
+     anything. Every row carries an explicit inline height (WEEK_HEIGHT), so the
+     scroll height stays exact and the manual prepend anchoring below is
+     unaffected; `contain-intrinsic-size: auto <h>` just seeds the placeholder
+     with the last rendered size. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 186px;
+}
+
+.day-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--space-1) * var(--effective-tile-scale)) calc(var(--space-2) * var(--effective-tile-scale));
+  font-size: calc(12px * var(--effective-tile-scale));
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: calc(2px * var(--effective-tile-scale));
+  min-height: 0;
+  user-select: none;
+  position: relative;
+}
+
+.day-tile:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* Alternating month tint so boundaries stay readable in the continuous stream. */
+.month-tint-a {
+  background: var(--color-surface);
+}
+
+.month-tint-b {
+  background: var(--color-muted-bg);
+}
+
+.month-marker {
+  display: inline-block;
+  margin-right: calc(var(--space-1) * var(--effective-tile-scale));
+  padding: 0 calc(var(--space-1) * var(--effective-tile-scale));
+  border-radius: 4px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: calc(10px * var(--effective-tile-scale));
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.day-tile.day-tile-today {
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+  z-index: 10;
+}
+
+.day-tile-today .day-number {
+  font-weight: 700;
+}
+
+.day-tile.day-tile-today:hover {
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.today-clock {
+  position: absolute;
+  top: calc(var(--space-1) * var(--effective-tile-scale));
+  right: calc(var(--space-2) * var(--effective-tile-scale));
+  font-size: calc(11px * var(--effective-tile-scale));
+  color: var(--color-accent);
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+  pointer-events: none;
+}
+.day-weather {
+  position: absolute;
+  top: calc(var(--space-1) * var(--effective-tile-scale));
+  right: calc(var(--space-2) * var(--effective-tile-scale));
+  font-size: calc(11px * var(--effective-tile-scale));
+  cursor: help;
+}
+
+/* Today's corner row: weather icon and clock sit side by side instead of both
+   absolutely claiming the top-right corner (the clock's width varies by format). */
+.day-corner {
+  position: absolute;
+  top: calc(var(--space-1) * var(--effective-tile-scale));
+  right: calc(var(--space-2) * var(--effective-tile-scale));
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--effective-tile-scale));
+}
+
+.day-corner .today-clock,
+.day-corner .day-weather {
+  position: static;
+}
+
+.event-chip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--event-color, var(--color-accent)) 8%, transparent);
+  color: var(--color-text);
+  border: none;
+  border-left: 3px solid var(--event-color, var(--color-accent));
+  border-radius: 4px;
+  padding: calc(2px * var(--effective-tile-scale)) calc(6px * var(--effective-tile-scale));
+  font-size: calc(10px * var(--effective-tile-scale));
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-user-drag: element;
+  user-drag: element;
+  transition: background-color 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.event-time {
+  font-weight: 600;
+  margin-right: 4px;
+  color: var(--event-color, var(--color-accent));
+}
+
+.event-chip:not([class*='cosmetic-']):hover {
+  background: color-mix(in srgb, var(--event-color, var(--color-accent)) 14%, transparent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.event-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--event-color, var(--color-accent));
+}
+
+.event-chip-allday {
+  background: var(--event-color, var(--color-muted-bg));
+  color: var(--event-text-color, var(--color-text));
+  border-left: none;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.event-chip-allday:not([class*='cosmetic-']):hover {
+  background: var(--event-color, var(--color-muted-bg));
+  filter: brightness(0.93);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.month-tint-b .event-chip-allday {
+  background: var(--event-color, var(--color-surface));
+}
+
+.month-tint-b .event-chip-allday:not([class*='cosmetic-']):hover {
+  background: var(--event-color, var(--color-surface));
+  filter: brightness(0.93);
+}
+
+.event-more {
+  font-size: calc(9px * var(--effective-tile-scale));
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  text-align: left;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.event-more:hover,
+.event-more:focus-visible {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+/* Multi-day span bar: each covered day renders a segment that bleeds over the
+   tile's horizontal padding so adjacent days read as one continuous bar. */
+.span-seg {
+  display: block;
+  width: auto;
+  margin: 0 calc(-1 * var(--space-2) * var(--effective-tile-scale));
+  padding: calc(2.5px * var(--effective-tile-scale)) calc(6px * var(--effective-tile-scale));
+  font-size: calc(10px * var(--effective-tile-scale));
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  background: var(--event-color, var(--color-accent-soft));
+  color: var(--event-text-color, var(--color-accent));
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.span-seg:hover {
+  filter: brightness(0.94);
+}
+
+.span-seg:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--event-color, var(--color-accent));
+}
+
+.span-seg-start {
+  margin-left: calc(2px * var(--effective-tile-scale));
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.span-seg-end {
+  margin-right: calc(2px * var(--effective-tile-scale));
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.span-seg.is-selected {
+  outline: 2px solid var(--event-color, var(--color-accent));
+  outline-offset: 1px;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 768px) {
+  .month-grid {
+    padding: var(--space-3) var(--space-2) 0;
+  }
+
+  .month-header {
+    padding: 0 var(--space-1) var(--space-2);
+  }
+
+  .month-title {
+    font-size: 22px;
+  }
+
+  .weekday-row {
+    padding: 0 var(--space-1);
+    font-size: 10px;
+  }
+
+  .week-row {
+    gap: 3px;
+  }
+
+  .day-tile {
+    padding: 3px 4px;
+    border-radius: 5px;
+  }
+
+  .day-number {
+    font-size: 13px;
+  }
+
+  .today-clock {
+    top: 3px;
+    right: 4px;
+    font-size: 9px;
+  }
+
+  .day-weather {
+    top: 3px;
+    right: 4px;
+    font-size: 9px;
+  }
+
+  .day-corner {
+    top: 3px;
+    right: 4px;
+    gap: 3px;
+  }
+
+  .is-today .day-weather {
+    right: 50px;
+  }
+
+
+
+  /* Chips need a little more height to be readable/tappable. */
+  .event-chip {
+    padding: 2px 4px;
+    font-size: 10px;
+  }
+
+  .month-marker {
+    font-size: 9px;
+  }
+}
+
+/* Bulk-select mode */
+.event-chip.is-selected {
+  outline: 2px solid var(--event-color, var(--color-accent));
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+/* Highlight tiles under a dragged event. */
+.day-tile.is-drag-over {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+/* Custom location dialog styles */
+.location-input-field {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.location-input-field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+/* Month blocks layout */
+.month-block-container {
+  margin-bottom: 48px;
+}
+
+.month-block {
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+}
+
+/* No enclosing card in Months mode: a solid card would fill the empty leading/
+   trailing slots with white. Instead the grid lines live on each day cell (see
+   below), so the borders trace only the real days and the blank slots are cut
+   out (they show the page background). */
+.grid-style-on .month-block {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.month-block-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0 0 var(--space-3) 4px;
+  color: var(--color-text);
+  display: flex;
+  align-items: baseline;
+  letter-spacing: -0.03em;
+}
+
+.month-block-year {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  font-size: 22px;
+  margin-left: var(--space-2);
+  letter-spacing: normal;
+}
+
+.month-block-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid ON: eliminate per-tile borders/gaps and draw thin shared divider lines
+   between days, so the month reads as one continuous grid. The background stays
+   a flat surface in both modes (see grid-off) — the toggle only adds/removes the
+   shared border lines, nothing else. */
+.grid-style-on .week-row {
+  gap: 0;
+  padding-bottom: 0;
+}
+
+/* Both divider lines live on the cell (not the row), so a hidden empty slot
+   draws no border and the grid is cut out around the days that don't exist.
+   Borders are right + bottom only, so adjacent cells share a single line. */
+.grid-style-on .day-tile {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: calc(var(--space-2) * var(--effective-tile-scale)) calc(var(--space-2) * var(--effective-tile-scale));
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+/* Premium Hover Effects */
+.grid-style-on .day-tile:hover {
+  background: var(--color-accent-soft);
+}
+
+/* Grid OFF: no borders, no gaps, no divider lines. Day tiles are transparent so
+   they take the page background — that way real days and the empty leading/
+   trailing slots in Months view are the same colour, leaving no visible block or
+   gap where days don't exist. No alternating month tint either, so toggling the
+   grid changes only the border lines. Today keeps its accent ring; month
+   boundaries are still marked by the month label on the 1st. */
+.grid-style-off .week-row {
+  gap: 0;
+  padding-bottom: 0;
+}
+
+.grid-style-off .day-tile {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: calc(var(--space-2) * var(--effective-tile-scale)) calc(var(--space-2) * var(--effective-tile-scale));
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.grid-style-off .day-tile:hover {
+  background: var(--color-accent-soft);
+}
+
+/* Custom image / CSS backgrounds: fill (z0) + scrim (z1) sit behind everything.
+   Particles ride above the scrim (z2); all real content sits on top (z3). White
+   text + shadow ride the scrim for legibility (matches .cosmetic-gradient days). */
+.day-tile.is-custom-bg .day-number {
+  position: relative;
+  z-index: 3;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+.day-tile.is-custom-bg .special-day-particles { z-index: 2; }
+.day-tile.is-custom-bg .event-chip,
+.day-tile.is-custom-bg .span-seg,
+.day-tile.is-custom-bg .today-clock,
+.day-tile.is-custom-bg .day-weather { position: relative; z-index: 3; }
+.day-tile.is-custom-bg .day-corner { z-index: 3; }
+
+/* Selection band — the days swept by a click-drag, and the days behind an open
+   span-create modal. Drawn with inset box-shadows (not borders) so it overrides
+   the grid-on/off border schemes regardless of mode. Every tile draws the top &
+   bottom accent edge; only the run's first/last tile in a row adds its outer
+   side edge (via the --range-edge-* vars), so adjacent days share an edge
+   instead of doubling up. Placed after the grid-style rules to win the cascade. */
+.month-grid .day-tile.is-drag-range {
+  background: var(--color-accent-soft);
+  z-index: 10;
+}
+
+.month-grid .day-tile.is-drag-range .day-number {
+  font-weight: 700;
+}
+
+/* Highlight the grid's OWN divider lines that bound or sit inside the selection,
+   rather than drawing a separate outline. Each boundary line is a single border
+   owned by exactly one cell (grid-on draws border-right + border-bottom per
+   tile), so recolouring it can't double up — even between rows. The owning cell
+   is tagged hl-border-right / hl-border-bottom in MonthGrid.tsx. */
+.grid-style-on .day-tile.hl-border-right {
+  border-right-color: var(--color-accent);
+}
+
+.grid-style-on .day-tile.hl-border-bottom {
+  border-bottom-color: var(--color-accent);
+}
+
+/* The Monday column has no left divider to recolour, so draw the selection's
+   left edge on the tile itself. box-sizing is border-box, so the added 1px
+   border doesn't shift the grid. */
+.grid-style-on .day-tile.hl-border-left {
+  border-left: 1px solid var(--color-accent);
+}

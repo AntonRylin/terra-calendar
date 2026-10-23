@@ -1,0 +1,1285 @@
+/* Special Day Styles and Animations */
+
+.special-day-emoji-badge {
+  margin-left: 6px;
+  font-size: 1.15em;
+  vertical-align: middle;
+  display: inline-block;
+  user-select: none;
+}
+
+/* Animations container */
+.special-day-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Sparkles animation */
+.special-day-sparkle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  fill: #ffd700;
+  opacity: 0;
+  animation: sparkle-fade 2s infinite ease-in-out;
+}
+
+@keyframes sparkle-fade {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(90deg);
+  }
+}
+
+/* Snow animation */
+.special-day-snowflake {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ffffff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: snow-fall 3.5s infinite linear;
+  box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes snow-fall {
+  0% {
+    transform: translateY(-8px) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(110px) translateX(12px);
+    opacity: 0;
+  }
+}
+
+/* Fireflies animation */
+.special-day-firefly {
+  position: absolute;
+  width: 3.5px;
+  height: 3.5px;
+  background: #ffe066;
+  border-radius: 50%;
+  box-shadow: 0 0 5px 2px #ffe066;
+  opacity: 0;
+  animation: firefly-drift 4.5s infinite ease-in-out;
+}
+
+@keyframes firefly-drift {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translateY(-20px) translateX(15px);
+    opacity: 1;
+  }
+}
+
+/* Comet — a bright head trailing a tail, streaking diagonally then resting, so
+   staggered copies read as an occasional shower rather than a swarm. The white
+   end leads; the travel slope is kept close to the tail's rotation so the head
+   always points the way it's going. */
+.special-day-comet {
+  position: absolute;
+  width: 46px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(190, 220, 255, 0) 0%, rgba(190, 220, 255, 0.85) 78%, #ffffff 100%);
+  filter: drop-shadow(0 0 3px rgba(150, 200, 255, 0.9));
+  opacity: 0;
+  animation: comet-streak 4s infinite ease-in;
+}
+
+@keyframes comet-streak {
+  0% { transform: translate(-30px, -22px) rotate(34deg); opacity: 0; }
+  4% { opacity: 1; }
+  15% { opacity: 1; }
+  21% { transform: translate(120px, 90px) rotate(34deg); opacity: 0; }
+  100% { transform: translate(120px, 90px) rotate(34deg); opacity: 0; }
+}
+
+/* Bubbles — glossy translucent orbs rising from the bottom, swaying sideways and
+   popping out near the top. Size, lane and delay come from inline style. */
+.special-day-bubble {
+  position: absolute;
+  bottom: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.18) 42%, rgba(255, 255, 255, 0.04) 72%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.3);
+  opacity: 0;
+  animation: bubble-rise 4.2s infinite ease-in;
+}
+
+@keyframes bubble-rise {
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  12% { opacity: 0.9; }
+  55% { transform: translate(6px, -52px) scale(1); opacity: 0.85; }
+  82% { opacity: 0.6; }
+  100% { transform: translate(-4px, -104px) scale(1.12); opacity: 0; }
+}
+
+/* Confetti — coloured paper tumbling down its lane. Colour comes from inline
+   style; --cf-rot (also inline) is each piece's spin end-angle, so mixing signs
+   makes them flip in both directions rather than in unison. */
+.special-day-confetti {
+  position: absolute;
+  top: -12px;
+  width: 6px;
+  height: 9px;
+  border-radius: 1px;
+  opacity: 0;
+  animation: confetti-fall 2.8s infinite ease-in;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translate(0, -12px) rotateZ(0deg); opacity: 0; }
+  8% { opacity: 1; }
+  50% { transform: translate(10px, 52px) rotateZ(calc(var(--cf-rot, 720deg) * 0.5)); }
+  92% { opacity: 1; }
+  100% { transform: translate(-6px, 118px) rotateZ(var(--cf-rot, 720deg)); opacity: 0; }
+}
+
+/* Firework — a ring of eight coloured sparks drawn with box-shadows around a tiny
+   core, then scaled up so the ring flies outward and fades. --fw is the burst
+   colour (inline); the drop-shadow gives each spark a soft glow. */
+.special-day-firework {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: var(--fw, #fff);
+  opacity: 0;
+  box-shadow:
+    0 -9px 0 var(--fw, #fff), 0 9px 0 var(--fw, #fff),
+    -9px 0 0 var(--fw, #fff), 9px 0 0 var(--fw, #fff),
+    -6.4px -6.4px 0 var(--fw, #fff), 6.4px -6.4px 0 var(--fw, #fff),
+    -6.4px 6.4px 0 var(--fw, #fff), 6.4px 6.4px 0 var(--fw, #fff);
+  filter: drop-shadow(0 0 2px var(--fw, #fff));
+  animation: firework-burst 2.5s infinite ease-out;
+}
+
+@keyframes firework-burst {
+  0% { transform: scale(0.2); opacity: 0; }
+  10% { opacity: 1; }
+  70% { opacity: 0.85; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Blossom — pink petals (the 100%/0 corner radii make the petal shape) drifting
+   from the top, swaying sideways and turning as they fall. Colour is inline. */
+.special-day-petal {
+  position: absolute;
+  top: -10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 100% 0 100% 0;
+  opacity: 0;
+  animation: petal-fall 4.8s infinite ease-in-out;
+}
+
+@keyframes petal-fall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.95; }
+  50% { transform: translate(14px, 55px) rotate(200deg); }
+  90% { opacity: 0.85; }
+  100% { transform: translate(-6px, 116px) rotate(400deg); opacity: 0; }
+}
+
+/* Aurora — a soft curtain of green/blue light that slides across the tile and
+   skews as it goes. Blurred and oversized (inset:-25%) so its edges are never a
+   hard line; the particle container's overflow:hidden trims the excess. Kept off
+   mix-blend so it stays visible on light and dark tiles alike. */
+.special-day-aurora {
+  position: absolute;
+  inset: -25%;
+  background: linear-gradient(115deg,
+    transparent 12%,
+    rgba(64, 255, 170, 0.5) 30%,
+    transparent 46%,
+    rgba(110, 130, 255, 0.45) 62%,
+    transparent 80%);
+  background-size: 200% 200%;
+  filter: blur(6px);
+  opacity: 0.75;
+  animation: aurora-wave 6s ease-in-out infinite;
+}
+
+@keyframes aurora-wave {
+  0% { background-position: 0% 50%; transform: skewX(-10deg); }
+  50% { background-position: 100% 50%; transform: skewX(10deg); }
+  100% { background-position: 0% 50%; transform: skewX(-10deg); }
+}
+
+/* Hearts — rise like bubbles but in warm pinks/violets, swaying and swelling as
+   they climb. Size and fill colour are inline (same SVG path as the grid). */
+.special-day-heart {
+  position: absolute;
+  bottom: -14px;
+  opacity: 0;
+  filter: drop-shadow(0 0 2px rgba(255, 120, 170, 0.5));
+  animation: heart-float 4.5s infinite ease-in;
+}
+
+@keyframes heart-float {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  15% { opacity: 0.95; }
+  50% { transform: translate(8px, -54px) scale(1); }
+  80% { opacity: 0.7; }
+  100% { transform: translate(-6px, -108px) scale(1.15); opacity: 0; }
+}
+
+/* Balloons — glossy coloured orbs rising on a thin thread, swaying as they climb.
+   Colour comes from --balloon (inline); the radial highlight reads as a sheen.
+   The ::after is the string. */
+.special-day-balloon {
+  position: absolute;
+  bottom: -22px;
+  width: 13px;
+  height: 17px;
+  border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.6), var(--balloon, #ff5a5a) 62%);
+  opacity: 0;
+  animation: balloon-rise 5s infinite ease-in;
+}
+
+.special-day-balloon::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  height: 9px;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateX(-0.5px);
+}
+
+@keyframes balloon-rise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: 0.95; }
+  55% { transform: translate(7px, -70px); opacity: 0.9; }
+  82% { opacity: 0.7; }
+  100% { transform: translate(-5px, -140px); opacity: 0; }
+}
+
+/* Autumn leaves — warm tumbling flecks (colour inline). The scaleX sign flips
+   mid-fall to fake the leaf turning over, and the corner radii give the leaf
+   shape; the diagonal is mirrored from the petal so the two read apart. */
+.special-day-leaf {
+  position: absolute;
+  top: -12px;
+  width: 11px;
+  height: 11px;
+  border-radius: 0 100% 0 100%;
+  opacity: 0;
+  animation: leaf-fall 5.2s infinite ease-in-out;
+}
+
+@keyframes leaf-fall {
+  0% { transform: translate(0, 0) rotate(0deg) scaleX(1); opacity: 0; }
+  10% { opacity: 0.95; }
+  35% { transform: translate(16px, 44px) rotate(160deg) scaleX(-0.6); }
+  70% { transform: translate(-10px, 90px) rotate(320deg) scaleX(0.8); }
+  90% { opacity: 0.85; }
+  100% { transform: translate(8px, 140px) rotate(520deg) scaleX(-1); opacity: 0; }
+}
+
+/* Music notes — rise like hearts but tilt side to side as they go; size and
+   fill colour are inline (same note glyph as the grid). */
+.special-day-note {
+  position: absolute;
+  bottom: -16px;
+  opacity: 0;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.35));
+  animation: note-float 4.6s infinite ease-in;
+}
+
+@keyframes note-float {
+  0% { transform: translate(0, 0) rotate(-8deg); opacity: 0; }
+  15% { opacity: 0.95; }
+  50% { transform: translate(9px, -58px) rotate(8deg); }
+  80% { opacity: 0.7; }
+  100% { transform: translate(-7px, -116px) rotate(-6deg); opacity: 0; }
+}
+
+/* Day Tile Wiggle and Bounce.
+   These animate the individual `rotate` / `translate` transform properties
+   (CSS Transforms Level 2) rather than the `transform` shorthand, so the two
+   compose natively when both effects are selected — see the combined rule.
+   Both carry z-index so the moving day paints above its non-animated
+   neighbours (its rotated corners / bounce overflow into them); the row-level
+   rule further down lets that overflow cross into the row above. */
+.day-tile.animation-wiggle {
+  z-index: 12;
+  animation: wiggle-anim 0.6s infinite ease-in-out alternate;
+}
+
+@keyframes wiggle-anim {
+  0% {
+    rotate: -1.2deg;
+  }
+  100% {
+    rotate: 1.2deg;
+  }
+}
+
+/* Bounce is ambient like every other effect: it runs on its own and *settles*
+   to rest while you point at the day, so you can read and click it steadily.
+   The z-index lifts the tile above its neighbours (and above today's z-index:10
+   in monthGrid.css) so the raised tile paints on top instead of tucking behind
+   them; the transition eases it back down when the animation pauses on hover. */
+.day-tile.animation-bounce {
+  z-index: 12;
+  animation: bounce-anim 0.6s infinite ease-in-out alternate;
+  transition: translate 0.25s ease-out;
+}
+
+.day-tile.animation-bounce:hover {
+  animation: none;
+  translate: 0 0;
+}
+
+@keyframes bounce-anim {
+  0% {
+    translate: 0 0;
+  }
+  100% {
+    translate: 0 -4px;
+  }
+}
+
+/* Both selected: each keyframe set touches a different transform property
+   (rotate vs. translate) so they compose natively. Both run ambiently; pointing
+   at the day settles the bounce while the wiggle keeps going. */
+.day-tile.animation-wiggle.animation-bounce {
+  animation: wiggle-anim 0.6s infinite ease-in-out alternate,
+             bounce-anim 0.6s infinite ease-in-out alternate;
+}
+
+.day-tile.animation-wiggle.animation-bounce:hover {
+  animation: wiggle-anim 0.6s infinite ease-in-out alternate;
+  translate: 0 0;
+}
+
+/* The month is built from per-week rows, and each `.week-row` (monthGrid.css)
+   carries `content-visibility: auto` to skip offscreen rows. That also applies
+   paint containment, which CLIPS the row to its own box and traps z-index inside
+   it — so a tile that bounces or wiggles gets sliced off at the row boundary and
+   can never rise above the day in the row above (the tile's own z-index is
+   powerless across rows). For a row that actually holds a moving day, drop the
+   containment and lift the whole row so the movement can cross into — and paint
+   over — the row above.
+
+   Scoped two ways so it stays cheap: :has limits it to rows with an animated
+   day, and `.week-row-near` (toggled by the IntersectionObserver in MonthGrid)
+   limits it to rows near the viewport. A far-offscreen animated row keeps its
+   content-visibility:auto skipping — so even a weekly-recurring effect only ever
+   un-contains the few rows on screen. wiggle/bounce are GPU-composited
+   transforms, so those few rows stay cheap. */
+.week-row.week-row-near:has(.day-tile.animation-wiggle),
+.week-row.week-row-near:has(.day-tile.animation-bounce) {
+  content-visibility: visible;
+  position: relative;
+  z-index: 12;
+}
+
+/* Rainbow border animation */
+.day-tile.animation-rainbow-border {
+  position: relative;
+}
+
+.day-tile.animation-rainbow-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 3px solid transparent;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff007f, #ffd700, #00ff66, #4d00ff, #ff007f) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  animation: border-rotate 4s linear infinite;
+  background-size: 300% 300%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes border-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ── Special Day customization panel ───────────────────────────────────── */
+.sd-panel {
+  width: 268px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: sd-panel-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes sd-panel-in {
+  from { opacity: 0; transform: scale(0.97) translateY(-2px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Slim action row — reset + close, no date or title. */
+.sd-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  margin: -2px -4px calc(-1 * var(--space-2));
+}
+
+.sd-icon-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.sd-icon-btn:hover:not(:disabled) {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+.sd-icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.sd-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Front-panel style picker: a full-width grid so swatches fill the space
+   evenly with no leftover gap (no "None" swatch — clearing uses the footer's
+   "Reset changes"). */
+.sd-styles.cosmetic-options {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-1);
+}
+
+.sd-styles .cosmetic-swatch {
+  width: 100%;
+  height: 24px;
+}
+
+.sd-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+/* Category filter pills — rounded, Apple-style toggle buttons that read as
+   selected/unselected on click. Shared by the upcoming-filter panel. */
+.sd-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.sd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease,
+    background 120ms ease, color 120ms ease;
+}
+
+.sd-pill:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+
+.sd-pill:active {
+  transform: scale(0.95);
+}
+
+.sd-pill.selected {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* Effect opener — a single row that summarises what's on and opens the gallery
+   (the pills that lived here couldn't show what an effect looked like). Mirrors
+   the custom-background button's footprint below it. */
+.sd-effects-open {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+/* Fireflies drift behind the empty "Add effects" label as a small enticement;
+   the label and chevron sit above them so they stay legible. */
+.sd-effects-open .special-day-particles {
+  z-index: 0;
+}
+
+.sd-effects-empty,
+.sd-effects-summary,
+.sd-effects-chev {
+  position: relative;
+  z-index: 1;
+}
+
+/* Empty state wears the same gradient ground as the preview tiles (.fx-prev), so
+   the fireflies read against it and the button previews what a styled day looks
+   like. Text turns white with a soft shadow to match. Scoped with :has() to the
+   empty state; once effects are chosen it reverts to the plain summary row. */
+.sd-effects-open:has(.sd-effects-empty),
+.sd-effects-open:has(.sd-effects-empty):hover {
+  background-image: linear-gradient(135deg, #232a72, #4b2f9e 55%, #6d4bd6);
+  border-color: transparent;
+}
+
+.sd-effects-open:has(.sd-effects-empty):hover {
+  filter: brightness(1.08);
+}
+
+.sd-effects-open:has(.sd-effects-empty) .sd-effects-empty {
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.sd-effects-open:has(.sd-effects-empty) .sd-effects-chev {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sd-effects-open:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-muted-bg);
+}
+
+.sd-effects-empty {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.sd-effects-summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sd-effects-icons {
+  display: inline-flex;
+  gap: 1px;
+  font-size: 14px;
+  line-height: 1;
+  flex: none;
+}
+
+.sd-effects-names {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sd-effects-chev {
+  margin-left: auto;
+  flex: none;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--color-text-faint);
+}
+
+/* ── Effects gallery modal (Option A) ──────────────────────────────────────
+   Portals over the special-day panel; the panel suppresses its own dismiss
+   while this is up so a click in here doesn't also close it. */
+.fx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(15, 18, 24, 0.42);
+  animation: fx-backdrop-in 150ms ease forwards;
+}
+
+.fx-modal {
+  width: 100%;
+  max-width: 840px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+  /* vh ignores the interface-scale zoom; divide by --font-scale to cap to the
+     real window (matches .popover). No-op at scale 1. */
+  max-height: calc((100vh - 2 * var(--space-4)) / var(--font-scale, 1));
+  animation: fx-modal-in 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes fx-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fx-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.fx-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-1);
+}
+
+.fx-modal-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.fx-modal-sub {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.fx-modal-x {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-muted-bg);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.fx-modal-x:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.fx-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  overflow-y: auto;
+}
+
+/* Overlay layout: the effect tile is the whole card — no frame, no padding — so
+   the animation fills the cell edge to edge and the accent stays on the effect,
+   not the chrome. The name is hidden until hover (see .fx-card-name). */
+.fx-card {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 140ms ease, transform 120ms ease;
+}
+
+.fx-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
+}
+
+.fx-card:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.fx-card.selected {
+  box-shadow: 0 0 0 2.5px var(--color-accent), 0 6px 16px rgba(0, 0, 0, 0.24);
+}
+
+.fx-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 12px;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 150ms ease, transform 150ms ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.fx-card.selected .fx-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Name rides on the artwork, revealed only on hover (or keyboard focus) so the
+   resting card is pure effect. White on a soft bottom scrim reads over every
+   effect ground; pointer-events:none lets clicks fall through to the button. */
+.fx-card-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  padding: 20px 10px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  text-align: left;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  opacity: 0;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+
+.fx-card:hover .fx-card-name,
+.fx-card:focus-visible .fx-card-name {
+  opacity: 1;
+}
+
+.fx-modal-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.fx-foot-count {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.fx-foot-count b {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.fx-foot-clear {
+  margin-left: 4px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.fx-foot-clear:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+.fx-foot-done {
+  margin-left: auto;
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.fx-foot-done:hover {
+  filter: brightness(1.08);
+}
+
+/* The preview tile: a miniature day playing the real effect. It reuses the
+   grid's own particle classes and keyframes (sparkle-fade / snow-fall /
+   firefly-drift / wiggle-anim / bounce-anim / border-rotate), so what you see
+   is exactly what lands on the calendar. The gradient is a fixed, still ground
+   (not the day's own style, and not flowing) so it never competes with the
+   effect and gold, white and neon all read against it in every theme. The
+   bounce preview loops the same bob the grid plays at rest (the grid settles it
+   on hover; the preview just keeps going so you can see the motion). */
+.fx-prev {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  background-image: linear-gradient(135deg, #232a72, #4b2f9e 55%, #6d4bd6);
+  user-select: none;
+}
+
+.fx-prev-num {
+  position: absolute;
+  top: 7px;
+  left: 10px;
+  z-index: 3;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  opacity: 0.92;
+}
+
+.fx-prev .special-day-particles {
+  z-index: 2;
+}
+
+.fx-prev.fx-prev-wiggle {
+  animation: wiggle-anim 0.6s infinite ease-in-out alternate;
+}
+
+.fx-prev.fx-prev-bounce {
+  animation: bounce-anim 0.6s infinite ease-in-out alternate;
+}
+
+/* Preview draws a thicker rainbow ring than the real tile (2px) so the effect is
+   legible at the small gallery size — the day tile itself stays a fine outline. */
+.fx-prev.fx-prev-rainbow-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border: 5px solid transparent;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff007f, #ffd700, #00ff66, #4d00ff, #ff007f) border-box;
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  animation: border-rotate 4s linear infinite;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .fx-gallery {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .fx-gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Recurrence — a segmented control with a sliding thumb. */
+.sd-segment {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 3px;
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-md);
+}
+
+.sd-segment-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3);
+  height: calc(100% - 6px);
+  background: var(--color-surface);
+  border-radius: calc(var(--radius-md) - 3px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sd-segment-btn {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: none;
+  padding: 7px 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.sd-segment-btn.selected {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* Day Tile Cosmetic Overrides */
+.day-tile[class*='cosmetic-'] {
+  position: relative;
+  overflow: hidden;
+}
+
+.day-tile.cosmetic-gradient {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.day-tile.cosmetic-gradient .day-number {
+  color: #ffffff !important;
+}
+
+.day-tile.cosmetic-gradient .month-marker {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.day-tile.cosmetic-gradient .day-weather {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.day-tile.cosmetic-aurora { background-image: linear-gradient(90deg, #1d9e75, #5dcaa5, #7f77dd, #534ab7, #1d9e75) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-sunset { background-image: linear-gradient(90deg, #ef9f27, #d85a30, #d4537e, #7f77dd, #ef9f27) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-ocean { background-image: linear-gradient(90deg, #042c53, #185fa5, #378add, #85b7eb, #185fa5, #042c53) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-rainbow { background-image: linear-gradient(90deg, #534ab7, #d4537e, #d85a30, #ef9f27, #1d9e75, #185fa5, #534ab7) !important; background-size: 300% 100%; animation: cos-flow 9s linear infinite; }
+.day-tile.cosmetic-gold { background-image: linear-gradient(90deg, #6e4e10, #caa033, #f4d97a, #fff7da, #caa033, #6e4e10) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #3a2a06 !important; text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35) !important; }
+.day-tile.cosmetic-gold .day-number { color: #3a2a06 !important; }
+.day-tile.cosmetic-gold .month-marker { color: rgba(58, 42, 6, 0.8) !important; }
+.day-tile.cosmetic-candy { background-image: linear-gradient(90deg, #ed93b1, #d4537e, #7f77dd, #85b7eb, #ed93b1) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-magma { background-image: linear-gradient(90deg, #4a1b0c, #a32d2d, #e24b4a, #ef9f27, #a32d2d, #4a1b0c) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-mint { background-image: linear-gradient(90deg, #0f6e56, #1d9e75, #9fe1cb, #5dcaa5, #0f6e56) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-neon-rush { background-image: linear-gradient(90deg, #ff007f, #7928ca, #00dfd8, #ff007f) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-bubblegum { background-image: linear-gradient(90deg, #ff9a9e, #fecfef, #a1c4fd, #ff9a9e) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-retro-sunset { background-image: linear-gradient(90deg, #f4a261, #e76f51, #2a9d8f, #e9c46a, #f4a261) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; }
+.day-tile.cosmetic-forest-moss { background-image: linear-gradient(90deg, #114b3e, #2a9d8f, #e9c46a, #2a9d8f, #114b3e) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-nebula { background-image: linear-gradient(90deg, #ba55d3, #8a2be2, #4b0082, #9370db, #ba55d3) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-lava-flow { background-image: linear-gradient(90deg, #ff4500, #ff8c00, #d84315, #ff4500) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-holo-prism { background-image: linear-gradient(90deg, #e0c3fc, #8ec5fc, #fbc2eb, #e0c3fc) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #1c1c1e !important; text-shadow: none !important; }
+.day-tile.cosmetic-holo-prism .day-number { color: #1c1c1e !important; }
+.day-tile.cosmetic-cyberpunk { background-image: linear-gradient(90deg, #f1c40f, #e74c3c, #9b59b6, #3498db, #f1c40f) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite; }
+.day-tile.cosmetic-glacier { background-image: linear-gradient(90deg, #e0f7fa, #b2ebf2, #80deea, #e0f7fa) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; color: #1c1c1e !important; text-shadow: none !important; }
+.day-tile.cosmetic-glacier .day-number { color: #1c1c1e !important; }
+.day-tile.cosmetic-stripes { background-image: repeating-linear-gradient(45deg, #457b9d, #457b9d 10px, #1d3557 10px, #1d3557 20px) !important; }
+.day-tile.cosmetic-golden-hour { background-image: linear-gradient(90deg, #ff9f1c, #ffbf69, #ffffff, #ffbf69, #ff9f1c) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #3a2a06 !important; text-shadow: none !important; }
+.day-tile.cosmetic-golden-hour .day-number { color: #3a2a06 !important; }
+.day-tile.cosmetic-cyber-green { background-image: linear-gradient(90deg, #00ff66, #003311, #00ff66) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-cotton-candy { background-image: linear-gradient(90deg, #ffb3c6, #ffe5ec, #ffc8dd, #ffb3c6) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; color: #3a1c22 !important; text-shadow: none !important; }
+.day-tile.cosmetic-cotton-candy .day-number { color: #3a1c22 !important; }
+.day-tile.cosmetic-electric-indigo { background-image: linear-gradient(90deg, #4d00ff, #00f0ff, #4d00ff) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite; }
+.day-tile.cosmetic-ruby-gem { background-image: linear-gradient(90deg, #800000, #d90429, #ef233c, #800000) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite; }
+.day-tile.cosmetic-acid-lime { background-image: linear-gradient(90deg, #adff2f, #7fff00, #00ff00, #adff2f) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #1e3a00 !important; text-shadow: none !important; }
+.day-tile.cosmetic-acid-lime .day-number { color: #1e3a00 !important; }
+.day-tile.cosmetic-bronze-metal { background-image: linear-gradient(90deg, #cd7f32, #8c5a2b, #b87333, #cd7f32) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; }
+.day-tile.cosmetic-deep-abyss { background-image: linear-gradient(90deg, #03001e, #7303c0, #ec38bc, #03001e) !important; background-size: 300% 100%; animation: cos-flow 9s linear infinite; }
+.day-tile.cosmetic-candy-cane { background-image: repeating-linear-gradient(45deg, #e63946, #e63946 10px, #ffffff 10px, #ffffff 20px) !important; color: #e63946 !important; text-shadow: 0 1px 1px #ffffff !important; }
+.day-tile.cosmetic-candy-cane .day-number { color: #e63946 !important; }
+.day-tile.cosmetic-peach-cream { background-image: linear-gradient(90deg, #ffcad4, #ffe5ec, #f7d1cd, #ffcad4) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; color: #4a2d33 !important; text-shadow: none !important; }
+.day-tile.cosmetic-peach-cream .day-number { color: #4a2d33 !important; }
+.day-tile.cosmetic-cosmic-dust { background-image: linear-gradient(90deg, #614385, #516395, #c33764, #1d2671, #614385) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-frozen-fire { background-image: linear-gradient(90deg, #00c6ff, #0072ff, #f857a6, #ff5858, #00c6ff) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-emerald-glow { background-image: linear-gradient(90deg, #11998e, #38ef7d, #00b4db, #11998e) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-sweet-lavender { background-image: linear-gradient(90deg, #e1eec3, #f05053, #a18cd1, #fbc2eb, #e1eec3) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; color: #3b2b54 !important; text-shadow: none !important; }
+.day-tile.cosmetic-sweet-lavender .day-number { color: #3b2b54 !important; }
+.day-tile.cosmetic-solar-flare { background-image: linear-gradient(90deg, #f12711, #f5af19, #f80759, #f12711) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-deep-space { background-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364, #0f2027) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-mermaid-shell { background-image: linear-gradient(90deg, #a1c4fd, #c2e9fb, #ffdde1, #ee9ca7, #a1c4fd) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #2c3e50 !important; text-shadow: none !important; }
+.day-tile.cosmetic-mermaid-shell .day-number { color: #2c3e50 !important; }
+.day-tile.cosmetic-cherry-blossom { background-image: linear-gradient(90deg, #ff9a9e, #fecfef, #ffffff, #fecfef, #ff9a9e) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #4a2d33 !important; text-shadow: none !important; }
+.day-tile.cosmetic-cherry-blossom .day-number { color: #4a2d33 !important; }
+.day-tile.cosmetic-electric-crimson { background-image: linear-gradient(90deg, #800080, #ff007f, #ff0000, #800080) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite; }
+.day-tile.cosmetic-matcha-latte { background-image: linear-gradient(90deg, #556b2f, #8fbc8f, #f5f5dc, #8fbc8f, #556b2f) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #2f3e1b !important; text-shadow: none !important; }
+.day-tile.cosmetic-matcha-latte .day-number { color: #2f3e1b !important; }
+
+.day-tile.cosmetic-neon-pulse { background-image: linear-gradient(90deg, #ff007f, #00f0ff, #7928ca, #00f0ff, #ff007f) !important; background-size: 300% 100%; animation: cos-flow 5s linear infinite, neon-pulse-glow 3s ease-in-out infinite; }
+.day-tile.cosmetic-magical-amethyst { background-image: linear-gradient(90deg, #4b0082, #9966cc, #d8bfd8, #9966cc, #4b0082) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; }
+.day-tile.cosmetic-cyber-inferno { background-image: linear-gradient(90deg, #ff3300, #ff9900, #ffcc00, #ff3300) !important; background-size: 300% 100%; animation: cos-flow 4s linear infinite, cyber-inferno-glow 2.5s ease-in-out infinite; }
+.day-tile.cosmetic-aurora-borealis { background-image: linear-gradient(90deg, #00ffc4, #00b4db, #9b59b6, #00ffc4) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; }
+.day-tile.cosmetic-frozen-tundra { background-image: linear-gradient(90deg, #cce6ff, #e6f2ff, #ffffff, #cce6ff) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; color: #1a3a5c !important; text-shadow: none !important; }
+.day-tile.cosmetic-frozen-tundra .day-number { color: #1a3a5c !important; }
+.day-tile.cosmetic-vintage-velvet { background-image: linear-gradient(90deg, #800020, #b8860b, #4a0404, #b8860b, #800020) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; }
+.day-tile.cosmetic-acid-techno { background-image: linear-gradient(90deg, #ccff00, #39ff14, #1a1a1a, #39ff14, #ccff00) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite; color: #ffffff !important; text-shadow: 0 1px 2px #000 !important; }
+.day-tile.cosmetic-starlight-glow { background-image: linear-gradient(90deg, #e6f2ff, #ffffff, #b3d1ff, #e6f2ff) !important; background-size: 300% 100%; animation: cos-flow 9s linear infinite, starlight-breathing 4s ease-in-out infinite; color: #2c3e50 !important; text-shadow: none !important; }
+.day-tile.cosmetic-starlight-glow .day-number { color: #2c3e50 !important; }
+.day-tile.cosmetic-supernova-spark { background-image: linear-gradient(90deg, #ff00cc, #ffcc00, #00ffff, #ff00cc) !important; background-size: 300% 100%; animation: cos-flow 4s linear infinite; }
+.day-tile.cosmetic-luminous-teal { background-image: linear-gradient(90deg, #00e5ff, #0083b0, #00e5ff) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite, luminous-teal-glow 3s ease-in-out infinite; }
+.day-tile.cosmetic-electric-violet { background-image: linear-gradient(90deg, #6600ff, #00e5ff, #6600ff) !important; background-size: 300% 100%; animation: cos-flow 5s linear infinite, electric-violet-glow 3s ease-in-out infinite; }
+.day-tile.cosmetic-sunset-gold { background-image: linear-gradient(90deg, #ff9900, #ffd700, #ff5500, #ffd700, #ff9900) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #4a2a00 !important; text-shadow: none !important; }
+.day-tile.cosmetic-sunset-gold .day-number { color: #4a2a00 !important; }
+.day-tile.cosmetic-midnight-neon { background-image: linear-gradient(90deg, #001133, #00ff00, #002266, #00ff00, #001133) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; }
+.day-tile.cosmetic-glitch-matrix { background-image: repeating-linear-gradient(90deg, #000, #000 2px, #00ff00 2px, #00ff00 4px) !important; background-size: 8px 100%; animation: cos-stripes-move 1.5s linear infinite, matrix-flicker 5s infinite; }
+.day-tile.cosmetic-holographic-pearl { background-image: linear-gradient(90deg, #ffffff, #fbc2eb, #a6c1ee, #fbc2eb, #ffffff) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; color: #3b3b3b !important; text-shadow: none !important; }
+.day-tile.cosmetic-holographic-pearl .day-number { color: #3b3b3b !important; }
+.day-tile.cosmetic-tempting-tangerine { background-image: linear-gradient(90deg, #ff5500, #ffaa00, #ff5500) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite; }
+.day-tile.cosmetic-neon-lime { background-image: linear-gradient(90deg, #39ff14, #00ff66, #39ff14) !important; background-size: 300% 100%; animation: cos-flow 5s linear infinite, neon-lime-glow 3s ease-in-out infinite; color: #0b3a00 !important; text-shadow: none !important; }
+.day-tile.cosmetic-neon-lime .day-number { color: #0b3a00 !important; }
+.day-tile.cosmetic-plasma-wave { background-image: linear-gradient(90deg, #ff0055, #7928ca, #ffaa00, #ff0055) !important; background-size: 300% 100%; animation: cos-flow 5s linear infinite; }
+.day-tile.cosmetic-boreal-forest { background-image: linear-gradient(90deg, #228b22, #556b2f, #cd7f32, #228b22) !important; background-size: 300% 100%; animation: cos-flow 8s linear infinite; }
+.day-tile.cosmetic-cotton-candy-swirl { background-image: linear-gradient(90deg, #ffc0cb, #e0b0ff, #80daeb, #ffc0cb) !important; background-size: 300% 100%; animation: cos-flow 7s linear infinite; color: #3b2a3a !important; text-shadow: none !important; }
+.day-tile.cosmetic-cotton-candy-swirl .day-number { color: #3b2a3a !important; }
+
+/* AI gradients (mirror of the event versions in cosmetics.css). */
+.day-tile.cosmetic-ai-aura { background-image: linear-gradient(90deg, #c3b6ff, #e9d8ff, #b8e0ff, #ffd6f0, #c3b6ff) !important; background-size: 300% 100%; animation: cos-flow 9s linear infinite; color: #2e2a52 !important; text-shadow: none !important; }
+.day-tile.cosmetic-ai-aura .day-number { color: #2e2a52 !important; }
+.day-tile.cosmetic-ai-glow { background-image: linear-gradient(90deg, #4d00ff, #00e5ff, #ff00d4, #7b6cff, #4d00ff) !important; background-size: 300% 100%; animation: cos-flow 6s linear infinite, ai-glow-pulse 3s ease-in-out infinite; }
+.day-tile.cosmetic-ai-spin { background: conic-gradient(from var(--ai-angle), #ff007f, #ffae00, #00e5ff, #6e8bff, #ff007f) !important; animation: ai-spin-rot 4s linear infinite; }
+.day-tile.cosmetic-ai-prism { background: conic-gradient(from var(--ai-angle), #6e8bff, #ff00d4, #00e5ff, #ffd000, #6e8bff) !important; animation: ai-spin-rot 6s linear infinite, ai-prism-glow 3s ease-in-out infinite; }
+
+/* Liquid gradients (mirror of the event versions in cosmetics.css — same
+   registered --lq-* blob centres and cos-liquid keyframes). */
+.day-tile.cosmetic-ai-mesh { background-image: radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(99, 132, 255, 0.9) 0%, transparent 62%), radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(255, 110, 199, 0.8) 0%, transparent 58%), radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(64, 224, 255, 0.75) 0%, transparent 60%),
+    linear-gradient(#191645, #191645) !important; animation: cos-liquid-a 11s ease-in-out infinite; }
+.day-tile.cosmetic-liquid-dream { background-image: radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(165, 184, 255, 0.85) 0%, transparent 60%), radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(255, 190, 226, 0.8) 0%, transparent 58%), radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(174, 233, 255, 0.8) 0%, transparent 60%),
+    linear-gradient(#eef0fb, #eef0fb) !important; animation: cos-liquid-b 13s ease-in-out infinite; color: #33325e !important; text-shadow: none !important; }
+.day-tile.cosmetic-liquid-dream .day-number { color: #33325e !important; }
+.day-tile.cosmetic-ink-bloom { background-image: radial-gradient(120% 150% at var(--lq-x1) var(--lq-y1), rgba(38, 198, 218, 0.75) 0%, transparent 55%), radial-gradient(130% 130% at var(--lq-x2) var(--lq-y2), rgba(124, 77, 255, 0.7) 0%, transparent 58%), radial-gradient(150% 120% at var(--lq-x3) var(--lq-y3), rgba(21, 101, 192, 0.8) 0%, transparent 62%),
+    linear-gradient(#0b1026, #0b1026) !important; animation: cos-liquid-b 15s ease-in-out infinite reverse; }
+.day-tile.cosmetic-lava-lamp { background-image: radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(255, 78, 138, 0.9) 0%, transparent 58%), radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(255, 158, 68, 0.85) 0%, transparent 55%), radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(222, 49, 99, 0.8) 0%, transparent 60%),
+    linear-gradient(#3d0a33, #3d0a33) !important; animation: cos-liquid-a 9s ease-in-out infinite reverse; }
+.day-tile.cosmetic-deep-current { background-image: radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(14, 116, 144, 0.9) 0%, transparent 60%), radial-gradient(110% 130% at var(--lq-x2) var(--lq-y2), rgba(125, 211, 252, 0.55) 0%, transparent 50%), radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(13, 148, 136, 0.7) 0%, transparent 58%),
+    linear-gradient(#04263c, #04263c) !important; animation: cos-liquid-b 17s ease-in-out infinite; }
+.day-tile.cosmetic-opal-drift { background-image: radial-gradient(130% 150% at var(--lq-x1) var(--lq-y1), rgba(191, 231, 215, 0.9) 0%, transparent 58%), radial-gradient(120% 140% at var(--lq-x2) var(--lq-y2), rgba(220, 210, 245, 0.9) 0%, transparent 58%), radial-gradient(140% 130% at var(--lq-x3) var(--lq-y3), rgba(250, 214, 214, 0.85) 0%, transparent 60%),
+    linear-gradient(#f6f2ee, #f6f2ee) !important; animation: cos-liquid-a 14s ease-in-out infinite; color: #4b4257 !important; text-shadow: none !important; }
+.day-tile.cosmetic-opal-drift .day-number { color: #4b4257 !important; }
+
+
+.day-tile.cosmetic-glow { animation: cos-glow 3s ease infinite !important; }
+
+.day-tile.cosmetic-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  transform: translateX(-120%);
+  animation: cos-shimmer 6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.day-tile.cosmetic-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  transform: translateX(-120%);
+  animation: cos-shimmer 6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+/* Stardust on a day keeps the tile's own background and dusts it with twinkling
+   specks; hovering hands over to the particle engine (cosmeticParticles.ts). */
+.day-tile.cosmetic-stardust::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 30%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 30% 68%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 46% 22%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 58% 74%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.5px 1.5px at 72% 40%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 86% 64%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 93% 18%, rgba(255, 255, 255, 0.8), transparent);
+  animation: stardust-twinkle 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Matches the sd-panel idiom; sd-panel's gap handles spacing (no margin). */
+.sd-custom-bg-btn {
+  width: 100%;
+  padding: 9px;
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 120ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.sd-custom-bg-btn:hover { filter: brightness(0.97); }
+
+/* Second line, present only when a background is set. Without it the panel gave
+   no sign one existed, which is half of why clearing a day felt arbitrary. */
+.sd-custom-bg-cur {
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Footer — the panel's two exits in one row. This replaces the old topbar,
+   where the reset was a bare ↺ whose only label lived in a tooltip, and which
+   cleared everything except the background. */
+.sd-footbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.sd-foot-reset {
+  margin-left: -8px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.sd-foot-reset:hover {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+
+.sd-foot-done {
+  margin-left: auto;
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.sd-foot-done:hover { filter: brightness(1.08); }
+
+/* Day tiles were the one cosmetic host with no reduced-motion escape hatch:
+   cosmetics.css covers chips, spans, swatches and week-view blocks, but the
+   month grid's tiles (and their sparkle / snow / firefly particle overlays,
+   wiggle, bounce and rotating rainbow border) kept animating regardless. A
+   styled recurring day can decorate dozens of tiles at once, so honouring the
+   preference is both an accessibility fix and the cheapest possible render
+   path for anyone who has set it. */
+@media (prefers-reduced-motion: reduce) {
+  .day-tile[class*='cosmetic-'],
+  .day-tile[class*='cosmetic-']::before,
+  .day-tile[class*='cosmetic-']::after,
+  .day-tile.animation-wiggle,
+  .day-tile.animation-bounce,
+  .day-tile.animation-bounce:hover,
+  .day-tile.animation-wiggle.animation-bounce,
+  .day-tile.animation-wiggle.animation-bounce:hover,
+  .day-tile.animation-rainbow-border::after,
+  .special-day-sparkle,
+  .special-day-snowflake,
+  .special-day-firefly,
+  .special-day-comet,
+  .special-day-bubble,
+  .special-day-confetti,
+  .special-day-firework,
+  .special-day-petal,
+  .special-day-aurora,
+  .special-day-heart,
+  .special-day-balloon,
+  .special-day-leaf,
+  .special-day-note,
+  /* The gallery previews too: with motion off the real tiles don't animate and
+     the particle overlays are hidden below, so a still tile is the honest
+     preview of what this user would actually get. */
+  .fx-prev.fx-prev-wiggle,
+  .fx-prev.fx-prev-bounce,
+  .fx-prev.fx-prev-rainbow-border::after {
+    animation: none;
+  }
+  /* The particle overlays exist only to move; with motion off they would sit
+     as static dots and specks over the tile, so hide them outright. */
+  .special-day-particles {
+    display: none;
+  }
+}
