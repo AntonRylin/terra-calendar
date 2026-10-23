@@ -590,7 +590,7 @@
     max-width: 100%;
     max-height: 90dvh;
     border-radius: 18px 18px 0 0;
-    padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+    padding: 20px 20px calc(24px + var(--safe-bottom));
   }
 
   .settings-header h2 {
@@ -941,10 +941,29 @@
 
 /* Mobile: stack the split card — the nav becomes a horizontal scrollable row. */
 @media (max-width: 768px) {
+  /* Phones: settings is a full-screen page rather than a 640px card floating
+     near the top with the calendar showing underneath. */
+  .settings-backdrop {
+    padding: 0;
+  }
+
   .settings-card-split {
     flex-direction: column;
     width: 100%;
-    padding: 0;
+    padding: var(--safe-top) 0 var(--safe-bottom);
+    height: 100dvh;
+    max-height: 100dvh;
+    border: none;
+    border-radius: 0;
+  }
+
+  .settings-nav-item {
+    min-height: 40px;
+  }
+
+  .settings-close {
+    width: 40px;
+    height: 40px;
   }
 
   .settings-nav {

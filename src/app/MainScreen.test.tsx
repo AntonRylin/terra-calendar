@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useSettingsStore } from './settingsStore';
 
@@ -19,6 +19,9 @@ vi.mock('./panels', async () => {
 vi.mock('./useReminderScheduler', () => ({ useReminderScheduler: () => {} }));
 
 import { MainScreen } from './MainScreen';
+import { MOBILE_QUERY } from '../ui/useMediaQuery';
+import { openMobileMenu, useMobileMenuStore } from './mobileMenu';
+import { useUiStore } from './uiStore';
 
 beforeEach(() => {
   localStorage.clear();
@@ -69,5 +72,62 @@ describe('MainScreen side panel', () => {
     fireEvent.keyDown(window, { key: 'b' });
 
     expect(screen.getByText('UPCOMING')).toBeInTheDocument();
+  });
+});
+
+describe('MainScreen on a phone', () => {
+  const desktopMatchMedia = window.matchMedia;
+
+  beforeEach(() => {
+    window.matchMedia = ((query: string) => ({
+      ...desktopMatchMedia(query),
+      matches: query === MOBILE_QUERY,
+    })) as typeof window.matchMedia;
+    useMobileMenuStore.setState({ open: false });
+  });
+
+  afterEach(() => {
+    window.matchMedia = desktopMatchMedia;
+  });
+
+  it('fills the screen with the calendar: no tab bar, no minimap, Upcoming in a closed drawer', () => {
+    const { container } = render(<MainScreen />);
+
+    expect(screen.getByText('CALENDAR')).toBeInTheDocument();
+    expect(screen.queryByText('MINIMAP')).not.toBeInTheDocument();
+    expect(container.querySelector('.mobile-tabbar')).toBeNull();
+    expect(container.querySelector('.sidebar')).toBeNull();
+
+    const drawer = container.querySelector('#mobile-drawer') as HTMLElement;
+    expect(drawer).toContainElement(screen.getByText('UPCOMING'));
+    expect(container.querySelector('.mobile-drawer-root.is-open')).toBeNull();
+    expect(drawer).toHaveAttribute('inert');
+  });
+
+  it('opens the drawer and closes it from the close button, Escape and the scrim', () => {
+    const { container } = render(<MainScreen />);
+    const isOpen = () => container.querySelector('.mobile-drawer-root.is-open') !== null;
+
+    act(() => openMobileMenu());
+    expect(isOpen()).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Close menu' }));
+    expect(isOpen()).toBe(false);
+
+    act(() => openMobileMenu());
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(isOpen()).toBe(false);
+
+    act(() => openMobileMenu());
+    fireEvent.click(container.querySelector('.mobile-drawer-scrim')!);
+    expect(isOpen()).toBe(false);
+  });
+
+  it('closes the drawer once an item in it navigates the calendar', () => {
+    const { container } = render(<MainScreen />);
+
+    act(() => openMobileMenu());
+    act(() => useUiStore.getState().setViewedDate('2031-05-04'));
+
+    expect(container.querySelector('.mobile-drawer-root.is-open')).toBeNull();
   });
 });

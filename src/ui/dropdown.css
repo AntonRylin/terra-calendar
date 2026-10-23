@@ -34,3 +34,17 @@
   border-radius: var(--radius-sm);
   padding: 2px 7px;
 }
+
+/* On phones the dropdown is a bottom sheet: keep the sheet's padding (it
+   clears the gesture bar), give rows finger height, and drop the keyboard
+   shortcut hints. */
+.popover.popover-sheet.popover--dropdown {
+  padding: var(--space-2) var(--space-3) calc(var(--space-3) + var(--safe-bottom));
+}
+.popover-sheet .dd-item {
+  min-height: 48px;
+  font-size: 16px;
+}
+.popover-sheet .dd-hint {
+  display: none;
+}

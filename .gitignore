@@ -1,4 +1,4 @@
-# Dependencies
+﻿# Dependencies
 node_modules/
 mcp-server/node_modules/
 
@@ -7,7 +7,7 @@ mcp-server/node_modules/
 dist/
 mcp-server/dist/
 src-tauri/target/
-src-tauri/gen/
+src-tauri/gen/schemas/
 coverage/
 
 # Local tool and agent folders

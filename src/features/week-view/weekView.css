@@ -612,6 +612,30 @@
     padding-left: var(--space-2);
     padding-right: var(--space-2);
   }
+
+  /* Same breathing room above the header as the month views. */
+  .week-view .month-header.mobile-header {
+    padding-top: calc(var(--space-3) + var(--safe-top));
+  }
+
+  /* Phone columns are narrow: wrap titles between words only, so the fitter
+     shrinks the font instead of splitting "Focus" into "Foc / us". */
+  .wv-title-text {
+    overflow-wrap: normal;
+  }
+
+  /* …and give a narrow block's whole width to its title; the time is on the
+     hour grid right beside it. */
+  @container week-event (max-width: 100px) {
+    .wv-block-content {
+      grid-template-columns: minmax(0, 1fr);
+      padding-left: 4px;
+      padding-right: 3px;
+    }
+    .wv-block-times {
+      display: none;
+    }
+  }
 }
 
 @media (max-width: 640px) {

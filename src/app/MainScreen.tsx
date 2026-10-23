@@ -5,49 +5,8 @@ import { useSettingsStore } from './settingsStore';
 import { isSidebarShortcut, toggleSidebar } from './sidebarVisibility';
 import { SelectionBar } from '../features/bulk-select/SelectionBar';
 import { useReminderScheduler } from './useReminderScheduler';
+import { MobileDrawer } from './MobileDrawer';
 import './mainScreen.css';
-
-type MobileTab = 'calendar' | 'upcoming' | 'minimap';
-
-const TABS: { id: MobileTab; label: string; icon: JSX.Element }[] = [
-  {
-    id: 'calendar',
-    label: 'Calendar',
-    icon: (
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <line x1="3" y1="9" x2="21" y2="9" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-      </svg>
-    ),
-  },
-  {
-    id: 'upcoming',
-    label: 'Upcoming',
-    icon: (
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <line x1="8" y1="6" x2="21" y2="6" />
-        <line x1="8" y1="12" x2="21" y2="12" />
-        <line x1="8" y1="18" x2="21" y2="18" />
-        <line x1="3" y1="6" x2="3.01" y2="6" />
-        <line x1="3" y1="12" x2="3.01" y2="12" />
-        <line x1="3" y1="18" x2="3.01" y2="18" />
-      </svg>
-    ),
-  },
-  {
-    id: 'minimap',
-    label: 'Minimap',
-    icon: (
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-        <line x1="12" y1="3" x2="12" y2="6" />
-      </svg>
-    ),
-  },
-];
 
 export function MainScreen({ layout = defaultLayout }: { layout?: LayoutConfig }) {
   useReminderScheduler();
@@ -55,7 +14,6 @@ export function MainScreen({ layout = defaultLayout }: { layout?: LayoutConfig }
   const Bottom = panelRegistry[layout.sidebar.bottom];
   const Main = panelRegistry[layout.main];
   const isMobile = useIsMobile();
-  const [tab, setTab] = useState<MobileTab>('calendar');
 
   const sidebarWidth = useSettingsStore((s) => s.sidebarWidth);
   const sidebarSplit = useSettingsStore((s) => s.sidebarSplit);
@@ -163,37 +121,17 @@ export function MainScreen({ layout = defaultLayout }: { layout?: LayoutConfig }
     window.addEventListener('pointerup', handlePointerUp);
   };
 
+  // Phones: the calendar fills the screen. Upcoming lives in a slide-in drawer
+  // opened from the header's menu button; the minimap isn't offered at all.
   if (isMobile) {
     return (
       <div className="main-screen main-screen-mobile">
         <div className="mobile-view">
-          {/* All panes stay mounted so each keeps its scroll/position; only the
-              active one is shown. The calendar mounts visible so its initial
-              scroll-to-today measurement is correct. */}
-          <div className="mobile-pane" hidden={tab !== 'calendar'}>
-            <Main />
-          </div>
-          <div className="mobile-pane" hidden={tab !== 'upcoming'}>
-            <Top />
-          </div>
-          <div className="mobile-pane" hidden={tab !== 'minimap'}>
-            <Bottom />
-          </div>
+          <Main />
         </div>
-        <nav className="mobile-tabbar">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              className={'mobile-tab' + (tab === t.id ? ' is-active' : '')}
-              onClick={() => setTab(t.id)}
-              aria-label={t.label}
-              aria-current={tab === t.id}
-            >
-              {t.icon}
-              <span>{t.label}</span>
-            </button>
-          ))}
-        </nav>
+        <MobileDrawer>
+          <Top />
+        </MobileDrawer>
         <SelectionBar />
       </div>
     );

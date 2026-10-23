@@ -36,7 +36,7 @@
   border: none;
   border-radius: 18px 18px 0 0;
   padding: var(--space-3) var(--space-4)
-    calc(var(--space-4) + env(safe-area-inset-bottom));
+    calc(var(--space-4) + var(--safe-bottom));
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.22);
   animation: sheetUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -52,8 +52,27 @@
 /* The forms set fixed widths for the desktop popover; let them fill the sheet. */
 .popover-sheet .event-editor,
 .popover-sheet .quick-entry,
-.popover-sheet .delete-choices-container {
+.popover-sheet .delete-choices-container,
+.popover-sheet .sd-panel {
   width: 100%;
+}
+
+/* Fixed-width menus (account) also span the sheet on phones. */
+.popover.popover-sheet.popover--account {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Menu rows in a sheet are tapped, not clicked: give them touch height. */
+.popover-sheet .context-menu-item,
+.popover-sheet .acct-item {
+  min-height: 44px;
+  font-size: 15px;
+}
+
+/* Full-width special-day swatches get a finger-sized height. */
+.popover-sheet .sd-styles .cosmetic-swatch {
+  height: 40px;
 }
 
 @keyframes sheetBackdropIn {

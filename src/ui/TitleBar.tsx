@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import './titleBar.css';
 
+// Tauri also runs on Android and iOS, where the OS owns the window: no
+// minimise / maximise / close buttons there.
 const isDesktop =
-  typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  typeof window !== 'undefined' &&
+  '__TAURI_INTERNALS__' in window &&
+  !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 // Tag the document on desktop so the toolbar can reserve room at its right edge
 // for the fixed window controls (see .is-tauri-desktop .month-header).

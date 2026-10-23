@@ -27,6 +27,8 @@ import { ZoomStepper } from '../../ui/ZoomStepper';
 import { ToolbarButton } from '../../ui/ToolbarButton';
 import { AccountMenu } from '../../ui/AccountMenu';
 import { SidebarToggle } from '../../app/SidebarToggle';
+import { MobileHeader } from '../../app/MobileHeader';
+import { useIsMobile } from '../../ui/useMediaQuery';
 import { useAutoHideScrollbar } from '../../ui/useAutoHideScrollbar';
 import { AnchoredPopover } from '../../ui/AnchoredPopover';
 import { eventHoverProps } from '../../ui/eventHoverStore';
@@ -124,7 +126,11 @@ function isRainyOrSunny(code: number): boolean {
 
 async function getCurrentCoordinates(): Promise<{ latitude: number; longitude: number } | null> {
   return new Promise((resolve) => {
-    if (!navigator.geolocation) {
+    // The Android app declares no location permission: a GPS prompt for the
+    // weather glance isn't worth it there, and asking without the permission
+    // crashes Tauri's WebView client. The caller falls back to an IP lookup.
+    const inAndroidApp = '__TAURI_INTERNALS__' in window && /Android/i.test(navigator.userAgent);
+    if (!navigator.geolocation || inAndroidApp) {
       resolve(null);
       return;
     }
@@ -371,6 +377,7 @@ export function MonthGrid() {
   const showWeatherIconOnDays = useSettingsStore((s) => s.showWeatherIconOnDays);
   const showClockOnToday = useSettingsStore((s) => s.showClockOnToday);
   const weatherAndLocationEnabled = useSettingsStore((s) => s.weatherAndLocationEnabled);
+  const isMobile = useIsMobile();
   const setWeatherAndLocationEnabled = useSettingsStore((s) => s.setWeatherAndLocationEnabled);
   const setShowWeatherIconOnDays = useSettingsStore((s) => s.setShowWeatherIconOnDays);
   const setShowHourlyWeather = useSettingsStore((s) => s.setShowHourlyWeather);
@@ -1914,9 +1921,39 @@ export function MonthGrid() {
     );
   };
 
+  const viewSwitcher = (
+    <Dropdown
+      ariaLabel="Calendar layout"
+      value={calendarViewMode}
+      options={[
+        { value: 'continuous', label: 'Continuous', hint: 'C' },
+        { value: 'separate', label: 'Months', hint: 'M' },
+        { value: 'week', label: 'Week', hint: 'W' },
+      ] as const}
+      onChange={setCalendarViewMode}
+    />
+  );
+  const weatherGlance = weatherAndLocationEnabled && (
+    <button className="month-weather-glance" onClick={handleLocationClick} title="Change location">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M17.5 19a4.5 4.5 0 1 0 0-9 6 6 0 0 0-11.6 2A3.5 3.5 0 0 0 6.5 19z" />
+      </svg>
+      <span>{locationName}</span>
+    </button>
+  );
+
   return (
     <div className={`month-grid grid-style-${showGrid ? 'on' : 'off'}`}>
       <DayCustomStyleSheet specialDays={specialDays} />
+      {isMobile ? (
+        <MobileHeader
+          title={<>{MONTH_NAMES[header.month - 1]} <span className="month-year">{header.year}</span></>}
+        >
+          {viewSwitcher}
+          <ToolbarButton onClick={scrollToToday} disabled={todayVisible}>Today</ToolbarButton>
+          {weatherGlance}
+        </MobileHeader>
+      ) : (
       <header className="month-header" data-tauri-drag-region>
         <div className="month-header-left" data-tauri-drag-region>
           <SidebarToggle />
@@ -1925,24 +1962,8 @@ export function MonthGrid() {
           </h1>
         </div>
         <nav className="month-nav">
-          {weatherAndLocationEnabled && (
-            <button className="month-weather-glance" onClick={handleLocationClick} title="Change location">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M17.5 19a4.5 4.5 0 1 0 0-9 6 6 0 0 0-11.6 2A3.5 3.5 0 0 0 6.5 19z" />
-              </svg>
-              <span>{locationName}</span>
-            </button>
-          )}
-          <Dropdown
-            ariaLabel="Calendar layout"
-            value={calendarViewMode}
-            options={[
-              { value: 'continuous', label: 'Continuous', hint: 'C' },
-              { value: 'separate', label: 'Months', hint: 'M' },
-              { value: 'week', label: 'Week', hint: 'W' },
-            ] as const}
-            onChange={setCalendarViewMode}
-          />
+          {weatherGlance}
+          {viewSwitcher}
           <ToolbarButton onClick={scrollToToday} disabled={todayVisible}>
             {todayVisible ? 'Showing today' : 'Today'}
           </ToolbarButton>
@@ -1959,6 +1980,7 @@ export function MonthGrid() {
           <AccountMenu />
         </nav>
       </header>
+      )}
       <HabitTabSwitcher />
       <div className="weekday-row">
         {WEEKDAYS.map((d) => (

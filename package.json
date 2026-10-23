@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "android:dev": "node scripts/android.mjs dev",
+    "android:apk": "node scripts/android.mjs build --apk",
+    "android:apk:emulator": "node scripts/android.mjs build --debug --apk --target x86_64"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.0",

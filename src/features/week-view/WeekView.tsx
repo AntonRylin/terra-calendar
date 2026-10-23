@@ -28,6 +28,8 @@ import { Dropdown } from '../../ui/Dropdown';
 import { ToolbarButton } from '../../ui/ToolbarButton';
 import { AccountMenu } from '../../ui/AccountMenu';
 import { SidebarToggle } from '../../app/SidebarToggle';
+import { MobileHeader } from '../../app/MobileHeader';
+import { useIsMobile } from '../../ui/useMediaQuery';
 import { WeekEventContent } from './WeekEventContent';
 import { confirmChoice } from '../../ui/confirmStore';
 import { ContextMenu, pointAnchor, type ContextMenuItem } from '../../ui/ContextMenu';
@@ -351,6 +353,7 @@ export function WeekView() {
   const displayTimeZone = useSettingsStore((s) => s.displayTimeZone);
   const categories = useSettingsStore((s) => s.categories);
   const calendarViewMode = useSettingsStore((s) => s.calendarViewMode);
+  const isMobile = useIsMobile();
   const showTodayButton = useSettingsStore((s) => s.showWeekTodayButton);
   const setShowTodayButton = useSettingsStore((s) => s.setShowWeekTodayButton);
   const gapThresholdMin = useSettingsStore((s) => s.weekGapThresholdMin);
@@ -1606,6 +1609,34 @@ export function WeekView() {
         ? 'ahead'
         : null;
 
+  const prevWeek = (
+    <ToolbarButton variant="icon" onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label="Previous week">
+      ‹
+    </ToolbarButton>
+  );
+  const nextWeek = (
+    <ToolbarButton variant="icon" onClick={() => setWeekStart(addDays(weekStart, 7))} aria-label="Next week">
+      ›
+    </ToolbarButton>
+  );
+  const todayButton = (
+    <ToolbarButton onClick={() => setWeekStart(mondayOf(today))} disabled={isCurrentWeek}>
+      {isCurrentWeek && !isMobile ? 'This week' : 'Today'}
+    </ToolbarButton>
+  );
+  const viewSwitcher = (
+    <Dropdown
+      ariaLabel="Calendar layout"
+      value={calendarViewMode}
+      options={[
+        { value: 'continuous', label: 'Continuous', hint: 'C' },
+        { value: 'separate', label: 'Months', hint: 'M' },
+        { value: 'week', label: 'Week', hint: 'W' },
+      ] as const}
+      onChange={setCalendarViewMode}
+    />
+  );
+
   return (
     <div
       className="week-view"
@@ -1618,6 +1649,21 @@ export function WeekView() {
         } as React.CSSProperties
       }
     >
+      {isMobile ? (
+        <MobileHeader
+          title={
+            <>
+              {MONTH_NAMES[midMonth[1] - 1]} <span className="month-year">{midMonth[0]}</span>
+              <span className="wv-range">{rangeLabel}</span>
+            </>
+          }
+        >
+          {viewSwitcher}
+          {prevWeek}
+          {todayButton}
+          {nextWeek}
+        </MobileHeader>
+      ) : (
       <header className="month-header" data-tauri-drag-region>
         <div className="month-header-left" data-tauri-drag-region>
           <SidebarToggle />
@@ -1627,29 +1673,15 @@ export function WeekView() {
           </h1>
         </div>
         <nav className="month-nav">
-          <ToolbarButton variant="icon" onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label="Previous week">
-            ‹
-          </ToolbarButton>
-          <ToolbarButton onClick={() => setWeekStart(mondayOf(today))} disabled={isCurrentWeek}>
-            {isCurrentWeek ? 'This week' : 'Today'}
-          </ToolbarButton>
-          <ToolbarButton variant="icon" onClick={() => setWeekStart(addDays(weekStart, 7))} aria-label="Next week">
-            ›
-          </ToolbarButton>
-          <Dropdown
-            ariaLabel="Calendar layout"
-            value={calendarViewMode}
-            options={[
-              { value: 'continuous', label: 'Continuous', hint: 'C' },
-              { value: 'separate', label: 'Months', hint: 'M' },
-              { value: 'week', label: 'Week', hint: 'W' },
-            ] as const}
-            onChange={setCalendarViewMode}
-          />
+          {prevWeek}
+          {todayButton}
+          {nextWeek}
+          {viewSwitcher}
           <div className="month-nav-sep" />
           <AccountMenu />
         </nav>
       </header>
+      )}
 
       <div className="wv-top">
         <div className="wv-top-gutter">

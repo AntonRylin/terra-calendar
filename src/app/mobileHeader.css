@@ -1,0 +1,75 @@
+/* Phone calendar header (MobileHeader.tsx): two tidy rows instead of the
+   desktop toolbar. Only ever rendered at the mobile breakpoint. */
+.month-header.mobile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  /* Keep clear of the Android/iOS status bar when running edge-to-edge. */
+  padding: var(--safe-top) var(--space-1) 0;
+}
+
+.mobile-header-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.mobile-header .month-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-header-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Touch-sized controls (>= 40px). */
+.mobile-header .tb {
+  height: 40px;
+  font-size: 14px;
+}
+
+.mobile-header .tb-icon {
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.mobile-header .tb-text {
+  padding: 0 12px;
+}
+
+.mobile-header .acct-avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.mobile-header .mobile-header-menu {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Weather/location sits quietly at the end of the controls row. */
+.mobile-header .month-weather-glance {
+  height: 40px;
+  margin: 0 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.mobile-header .month-weather-glance span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
