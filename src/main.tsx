@@ -3,8 +3,10 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { installAndroidInsets } from './app/androidInsets';
+import { installAndroidBack } from './app/androidBack';
 
 installAndroidInsets();
+installAndroidBack();
 
 // Suppress the webview's native right-click menu (Reload / Inspect / Save as…)
 // everywhere. Our own context menus open via their React onContextMenu handlers,

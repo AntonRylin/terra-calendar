@@ -1,5 +1,6 @@
 @import './ui/tokens.css';
 @import './ui/skinTone.css';
+@import './ui/mobile.css';
 
 /* Space kept clear of the status bar, gesture bar and notches. Android sets
    these from the real insets (src/app/androidInsets.ts). */

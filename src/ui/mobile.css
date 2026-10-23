@@ -1,0 +1,59 @@
+/*
+ * Phone design tokens (Android-first, used inside @media (max-width: 768px)
+ * blocks and phone-only components). Desktop never reads these.
+ *
+ * Language: Material-style structure (top app bar, FAB, bottom sheets, list
+ * rows, 48px touch targets, pressed tints instead of hover) with Terra's own
+ * accent and colorful day styles as the personality. System font (Roboto on
+ * Android).
+ */
+:root {
+  /* Surfaces */
+  --m-bg: var(--color-bg);
+  --m-surface: var(--color-surface);
+  --m-surface-2: color-mix(in srgb, var(--color-text) 4%, var(--color-surface));
+  --m-surface-3: color-mix(in srgb, var(--color-text) 8%, var(--color-surface));
+  --m-outline: color-mix(in srgb, var(--color-text) 12%, transparent);
+  --m-scrim: rgba(0, 0, 0, 0.42);
+
+  /* Accent (follows the user's accent color) */
+  --m-accent: var(--color-accent);
+  --m-on-accent: #ffffff;
+  --m-accent-container: color-mix(in srgb, var(--color-accent) 16%, var(--color-surface));
+  --m-on-accent-container: color-mix(in srgb, var(--color-accent) 70%, var(--color-text));
+
+  /* Pressed state overlay (no hover on touch) */
+  --m-pressed: color-mix(in srgb, var(--color-text) 10%, transparent);
+
+  /* Type scale */
+  --m-font: Roboto, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --m-title-lg: 600 22px/28px var(--m-font);
+  --m-title-md: 600 17px/24px var(--m-font);
+  --m-body: 400 16px/22px var(--m-font);
+  --m-body-sm: 400 14px/20px var(--m-font);
+  --m-label: 500 14px/20px var(--m-font);
+  --m-label-sm: 600 12px/16px var(--m-font);
+  --m-chip: 600 11px/14px var(--m-font);
+
+  /* Shape */
+  --m-radius-sheet: 28px;
+  --m-radius-card: 16px;
+  --m-radius-field: 12px;
+  --m-radius-fab: 16px;
+  --m-radius-pill: 999px;
+
+  /* Sizes */
+  --m-touch: 48px;
+  --m-app-bar: 64px;
+  --m-fab: 56px;
+  --m-elev-1: 0 1px 2px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --m-elev-3: 0 4px 8px rgba(0, 0, 0, 0.14), 0 2px 4px rgba(0, 0, 0, 0.1);
+  --m-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root[data-theme='dark'] {
+  --m-on-accent: #ffffff;
+  --m-scrim: rgba(0, 0, 0, 0.6);
+  --m-elev-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --m-elev-3: 0 4px 12px rgba(0, 0, 0, 0.55);
+}

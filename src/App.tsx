@@ -32,6 +32,7 @@ import { OnboardingHost } from './features/onboarding/OnboardingHost';
 import { UndoControls } from './ui/UndoControls';
 import { WindowControls } from './ui/TitleBar';
 import { CustomStylesSheet } from './ui/CustomStylesSheet';
+import { setAndroidSystemBarsDark } from './app/androidBack';
 import { installCosmeticParticles } from './ui/cosmeticParticles';
 
 const IS_TAURI = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
@@ -298,6 +299,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', resolvedTheme);
+    setAndroidSystemBarsDark(resolvedTheme === 'dark');
   }, [resolvedTheme]);
 
   // Decorative fills (day styles, event skins, day backgrounds) were drawn for
