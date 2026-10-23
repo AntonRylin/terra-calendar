@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnchoredPopover } from './AnchoredPopover';
+import { useIsMobile } from './useMediaQuery';
+import { PhoneDateField } from './PhonePickers';
 import {
   addDays,
   formatDMY,
@@ -49,7 +51,7 @@ function shiftMonth(view: string, deltaMonths: number): string {
  * a fast, keyboard-navigable calendar dropdown. Replaces the native, clunky
  * `<input type="date">`.
  */
-export function DateField({ value, onChange, min, ariaLabel = 'Date', autoFocus, clearable }: DateFieldProps) {
+function DesktopDateField({ value, onChange, min, ariaLabel = 'Date', autoFocus, clearable }: DateFieldProps) {
   const today = useMemo(() => todayISO(), []);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState(() => (value ? formatDMY(value) : ''));
@@ -348,4 +350,22 @@ function Chevron({ dir }: { dir: 'left' | 'right' }) {
       {dir === 'left' ? <path d="M10 3l-5 5 5 5" /> : <path d="M6 3l5 5-5 5" />}
     </svg>
   );
+}
+
+/** Typed field with a calendar dropdown on desktop; on phones a tap opens
+ *  Android's own date picker (see PhonePickers). */
+export function DateField(props: DateFieldProps) {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <PhoneDateField
+        value={props.value}
+        onChange={props.onChange}
+        min={props.min}
+        ariaLabel={props.ariaLabel}
+        clearable={props.clearable}
+      />
+    );
+  }
+  return <DesktopDateField {...props} />;
 }

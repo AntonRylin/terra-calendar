@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FloatingPortal } from '@floating-ui/react';
+import { useAndroidBack } from '../../app/androidBack';
 import { useCalendarStore } from '../../app/store';
 import { useConnectionStore } from '../../app/connectionStore';
 import { confirmChoice } from '../../ui/confirmStore';
@@ -64,6 +65,7 @@ export function DeleteAllDataSection() {
   const dismiss = () => {
     if (!busy) setMode(null);
   };
+  useAndroidBack(Boolean(mode), dismiss);
 
   const armed = phrase.trim() === DELETE_ALL_PHRASE;
 

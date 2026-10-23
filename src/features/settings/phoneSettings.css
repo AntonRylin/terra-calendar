@@ -1,0 +1,1180 @@
+/*
+ * Phone Settings (Settings.tsx under useIsMobile + PhoneSettings.tsx).
+ * Only ever rendered on phones, so these rules never touch the desktop dialog.
+ * Android settings structure: top app bar, grouped rounded cards of rows,
+ * accent subheads, Material switches; pressed tints instead of hover.
+ */
+
+.settings-phone {
+  /* Page sits a step below the cards so the groups read as cards. */
+  --ps-page: color-mix(in srgb, var(--color-text) 5%, var(--m-bg));
+  --ps-card: var(--m-surface);
+  --ps-press: linear-gradient(var(--m-pressed), var(--m-pressed));
+  --ps-danger: var(--color-danger, #e5484d);
+
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  background: var(--ps-page);
+  color: var(--color-text);
+  font-family: var(--m-font);
+  -webkit-tap-highlight-color: transparent;
+  animation: psScreenIn 0.28s var(--m-ease);
+}
+
+:root[data-theme='dark'] .settings-phone {
+  --ps-page: var(--m-bg);
+}
+
+@keyframes psScreenIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── Top app bar ─────────────────────────────────────────────────────── */
+.ps-appbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: calc(var(--m-app-bar) + var(--safe-top));
+  padding: var(--safe-top) calc(8px + var(--safe-right)) 0 calc(4px + var(--safe-left));
+  background: var(--ps-page);
+  transition: background-color 0.2s ease;
+}
+
+.ps-appbar.is-raised {
+  background: color-mix(in srgb, var(--m-accent) 7%, var(--ps-page));
+}
+
+.ps-appbar-back {
+  flex: none;
+  width: var(--m-touch);
+  height: var(--m-touch);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.ps-appbar-back:active {
+  background: var(--m-pressed);
+}
+
+.ps-appbar-title {
+  margin: 0 0 0 4px;
+  min-width: 0;
+  font: var(--m-title-lg);
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Scrolling page ──────────────────────────────────────────────────── */
+.settings-phone-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px calc(16px + var(--safe-right)) calc(32px + var(--safe-bottom)) calc(16px + var(--safe-left));
+  animation: psPageIn 0.3s var(--m-ease);
+}
+
+.settings-phone-body.is-back {
+  animation-name: psPageBack;
+}
+
+@keyframes psPageIn {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes psPageBack {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── Groups, cards, subheads ─────────────────────────────────────────── */
+.ps-group {
+  margin-top: 20px;
+}
+
+.ps-subhead,
+.settings-phone .settings-section h3.ps-subhead {
+  margin: 0;
+  padding: 8px 16px;
+  border: none;
+  font: var(--m-label-sm);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--m-accent);
+}
+
+/* Rows in a group are separate tiles with a 2px seam; only the group's outer
+   corners are fully rounded. */
+.ps-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: var(--m-radius-card);
+  overflow: hidden;
+}
+
+.ps-card-pad {
+  padding: 16px;
+  background: var(--ps-card);
+}
+
+.ps-footnote {
+  margin: 8px 16px 0;
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+}
+
+.ps-footnote-center {
+  margin-top: 24px;
+  text-align: center;
+}
+
+/* ── Rows ────────────────────────────────────────────────────────────── */
+.ps-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 56px;
+  margin: 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 4px;
+  background: var(--ps-card);
+  color: var(--color-text);
+  font: var(--m-body);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ps-card > .ps-row:first-child {
+  border-top-left-radius: var(--m-radius-card);
+  border-top-right-radius: var(--m-radius-card);
+}
+
+.ps-card > .ps-row:last-child {
+  border-bottom-left-radius: var(--m-radius-card);
+  border-bottom-right-radius: var(--m-radius-card);
+}
+
+.ps-row:active:not(:disabled):not(.is-disabled) {
+  background-image: var(--ps-press);
+}
+
+.ps-row:focus-visible {
+  outline: 2px solid var(--m-accent);
+  outline-offset: -2px;
+}
+
+.ps-row:disabled,
+.ps-row.is-disabled {
+  cursor: default;
+}
+
+.ps-row.is-disabled .ps-row-text,
+.ps-row.is-disabled .ps-switch {
+  opacity: 0.45;
+}
+
+.ps-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+}
+
+.ps-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ps-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ps-row-title {
+  font: var(--m-body);
+  color: var(--color-text);
+}
+
+.ps-row-summary {
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.ps-chevron {
+  flex: none;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.ps-row.is-danger .ps-row-title {
+  color: var(--ps-danger);
+}
+
+.ps-row.is-danger .ps-icon {
+  background: color-mix(in srgb, var(--ps-danger) 14%, var(--ps-card));
+  color: var(--ps-danger);
+}
+
+.ps-chip {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: var(--m-radius-pill);
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+  font: var(--m-label);
+}
+
+/* ── Material switch ─────────────────────────────────────────────────── */
+.ps-switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--m-surface-3);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-text) 40%, transparent);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ps-switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ps-switch-thumb {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text) 55%, transparent);
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: left 0.2s var(--m-ease), width 0.2s var(--m-ease), height 0.2s var(--m-ease), background-color 0.2s ease;
+}
+
+.ps-switch.is-on {
+  background: var(--m-accent);
+  box-shadow: none;
+}
+
+.ps-switch.is-on .ps-switch-thumb {
+  left: 24px;
+  width: 24px;
+  height: 24px;
+  background: var(--m-on-accent);
+}
+
+.ps-switch:active .ps-switch-thumb {
+  width: 28px;
+  height: 28px;
+  left: 2px;
+}
+
+.ps-switch.is-on:active .ps-switch-thumb {
+  left: 22px;
+}
+
+.ps-switch input:focus-visible + .ps-switch-thumb {
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--m-accent) 20%, transparent);
+}
+
+/* ── Account card at the top of the list ─────────────────────────────── */
+.ps-account {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 16px;
+  border: none;
+  border-radius: 24px;
+  background: var(--ps-card);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ps-account:active {
+  background-image: var(--ps-press);
+}
+
+.ps-account-name {
+  font: var(--m-title-md);
+  font-size: 18px;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ps-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+  font-family: var(--m-font);
+  font-weight: 500;
+}
+
+.ps-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ps-avatar-md {
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+}
+
+.ps-avatar-lg {
+  width: 96px;
+  height: 96px;
+  font-size: 34px;
+}
+
+.ps-version {
+  margin: 28px 0 8px;
+  text-align: center;
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ── Account page ────────────────────────────────────────────────────── */
+.ps-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 24px 16px 16px;
+  border-radius: 24px;
+  background: var(--ps-card);
+}
+
+.ps-profile-avatar {
+  position: relative;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.ps-profile-avatar:disabled {
+  opacity: 0.7;
+}
+
+.ps-profile-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  border: 3px solid var(--ps-card);
+}
+
+.ps-profile-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ps-profile .ps-field {
+  align-self: stretch;
+  margin-top: 4px;
+}
+
+.ps-profile-sub {
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* Filled text field: label above the value inside a 56px box. */
+.ps-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 56px;
+  padding: 6px 16px 6px;
+  border-radius: var(--m-radius-field);
+  background: var(--m-surface-2);
+  box-shadow: inset 0 0 0 1px var(--m-outline);
+  box-sizing: border-box;
+  cursor: text;
+}
+
+.ps-field:focus-within {
+  box-shadow: inset 0 0 0 2px var(--m-accent);
+}
+
+.ps-field-label {
+  font: var(--m-label-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.ps-field:focus-within .ps-field-label {
+  color: var(--m-accent);
+}
+
+.ps-field-input {
+  width: 100%;
+  min-width: 0;
+  padding: 2px 0 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text);
+  font: var(--m-body);
+}
+
+.ps-field-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.ps-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--m-radius-card);
+  background: var(--ps-card);
+}
+
+.ps-form .ps-field {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 25%, transparent);
+}
+
+.ps-form .ps-field:focus-within {
+  box-shadow: inset 0 0 0 2px var(--m-accent);
+}
+
+.ps-form-hint {
+  margin: 0;
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+}
+
+.ps-form-error {
+  margin: 0;
+  font: var(--m-body-sm);
+  color: var(--ps-danger);
+}
+
+.ps-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+}
+
+.ps-or::before,
+.ps-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--m-outline);
+}
+
+/* Material buttons */
+.ps-btn {
+  min-height: var(--m-touch);
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  font: var(--m-label);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.ps-btn:disabled {
+  opacity: 0.5;
+}
+
+.ps-btn-filled {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+
+.ps-btn-tonal {
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+}
+
+.ps-btn:active:not(:disabled) {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1));
+}
+
+.ps-text-btn {
+  align-self: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  background: transparent;
+  color: var(--m-accent);
+  font: var(--m-label);
+  cursor: pointer;
+}
+
+.ps-text-btn:active {
+  background: var(--m-pressed);
+}
+
+/* ── Segmented button (theme) ────────────────────────────────────────── */
+.ps-seg {
+  display: flex;
+  height: 48px;
+  border-radius: var(--m-radius-pill);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 30%, transparent);
+  overflow: hidden;
+}
+
+.ps-seg-btn {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 4px;
+  border: none;
+  border-left: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
+  background: transparent;
+  color: var(--color-text);
+  font: var(--m-label);
+  cursor: pointer;
+}
+
+.ps-seg-btn:first-child {
+  border-left: none;
+}
+
+.ps-seg-btn.is-active {
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+}
+
+.ps-seg-btn:active {
+  background-image: var(--ps-press);
+}
+
+.ps-seg + .ps-group {
+  margin-top: 12px;
+}
+
+/* ── Bottom-sheet select ─────────────────────────────────────────────── */
+.ps-sheet-title {
+  padding: 0 12px 8px;
+  font: var(--m-title-md);
+  color: var(--color-text);
+}
+
+.popover.popover-sheet.ps-sheet .dd-item {
+  min-height: 52px;
+  padding: 0 12px;
+  border-radius: 12px;
+  font: var(--m-body);
+}
+
+.popover.popover-sheet.ps-sheet .dd-item:hover {
+  background: transparent;
+}
+
+.popover.popover-sheet.ps-sheet .dd-item:active {
+  background: var(--m-pressed);
+}
+
+.popover.popover-sheet.ps-sheet .dd-item[aria-checked='true'] {
+  color: var(--m-on-accent-container);
+  font-weight: 500;
+}
+
+.popover.popover-sheet.ps-sheet .dd-check {
+  width: 24px;
+}
+
+/* ── Section pages that keep their shared markup ─────────────────────────
+   Calendars, Sharing, Categories, Habit tabs and the danger zone reuse the
+   desktop components; these rules give them the phone look. */
+.settings-phone .settings-section {
+  padding: 0;
+  border-top: none;
+}
+
+.settings-phone .settings-section h3,
+.settings-phone .settings-section h3.settings-subhead {
+  margin: 24px 0 0;
+  padding: 8px 16px;
+  border: none;
+  font: var(--m-label-sm);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--m-accent);
+}
+
+.settings-phone .settings-section > h3:first-child,
+.settings-phone .settings-section > h3.settings-subhead:first-child {
+  margin-top: 8px;
+}
+
+.settings-phone .settings-empty,
+.settings-phone .settings-description {
+  margin: 0 16px 12px;
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+
+.settings-phone .settings-actions {
+  gap: 8px;
+  margin: 16px 0 0;
+}
+
+/* Buttons become full-width tappable tiles. */
+.settings-phone .settings-connect,
+.settings-phone .settings-reset-btn,
+.settings-phone .settings-cleanup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: none;
+  min-height: 56px;
+  margin: 8px 0 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--m-radius-card);
+  background: var(--ps-card);
+  color: var(--color-text);
+  font: var(--m-body);
+  text-align: left;
+}
+
+.settings-phone .settings-actions .settings-connect {
+  margin: 0;
+}
+
+.settings-phone .settings-connect:hover,
+.settings-phone .settings-reset-btn:hover,
+.settings-phone .settings-cleanup-btn:hover {
+  background: var(--ps-card);
+  border-color: transparent;
+}
+
+.settings-phone .settings-connect:active:not(:disabled),
+.settings-phone .settings-reset-btn:active:not(:disabled),
+.settings-phone .settings-cleanup-btn:active:not(:disabled) {
+  background-image: var(--ps-press);
+}
+
+.settings-phone .settings-connect:disabled,
+.settings-phone .settings-reset-btn:disabled {
+  opacity: 0.5;
+}
+
+.settings-phone .settings-btn-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 16px;
+  opacity: 1;
+}
+
+.settings-phone .settings-reset-btn,
+.settings-phone .settings-cleanup-btn {
+  color: var(--ps-danger);
+}
+
+/* Text inputs: 56px, 16px text. */
+.settings-phone .settings-mode {
+  width: 100%;
+  max-width: none;
+  min-height: 56px;
+  padding: 0 16px !important;
+  border: none;
+  border-radius: var(--m-radius-field);
+  background-color: var(--ps-card);
+  background-image: none;
+  box-shadow: inset 0 0 0 1px var(--m-outline);
+  font: var(--m-body);
+  cursor: text;
+}
+
+.settings-phone .settings-mode:hover {
+  background-color: var(--ps-card);
+}
+
+.settings-phone .settings-mode:focus {
+  box-shadow: inset 0 0 0 2px var(--m-accent);
+}
+
+.settings-phone .settings-field-group {
+  margin-top: 16px !important;
+  gap: 12px !important;
+}
+
+/* Calendars: sync status and calendar lists as cards. */
+.settings-phone .settings-sync-health {
+  margin: 0 0 8px;
+  padding: 16px;
+  border: none;
+  border-radius: var(--m-radius-card);
+  background: var(--ps-card);
+  font: var(--m-body-sm);
+}
+
+.settings-phone .settings-sync-health strong {
+  font: var(--m-body);
+  font-weight: 500;
+}
+
+.settings-phone .settings-sync-health.is-error {
+  box-shadow: inset 0 0 0 1px var(--ps-danger);
+}
+
+.settings-phone .settings-calendar-list {
+  width: 100%;
+  margin: 8px 0 0;
+  border: none;
+  border-radius: var(--m-radius-card);
+  background: var(--ps-card);
+}
+
+.settings-phone .settings-calendar-header {
+  min-height: 56px;
+  padding: 8px 16px;
+  background: transparent;
+  border-bottom: 1px solid var(--m-outline);
+  font: var(--m-label);
+}
+
+.settings-phone .settings-calendar-header-email {
+  font: var(--m-body-sm);
+}
+
+.settings-phone .settings-calendar-list .settings-calendar-item {
+  min-height: 56px;
+  padding: 8px 16px;
+  border-bottom-color: var(--m-outline) !important;
+}
+
+.settings-phone .settings-calendar-item:hover {
+  background: transparent;
+}
+
+.settings-phone .settings-calendar-label {
+  flex-wrap: wrap;
+  font: var(--m-body);
+}
+
+.settings-phone .settings-calendar-count {
+  margin-left: 0;
+  flex-basis: 100%;
+  font: var(--m-body-sm);
+}
+
+/* Native checkboxes in the shared sections become Material switches. */
+.settings-phone .settings-calendar-item input[type='checkbox'],
+.settings-phone .share-category input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  order: 2;
+  width: 52px;
+  height: 32px;
+  margin: 0 0 0 8px;
+  border-radius: 16px;
+  background: var(--m-surface-3);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-text) 40%, transparent);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.settings-phone .settings-calendar-item input[type='checkbox']::before,
+.settings-phone .share-category input[type='checkbox']::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text) 55%, transparent);
+  transform: translateY(-50%);
+  transition: left 0.2s var(--m-ease), width 0.2s var(--m-ease), height 0.2s var(--m-ease);
+}
+
+.settings-phone .settings-calendar-item input[type='checkbox']:checked,
+.settings-phone .share-category input[type='checkbox']:checked {
+  background: var(--m-accent);
+  box-shadow: none;
+}
+
+.settings-phone .settings-calendar-item input[type='checkbox']:checked::before,
+.settings-phone .share-category input[type='checkbox']:checked::before {
+  left: 24px;
+  width: 24px;
+  height: 24px;
+  background: var(--m-on-accent);
+}
+
+.settings-phone .settings-calendar-item input[type='radio'] {
+  width: 20px;
+  height: 20px;
+}
+
+/* Categories list. */
+.settings-phone .category-add-row {
+  width: 100%;
+  margin: 8px 0 0;
+  gap: 8px;
+}
+
+.settings-phone .category-add-row .tb {
+  height: 56px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  font: var(--m-label);
+  font-size: 15px;
+}
+
+.settings-phone .category-list {
+  width: 100%;
+  max-height: none;
+  gap: 2px;
+  padding: 0;
+  border: none;
+  border-radius: var(--m-radius-card);
+  background: transparent;
+  overflow: hidden;
+}
+
+.settings-phone .category-item-row {
+  min-height: 56px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: var(--ps-card);
+}
+
+.settings-phone .category-item-row:hover {
+  background: var(--ps-card);
+}
+
+.settings-phone .category-item-row:active {
+  background-image: var(--ps-press);
+}
+
+/* Today's clock (shared ClockSection) inside the Appearance page. */
+.settings-phone .ps-clock .settings-subhead {
+  margin-top: 20px;
+}
+
+.settings-phone .ps-clock .clock-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--m-radius-card);
+  background: var(--ps-card);
+  font: var(--m-body);
+  color: var(--color-text);
+}
+
+.settings-phone .ps-clock .clock-settings-body {
+  margin-top: 2px;
+  padding: 4px 16px 16px;
+  border-radius: var(--m-radius-card);
+  background: var(--ps-card);
+}
+
+.settings-phone .ps-clock .clock-settings-body .clock-toggle-row {
+  padding: 8px 0;
+  background: transparent;
+}
+
+.settings-phone .ps-clock .clock-group-label {
+  margin: 12px 0 8px;
+  font: var(--m-label);
+  color: var(--color-text-secondary);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Danger zone (shared DeleteAllData) on the Data page. */
+.settings-phone .ps-danger h3.settings-subhead {
+  margin-top: 20px;
+  color: var(--ps-danger) !important;
+}
+
+.settings-phone .ps-danger .settings-empty {
+  margin-bottom: 0;
+}
+
+.settings-phone .ps-clock .clock-toggle-row {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Shared iOS-style switches (ClockSection) and the habit-tracker switch take
+   the Material switch shape on phones. */
+.settings-phone .ios-switch {
+  flex: none;
+  width: 52px;
+  height: 32px;
+}
+
+.settings-phone .ios-switch-slider {
+  border-radius: 16px;
+  background-color: var(--m-surface-3);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-text) 40%, transparent);
+}
+
+.settings-phone .ios-switch-slider::before {
+  left: 8px;
+  bottom: 8px;
+  width: 16px;
+  height: 16px;
+  background-color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  box-shadow: none;
+  transition: transform 0.2s var(--m-ease), width 0.2s var(--m-ease), height 0.2s var(--m-ease), bottom 0.2s var(--m-ease);
+}
+
+.settings-phone .ios-switch input:checked + .ios-switch-slider {
+  background-color: var(--m-accent);
+  box-shadow: none;
+}
+
+.settings-phone .ios-switch input:checked + .ios-switch-slider::before {
+  width: 24px;
+  height: 24px;
+  bottom: 4px;
+  transform: translateX(16px);
+  background-color: var(--m-on-accent);
+}
+
+/* The first group on a page sits right under the app bar. */
+.settings-phone-body > .settings-section > .ps-group:first-child,
+.settings-phone-body > .settings-section > .ps-subhead:first-child {
+  margin-top: 4px;
+}
+
+/* Calendars: "Connect …" buttons read as one group of rows. */
+.settings-phone .ps-calendars-add {
+  margin-top: 4px;
+}
+
+.settings-phone .ps-calendars-add + .settings-actions {
+  gap: 2px;
+  margin-top: 0;
+  border-radius: var(--m-radius-card);
+  overflow: hidden;
+}
+
+.settings-phone .ps-calendars-add + .settings-actions .settings-connect {
+  border-radius: 4px;
+}
+
+.settings-phone .ps-calendars-add + .settings-actions .settings-connect:first-child {
+  border-top-left-radius: var(--m-radius-card);
+  border-top-right-radius: var(--m-radius-card);
+}
+
+.settings-phone .ps-calendars-add + .settings-actions .settings-connect:last-child {
+  border-bottom-left-radius: var(--m-radius-card);
+  border-bottom-right-radius: var(--m-radius-card);
+}
+
+/* Sharing (Cloud): each share is a card; its pickers are full-width rows. */
+.settings-phone .share-list {
+  gap: 12px;
+  margin: 8px 0 12px;
+}
+
+.settings-phone .share-card {
+  gap: 4px;
+  padding: 8px 16px 12px;
+  border: none;
+  border-radius: var(--m-radius-card);
+  background: var(--ps-card);
+}
+
+.settings-phone .share-card-head {
+  min-height: 48px;
+}
+
+.settings-phone .share-name {
+  font: var(--m-title-md);
+  padding: 4px 0;
+}
+
+.settings-phone .share-members,
+.settings-phone .share-scope-summary,
+.settings-phone .share-note {
+  font: var(--m-body-sm);
+}
+
+.settings-phone .share-row {
+  min-height: 56px;
+  border-top: 1px solid var(--m-outline);
+  font: var(--m-body);
+}
+
+.settings-phone .share-row > span {
+  color: var(--color-text);
+}
+
+.settings-phone .share-row select,
+.settings-phone .share-row input {
+  max-width: 60%;
+  min-height: 40px;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--m-accent);
+  font: var(--m-body);
+  text-align: right;
+}
+
+.settings-phone .share-category {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  font: var(--m-body);
+}
+
+.settings-phone .share-actions {
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.settings-phone .share-btn {
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: var(--m-radius-pill);
+  font: var(--m-label);
+}
+
+.settings-phone .share-btn-primary {
+  width: 100%;
+  min-height: var(--m-touch);
+  margin-top: 8px;
+  border: none;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+
+/* Habit tabs (shared HabitTabsSection) below its switch row. */
+.settings-phone .habit-step,
+.settings-phone .habit-add-step {
+  margin-top: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-phone,
+  .settings-phone-body {
+    animation: none;
+  }
+}
+
+/* Clock tiles fill the card in even columns; no hover names on touch. */
+.settings-phone .ps-clock .clock-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.settings-phone .ps-clock .clock-tile {
+  min-height: 48px;
+  justify-content: center;
+  padding: 8px 4px;
+  min-width: 0;
+}
+
+.settings-phone .ps-clock .clock-tile-time {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-phone .ps-clock .clock-tile-label {
+  display: none;
+}
+
+.settings-phone .ps-clock .clock-tile:hover {
+  background: var(--color-surface);
+}
+
+/* Habit buttons: Material pills. */
+.settings-phone .habit-add-prompt-btn,
+.settings-phone .habit-add-btn {
+  min-height: var(--m-touch);
+  padding: 0 24px;
+  border-radius: var(--m-radius-pill);
+  font: var(--m-label);
+  font-size: 15px;
+}

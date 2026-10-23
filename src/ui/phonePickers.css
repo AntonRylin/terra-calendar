@@ -1,0 +1,118 @@
+/* Phone date/time fields (PhonePickers.tsx). Phones only. */
+.phone-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 56px;
+  min-width: 0;
+  padding: 0 16px;
+  border-radius: var(--m-radius-field);
+  background: var(--m-surface-2);
+  color: var(--color-text);
+  font: var(--m-body);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.phone-picker:active {
+  box-shadow: inset 0 0 0 100px var(--m-pressed);
+}
+
+.phone-picker:focus-within {
+  box-shadow: inset 0 0 0 2px var(--m-accent);
+}
+
+.phone-picker.is-empty .phone-picker-text {
+  color: var(--color-text-faint);
+}
+
+.phone-picker-text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-picker-suffix {
+  margin-left: 8px;
+  color: var(--color-text-secondary);
+  font: var(--m-body-sm);
+}
+
+/* The real input: invisible, covering the label, so a tap opens Android's
+   own picker. */
+.phone-picker-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  font-size: 16px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.phone-picker-native::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.phone-picker.has-clear .phone-picker-native {
+  right: 44px;
+  width: auto;
+}
+
+.phone-picker-clear {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0 -12px 0 4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.phone-picker-clear svg {
+  width: 18px;
+  height: 18px;
+}
+
+.phone-picker-clear:active {
+  background: var(--m-pressed);
+}
+
+/* In a leading-icon row the field reads as plain text (Google Calendar
+   style); the press tint still shows it is tappable. */
+.sheet-row .phone-picker {
+  min-height: 48px;
+  padding: 0 12px;
+  margin-left: -12px;
+  background: transparent;
+  border-radius: var(--m-radius-pill);
+}
+
+.sheet-row .phone-picker:focus-within {
+  box-shadow: none;
+}
+
+.sheet-row .phone-picker:active {
+  box-shadow: none;
+  background: var(--m-pressed);
+}

@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUiStore } from '../../app/uiStore';
 import { useSpecialDaysStore, type DayCustomStyle, type DayImageRef } from '../../app/specialDaysStore';
 import { AnchoredPopover } from '../../ui/AnchoredPopover';
 import { CosmeticSelector } from '../../ui/CosmeticSelector';
 import { EFFECTS, EffectsModal } from './EffectsModal';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { SheetHeader } from '../../ui/SheetParts';
+import { CheckIcon, ImageIcon } from '../../ui/sheetIcons';
+import { formatPhoneDate } from '../../ui/PhonePickers';
 import './specialDay.css';
 
 /** Recurrence options — a single, intuitive segmented control. */
@@ -22,6 +26,7 @@ export function SpecialDayHost() {
 function SpecialDayForm({ date, anchorEl }: { date: string; anchorEl: Element }) {
   const close = useUiStore((s) => s.closeOverlays);
   const openDayBackground = useUiStore((s) => s.openDayBackground);
+  const isMobile = useIsMobile();
   const {
     specialDays,
     setSpecialDayInMemory,
@@ -30,6 +35,9 @@ function SpecialDayForm({ date, anchorEl }: { date: string; anchorEl: Element })
   } = useSpecialDaysStore();
 
   const existingDirect = specialDays.find((d) => d.date === date);
+  // The record as it was when the panel opened (existingDirect follows the live
+  // preview), for the phone sheet's ✕ to put back.
+  const originalRef = useRef(existingDirect);
 
   const [cosmetic, setCosmetic] = useState(existingDirect?.cosmetic ?? '');
   const [animations, setAnimations] = useState<string[]>(existingDirect?.animations ?? []);
@@ -107,6 +115,20 @@ function SpecialDayForm({ date, anchorEl }: { date: string; anchorEl: Element })
     setBackground({ image: undefined, customStyle: undefined });
   };
 
+  // Phone ✕: leave the day as it was when the sheet opened. The live preview
+  // already wrote to the store, so put the original record back before the
+  // close-time commit (which then records nothing, as nothing changed). The
+  // sync effect above can't undo this: the form state doesn't change again.
+  const discardChanges = () => {
+    const original = originalRef.current;
+    if (original) {
+      const { id: _id, date: _date, ...rest } = original;
+      setSpecialDayInMemory(date, rest);
+    } else {
+      removeSpecialDayInMemory(date);
+    }
+  };
+
   const isSpecial =
     Boolean(cosmetic) ||
     animations.length > 0 ||
@@ -130,14 +152,27 @@ function SpecialDayForm({ date, anchorEl }: { date: string; anchorEl: Element })
 
   return (
     <AnchoredPopover anchorEl={anchorEl} onClose={close} dismissable={!effectsOpen}>
-      <div className="sd-panel">
+      <div className={'sd-panel' + (isMobile ? ' sd-panel--phone' : '')}>
+        {isMobile && (
+          <SheetHeader
+            title={
+              <>
+                Style this day
+                <span className="sd-sheet-date">{formatPhoneDate(date)}</span>
+              </>
+            }
+            onBeforeClose={discardChanges}
+            closeLabel="Discard changes"
+            action={{ label: 'Done' }}
+          />
+        )}
         {/* No topbar — both exits live in the footer row at the bottom. */}
         <div className="sd-section">
           <span className="sd-label">Style</span>
           <CosmeticSelector
             value={cosmetic}
             onChange={handleCosmetic}
-            featuredTotal={17}
+            featuredTotal={isMobile ? 19 : 17}
             hideNone
             className="sd-styles"
           />
@@ -194,6 +229,7 @@ function SpecialDayForm({ date, anchorEl }: { date: string; anchorEl: Element })
                 className={`sd-segment-btn ${recurrence === r.id ? 'selected' : ''}`}
                 onClick={() => setRecurrence(r.id)}
               >
+                {isMobile && recurrence === r.id && <CheckIcon size={18} />}
                 {r.label}
               </button>
             ))}
@@ -205,6 +241,7 @@ function SpecialDayForm({ date, anchorEl }: { date: string; anchorEl: Element })
           className="sd-custom-bg-btn"
           onClick={() => openDayBackground(date)}
         >
+          {isMobile && <ImageIcon />}
           <span>Custom background{backgroundKind ? '' : '…'}</span>
           {backgroundKind && <span className="sd-custom-bg-cur">{backgroundKind} applied</span>}
         </button>
@@ -216,9 +253,11 @@ function SpecialDayForm({ date, anchorEl }: { date: string; anchorEl: Element })
               Reset changes
             </button>
           )}
-          <button type="button" className="sd-foot-done" onClick={close}>
-            Done
-          </button>
+          {!isMobile && (
+            <button type="button" className="sd-foot-done" onClick={close}>
+              Done
+            </button>
+          )}
         </div>
 
         {effectsOpen && (

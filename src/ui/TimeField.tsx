@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnchoredPopover } from './AnchoredPopover';
+import { useIsMobile } from './useMediaQuery';
+import { PhoneTimeField } from './PhonePickers';
 import {
   formatDuration,
   minutesToTime,
@@ -33,7 +35,7 @@ interface TimeOption {
  * A time field you can just type into — "1430", "9:30", "9pm" — with a quick
  * scrollable list of times. Replaces the native `<input type="time">`.
  */
-export function TimeField({
+function DesktopTimeField({
   value,
   onChange,
   ariaLabel = 'Time',
@@ -220,4 +222,25 @@ export function TimeField({
       )}
     </div>
   );
+}
+
+/** Typed field with a time list on desktop; on phones a tap opens Android's
+ *  own time picker (see PhonePickers). */
+export function TimeField(props: TimeFieldProps) {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    const { value, relativeTo } = props;
+    const dur =
+      relativeTo && value ? timeToMinutes(value) - timeToMinutes(relativeTo) : 0;
+    return (
+      <PhoneTimeField
+        value={value}
+        onChange={props.onChange}
+        ariaLabel={props.ariaLabel}
+        clearable={props.clearable}
+        suffix={dur > 0 ? formatDuration(dur) : undefined}
+      />
+    );
+  }
+  return <DesktopTimeField {...props} />;
 }

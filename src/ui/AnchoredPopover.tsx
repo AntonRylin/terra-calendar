@@ -1,4 +1,15 @@
-import { useEffect, useLayoutEffect, type CSSProperties, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 import {
   autoUpdate,
   flip,
@@ -15,6 +26,7 @@ import {
 import { useIsMobile } from './useMediaQuery';
 import { useSettingsStore } from '../app/settingsStore';
 import { useConfirmStore } from './confirmStore';
+import { useAndroidBack } from '../app/androidBack';
 import './popover.css';
 
 interface AnchoredPopoverProps {
@@ -119,18 +131,13 @@ export function AnchoredPopover({
     return () => document.removeEventListener('keydown', onKey);
   }, [isMobile, onClose, dismissOff]);
 
-  // Mobile: a full-width bottom sheet with a backdrop instead of a tiny popover
+  // Mobile: a full-width bottom sheet with a scrim instead of a tiny popover
   // anchored to a small tap target.
   if (isMobile) {
     return (
-      <FloatingPortal>
-        <div className="popover-backdrop" onClick={onClose}>
-          <div className={'popover popover-sheet' + (className ? ` ${className}` : '')} onClick={(e) => e.stopPropagation()}>
-            <div className="sheet-grabber" aria-hidden="true" />
-            {children}
-          </div>
-        </div>
-      </FloatingPortal>
+      <PhoneSheet className={className} onClose={onClose} dismissable={!dismissOff} backEnabled={dismissable}>
+        {children}
+      </PhoneSheet>
     );
   }
 
@@ -145,6 +152,125 @@ export function AnchoredPopover({
         {...getFloatingProps()}
       >
         {children}
+      </div>
+    </FloatingPortal>
+  );
+}
+
+/* ---- Phone bottom sheet ------------------------------------------------- */
+
+interface SheetApi {
+  /** Close the sheet the way the scrim or the back gesture does (animated). */
+  close(): void;
+}
+
+const SheetContext = createContext<SheetApi | null>(null);
+
+/** Inside a phone sheet: its animated close. Null on desktop popovers. */
+export function useSheet(): SheetApi | null {
+  return useContext(SheetContext);
+}
+
+const CLOSE_MS = 200;
+
+/** Where a press may start a swipe-down: the handle and the sheet header, but
+ *  not the buttons inside the header. */
+const DRAG_ZONE = '.sheet-grabber, .sheet-header, .sheet-drag-zone';
+const NOT_DRAGGABLE = 'button, input, select, textarea, a, label, [role="button"]';
+
+function PhoneSheet({
+  className,
+  onClose,
+  dismissable,
+  backEnabled,
+  children,
+}: {
+  className?: string;
+  onClose(): void;
+  /** Scrim tap and swipe-down close the sheet. */
+  dismissable: boolean;
+  /** The back gesture closes the sheet. Stays on while a confirm dialog is up
+   *  (that dialog registers above it and takes the back press first). */
+  backEnabled: boolean;
+  children: ReactNode;
+}) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [closing, setClosing] = useState(false);
+  const closingRef = useRef(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const timer = useRef<number>();
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const close = useCallback(() => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      onCloseRef.current();
+      return;
+    }
+    setClosing(true);
+    timer.current = window.setTimeout(() => onCloseRef.current(), CLOSE_MS);
+  }, []);
+
+  // Android back gesture closes the topmost sheet. Off while a child modal
+  // (which registers its own back handler) sits on top and owns dismissal.
+  useAndroidBack(backEnabled, close);
+
+  // Swipe down on the handle or header to dismiss.
+  const drag = useRef<{ id: number; y0: number; t0: number; dy: number } | null>(null);
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dismissable || e.button !== 0) return;
+    const t = e.target as Element;
+    if (!t.closest(DRAG_ZONE) || t.closest(NOT_DRAGGABLE)) return;
+    drag.current = { id: e.pointerId, y0: e.clientY, t0: performance.now(), dy: 0 };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    const el = sheetRef.current;
+    if (!d || d.id !== e.pointerId || !el) return;
+    d.dy = Math.max(0, e.clientY - d.y0);
+    el.style.transition = 'none';
+    el.style.transform = `translateY(${d.dy}px)`;
+  };
+  const onPointerEnd = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    const el = sheetRef.current;
+    if (!d || d.id !== e.pointerId || !el) return;
+    drag.current = null;
+    const velocity = d.dy / Math.max(1, performance.now() - d.t0);
+    const far = d.dy > Math.min(160, el.offsetHeight * 0.3);
+    el.style.transition = '';
+    el.style.transform = '';
+    if (e.type === 'pointerup' && (far || (velocity > 0.5 && d.dy > 56))) {
+      // Continue from where the finger left it rather than jumping back first.
+      el.style.setProperty('--sheet-drag', `${d.dy}px`);
+      close();
+    }
+  };
+
+  return (
+    <FloatingPortal>
+      <div
+        className={'popover-backdrop' + (closing ? ' is-closing' : '')}
+        onClick={dismissable ? close : undefined}
+      >
+        <div
+          ref={sheetRef}
+          role="dialog"
+          aria-modal="true"
+          className={'popover popover-sheet' + (closing ? ' is-closing' : '') + (className ? ` ${className}` : '')}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerEnd}
+          onPointerCancel={onPointerEnd}
+        >
+          <div className="sheet-grabber" aria-hidden="true" />
+          <SheetContext.Provider value={{ close }}>{children}</SheetContext.Provider>
+        </div>
       </div>
     </FloatingPortal>
   );

@@ -5,6 +5,10 @@ import { useCalendarStore } from '../../app/store';
 import { useSettingsStore, getCategoryStyle } from '../../app/settingsStore';
 import { AnchoredPopover } from '../../ui/AnchoredPopover';
 import { DateField } from '../../ui/DateField';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { SheetHeader, SheetRow, SheetSwitch } from '../../ui/SheetParts';
+import { CalendarIcon, ListIcon, PaletteIcon, SparkleIcon, TagIcon } from '../../ui/sheetIcons';
+import { PhoneCategoryField } from '../event-editor/PhoneCategoryField';
 import '../event-editor/eventEditor.css';
 import './spanEditor.css';
 
@@ -49,6 +53,7 @@ const TYPE_PRESETS = ['holiday', 'vacation', 'trip', 'event'];
  * All-day in Phase 1: only a start and end date, no time.
  */
 export function SpanForm({ initial, submitLabel, onSubmit, onChange, onDelete }: SpanFormProps) {
+  const isMobile = useIsMobile();
   const storeCategories = useSettingsStore((s) => s.categories);
   const events = useCalendarStore((s) => s.events);
   const existingCategories = useMemo(() => {
@@ -125,6 +130,67 @@ export function SpanForm({ initial, submitLabel, onSubmit, onChange, onDelete }:
       ...values,
       type: activeType.trim() || 'holiday',
     });
+  }
+
+  // Phones: the event editor's sheet layout. No minimap on phones, so only
+  // the Upcoming switch.
+  if (isMobile) {
+    return (
+      <div className="event-editor event-editor--phone">
+        <SheetHeader
+          title={onDelete ? 'Edit date range' : 'New date range'}
+          action={{ label: 'Save', onClick: () => submit(), disabled: !canSave }}
+        />
+        <input
+          className="editor-title ee-title"
+          aria-label="Title"
+          placeholder="Holiday name"
+          value={title}
+          enterKeyHint="done"
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+          autoFocus={!onDelete}
+        />
+        <div className="sheet-divider" />
+        <SheetRow icon={<CalendarIcon />}>
+          <div className="ee-when">
+            <span className="ee-when-label">From</span>
+            <DateField value={start} onChange={setStart} ariaLabel="Start date" />
+          </div>
+        </SheetRow>
+        <SheetRow>
+          <div className="ee-when">
+            <span className="ee-when-label">To</span>
+            <DateField value={end} min={start} onChange={setEnd} ariaLabel="End date" />
+          </div>
+        </SheetRow>
+        <SheetRow icon={<TagIcon />}>
+          <PhoneCategoryField value={type} onChange={setType} categories={existingCategories} label="Type" placeholder="Add type" />
+        </SheetRow>
+        <div className="sheet-divider" />
+        <SheetRow icon={<PaletteIcon />} className="ee-swatch-row">
+          <div className="ee-swatch-scroll" aria-label="Color">
+            <PaletteSelector value={color} onChange={setColor} presets={PRESET_COLORS} allowCustom={true} />
+          </div>
+        </SheetRow>
+        <SheetRow icon={<SparkleIcon />} className="ee-swatch-row">
+          <div className="ee-swatch-scroll" aria-label="Style">
+            <CosmeticSelector value={cosmetic} onChange={setCosmetic} color={color || undefined} />
+          </div>
+        </SheetRow>
+        <div className="sheet-divider" />
+        <SheetRow icon={<ListIcon />}>
+          <SheetSwitch label="Show in Upcoming" checked={showInUpcoming} onChange={setShowInUpcoming} />
+        </SheetRow>
+        {onDelete && (
+          <div className="ee-delete-row">
+            <button type="button" className="sheet-text-btn is-danger" onClick={onDelete}>
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (

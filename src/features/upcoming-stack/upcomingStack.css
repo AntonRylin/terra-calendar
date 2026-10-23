@@ -319,49 +319,186 @@
   background-color: rgba(255, 59, 48, 0.1);
 }
 
-/* ---- Mobile: full-width tab pane ---- */
+/* ---- Phones: the panel lives in the navigation drawer (MobileDrawer) ----
+   Cards become compact list rows (colour dot, title over date, relative time)
+   with pill-shaped pressed states like the drawer's own rows. */
 @media (max-width: 768px) {
-  .upcoming-header {
-    padding: var(--space-4) var(--space-4) var(--space-3);
-    gap: var(--space-2);
+  .upcoming-panel {
+    font-family: var(--m-font);
   }
 
+  .upcoming-header {
+    min-height: 56px;
+    padding: 4px 12px 0 28px;
+    gap: 4px;
+  }
+
+  .upcoming-count {
+    font: var(--m-body-sm);
+  }
+
+  .upcoming-header-actions {
+    gap: 0;
+    margin-left: 8px;
+  }
+
+  .upcoming-header .tb.tb-icon,
   .upcoming-add,
   .upcoming-filter-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
-    border-radius: var(--radius-md);
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-text-secondary);
   }
 
-  .upcoming-settings-btn {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
+  .upcoming-header .tb.tb-icon:active,
+  .upcoming-header .tb.tb-icon.is-active {
+    background: var(--m-pressed);
   }
 
   .upcoming-add svg,
   .upcoming-filter-btn svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Desktop layout knobs (grouping, columns, density) don't apply to rows. */
+  .upcoming-header .upcoming-settings-btn {
+    display: none;
   }
 
   .upcoming-list {
-    gap: var(--space-2);
-    padding: 0 var(--space-4) var(--space-5);
+    gap: 0;
+    padding: 0 12px var(--space-4);
   }
 
-  .upcoming-card {
-    padding: var(--space-3);
+  .ongoing-section {
+    gap: 0;
+    padding: 0 12px 4px;
   }
 
-  .upcoming-title {
+  .upcoming-panel .upcoming-card,
+  .upcoming-panel .upcoming-card.is-compact {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 56px;
+    padding: 6px 16px;
+    border: none;
+    border-radius: 28px;
+    background: transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .upcoming-card:hover {
+    border-color: transparent;
+  }
+
+  .upcoming-card:active {
+    background: var(--m-pressed);
+  }
+
+  .upcoming-card.is-selected {
+    border: none;
+    box-shadow: none;
+    background: var(--m-accent-container);
+  }
+
+  .mobile-drawer .upcoming-card.is-highlighted {
+    animation: none;
+    box-shadow: none !important;
+    background: var(--m-accent-container);
+  }
+
+  .upcoming-panel .upcoming-card-body,
+  .upcoming-panel .upcoming-card.is-compact .upcoming-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .upcoming-panel .upcoming-title,
+  .upcoming-panel .upcoming-card.is-compact .upcoming-title {
+    font: var(--m-body);
     font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .upcoming-date {
+  .upcoming-panel .upcoming-date,
+  .upcoming-panel .upcoming-card.is-compact .upcoming-date {
+    margin: 0;
+    font: var(--m-body-sm);
     font-size: 13px;
-    margin-top: 2px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .upcoming-dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .upcoming-dot.is-task {
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    margin: 0 -2px;
+    border: 2px solid var(--color-text-faint);
+    background: transparent;
+  }
+
+  .ongoing-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .upcoming-when {
+    flex-shrink: 0;
+    max-width: 38%;
+    font: var(--m-label-sm);
+    font-weight: 500;
+    color: var(--m-accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Delete lives in the long-press menu on touch. */
+  .upcoming-delete-btn {
+    display: none;
+  }
+
+  .upcoming-list .upcoming-section-label,
+  .upcoming-list .upcoming-category-header {
+    padding: 16px 16px 4px;
+    font: var(--m-label);
+    font-size: 13px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-text-secondary);
+  }
+
+  .upcoming-list .upcoming-category-section,
+  .upcoming-list .upcoming-category-items {
+    gap: 0;
+  }
+
+  .upcoming-empty {
+    padding: 16px;
+    font: var(--m-body-sm);
   }
 
   /* The filter popover becomes a sheet — let the panel fill it and drop the
@@ -371,7 +508,6 @@
     max-height: none;
   }
 }
-
 .upcoming-card.is-highlighted {
   border-color: var(--color-accent) !important;
   box-shadow: 0 0 0 3px var(--color-accent-soft) !important;

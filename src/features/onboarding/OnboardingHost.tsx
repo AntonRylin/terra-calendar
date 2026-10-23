@@ -9,7 +9,17 @@ import { WelcomeStep } from './steps/WelcomeStep';
 import { LookStep } from './steps/LookStep';
 import { CalendarsStep } from './steps/CalendarsStep';
 import { SignInStep } from './steps/SignInStep';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { useAndroidBack } from '../../app/androidBack';
 import './onboarding.css';
+
+/** Phone welcome screens lead with one big picture per step. */
+const PHONE_HERO: Record<OnboardingStep, string> = {
+  welcome: '📅',
+  look: '🎨',
+  calendars: '🔄',
+  signin: '☁️',
+};
 
 const IS_TAURI = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -20,6 +30,14 @@ function stepsForThisBuild(hasSession: boolean): OnboardingStep[] {
   const steps: OnboardingStep[] = ['welcome', 'look', 'calendars'];
   if (isSupabaseConfigured() && !hasSession) steps.push('signin');
   return steps;
+}
+
+/** Android back goes to the previous page of the tour (on the first page it
+ *  leaves the app). Keyed by page so each page registers afresh: a back press
+ *  consumes the registration. */
+function BackToPreviousStep() {
+  useAndroidBack(true, () => useOnboardingStore.getState().back());
+  return null;
 }
 
 /**
@@ -39,6 +57,7 @@ export function OnboardingHost() {
   const authLoading = useAuthStore((s) => s.loading);
   const decided = useRef(false);
   const primaryRef = useRef<HTMLButtonElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (decided.current) return;
@@ -67,7 +86,10 @@ export function OnboardingHost() {
   // Escape skips the whole tour; focus the step's primary action on each step.
   useEffect(() => {
     if (!open) return;
-    const timer = setTimeout(() => primaryRef.current?.focus(), 10);
+    // Phones: no keyboard focus ring on the pill (touch users never see focus).
+    const timer = setTimeout(() => {
+      if (!isMobile) primaryRef.current?.focus();
+    }, 10);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -79,7 +101,7 @@ export function OnboardingHost() {
       clearTimeout(timer);
       window.removeEventListener('keydown', onKey);
     };
-  }, [open, index]);
+  }, [open, index, isMobile]);
 
   if (!open) return null;
 
@@ -87,12 +109,18 @@ export function OnboardingHost() {
 
   return (
     <FloatingPortal>
-      <div className="onboarding-overlay">
+      <div className={`onboarding-overlay${isMobile ? ' is-phone' : ''}`}>
         <div className="onboarding-card" role="dialog" aria-modal="true" aria-label="Welcome to Terra Calendar">
+          {isMobile && (
+            <div className="onboarding-hero" aria-hidden="true">
+              <span className="onboarding-hero-emoji">{PHONE_HERO[step]}</span>
+            </div>
+          )}
           <div className="onboarding-brand" aria-hidden="true">
             <span className="onboarding-mark">OC</span>
             Terra Calendar
           </div>
+          {index > 0 && <BackToPreviousStep key={index} />}
           {step === 'welcome' && <WelcomeStep primaryRef={primaryRef} />}
           {step === 'look' && <LookStep primaryRef={primaryRef} />}
           {step === 'calendars' && <CalendarsStep primaryRef={primaryRef} />}

@@ -31,3 +31,8 @@
 .context-menu-item.is-danger {
   color: var(--color-danger);
 }
+
+/* Phone menu sheet: rows come from SheetMenuItem (sheetParts.css). */
+.popover.popover-sheet.popover--menu {
+  padding-bottom: calc(8px + var(--safe-bottom));
+}

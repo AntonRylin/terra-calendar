@@ -296,3 +296,215 @@
     animation: none;
   }
 }
+
+/* ---- Phones: a full-screen Android welcome instead of a floating card ----
+   Picture on top, title and text, page dots, then a big pill button and text
+   buttons sitting above the gesture bar. */
+@media (max-width: 768px) {
+  .onboarding-overlay.is-phone {
+    padding: 0;
+    align-items: stretch;
+    background: var(--m-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .onboarding-overlay.is-phone .onboarding-card {
+    max-width: none;
+    min-height: 100dvh;
+    overflow-y: auto;
+    padding: calc(24px + var(--safe-top)) calc(24px + var(--safe-right))
+      calc(16px + var(--safe-bottom)) calc(24px + var(--safe-left));
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--m-bg);
+    font-family: var(--m-font);
+    animation: onboarding-phone-in 0.32s var(--m-ease);
+  }
+
+  .is-phone .onboarding-brand {
+    display: none;
+  }
+
+  .is-phone .onboarding-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-height: 168px;
+    max-height: 300px;
+    margin-bottom: 24px;
+  }
+
+  .is-phone .onboarding-hero-emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    height: 160px;
+    border-radius: 48px;
+    background: var(--m-accent-container);
+    font-size: 76px;
+    line-height: 1;
+  }
+
+  .is-phone .onboarding-title {
+    margin: 0 0 8px;
+    font: 500 28px/36px var(--m-font);
+    letter-spacing: 0;
+    text-align: center;
+  }
+
+  .is-phone .onboarding-sub {
+    margin: 0 0 24px;
+    font: var(--m-body);
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  /* Welcome features: a plain list of three, emoji leading. */
+  .is-phone .onboarding-features {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    margin-bottom: 16px;
+    border-radius: var(--m-radius-card);
+    overflow: hidden;
+  }
+
+  .is-phone .onboarding-feature {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    column-gap: 16px;
+    align-items: center;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 4px;
+    background: var(--m-surface-2);
+    font: var(--m-body-sm);
+  }
+
+  .is-phone .onboarding-feature b {
+    font: var(--m-body);
+    font-weight: 500;
+  }
+
+  .is-phone .onboarding-feature-icon {
+    grid-row: span 2;
+    margin: 0;
+    font-size: 26px;
+    text-align: center;
+  }
+
+  .is-phone .onboarding-label {
+    font: var(--m-label);
+    color: var(--color-text-secondary);
+  }
+
+  .is-phone .onboarding-theme-seg {
+    height: 48px;
+    padding: 0;
+    gap: 0;
+    border: none;
+    border-radius: var(--m-radius-pill);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 30%, transparent);
+    overflow: hidden;
+  }
+
+  .is-phone .onboarding-seg-btn {
+    border-radius: 0;
+    border-left: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
+    font: var(--m-label);
+    color: var(--color-text);
+  }
+
+  .is-phone .onboarding-seg-btn:first-child {
+    border-left: none;
+  }
+
+  .is-phone .onboarding-seg-btn.selected {
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+    box-shadow: none;
+  }
+
+  .is-phone .onboarding-hint {
+    font: var(--m-body-sm);
+    text-align: center;
+  }
+
+  /* Dots, then the buttons, pinned to the bottom of the screen. */
+  .is-phone .onboarding-dots {
+    order: 9;
+    margin: auto 0 24px;
+    padding-top: 24px;
+    gap: 8px;
+  }
+
+  .is-phone .onboarding-dot {
+    width: 8px;
+    height: 8px;
+    transition: width 0.2s var(--m-ease), background-color 0.2s ease;
+  }
+
+  .is-phone .onboarding-dot.active {
+    width: 24px;
+    border-radius: 4px;
+    transform: none;
+  }
+
+  .is-phone .onboarding-actions {
+    order: 10;
+    gap: 4px;
+    margin-top: 0;
+  }
+
+  /* With one step there are no dots; keep the buttons at the bottom anyway. */
+  .is-phone .onboarding-hero ~ .onboarding-actions:last-child {
+    margin-top: auto;
+  }
+
+  .is-phone .onboarding-btn {
+    min-height: 56px;
+    border-radius: var(--m-radius-pill);
+    font: var(--m-label);
+    font-size: 16px;
+  }
+
+  .is-phone .onboarding-btn:active {
+    transform: none;
+    filter: brightness(0.92);
+  }
+
+  .is-phone .onboarding-btn.primary {
+    margin-bottom: 4px;
+  }
+
+  .is-phone .onboarding-quiet {
+    min-height: var(--m-touch);
+    border-radius: var(--m-radius-pill);
+    font: var(--m-label);
+    color: var(--m-accent);
+  }
+
+  .is-phone .onboarding-quiet:hover {
+    background: none;
+    color: var(--m-accent);
+  }
+
+  .is-phone .onboarding-quiet:active {
+    background: var(--m-pressed);
+  }
+}
+
+@keyframes onboarding-phone-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-overlay.is-phone .onboarding-card {
+    animation: none;
+  }
+}

@@ -47,3 +47,36 @@
   margin-bottom: var(--space-1);
 }
 
+
+/* Phones: the per-day chooser is a menu sheet with list rows. */
+@media (max-width: 768px) {
+  .popover-sheet .span-chooser {
+    gap: 0;
+    padding-bottom: 8px;
+  }
+
+  .popover-sheet .span-chooser-label {
+    margin: 2px 8px 8px;
+    font: var(--m-title-md);
+    color: var(--color-text);
+  }
+
+  .popover-sheet .span-chooser-btn {
+    min-height: 56px;
+    margin: 0 calc(-1 * var(--sheet-pad));
+    padding: 0 24px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    font: var(--m-body);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .popover-sheet .span-chooser-btn:hover {
+    color: var(--color-text);
+  }
+
+  .popover-sheet .span-chooser-btn:active {
+    background: var(--m-pressed);
+  }
+}

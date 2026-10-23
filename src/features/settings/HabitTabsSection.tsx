@@ -4,6 +4,8 @@ import { useHabitEntriesStore } from '../../app/habitEntriesStore';
 import { useUiStore } from '../../app/uiStore';
 import { HABIT_ICONS, habitIconById } from '../habit-tabs/habitIcons';
 import { confirmDialog } from '../../ui/confirmStore';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { PhoneGroup, PhoneSwitchRow } from './PhoneSettings';
 import './habitTabsSection.css';
 
 const KIND_OPTIONS: { value: HabitTabKind; label: string; description: string; icon: string }[] = [
@@ -21,6 +23,7 @@ export function HabitTabsSection() {
   const renameHabitTab = useSettingsStore((s) => s.renameHabitTab);
   const setHabitTabIcon = useSettingsStore((s) => s.setHabitTabIcon);
   const deleteHabitTab = useSettingsStore((s) => s.deleteHabitTab);
+  const isMobile = useIsMobile();
 
   const [isAdding, setIsAdding] = useState(false);
   const [name, setName] = useState('');
@@ -63,23 +66,31 @@ export function HabitTabsSection() {
 
   return (
     <section className="settings-section">
-      <div className="habit-section-header">
-        <h3 className="settings-subhead">Habit Tracker</h3>
-        <div className="habit-toggle-wrapper">
-          <label className="habit-toggle-switch">
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={(e) => setEnabled(e.target.checked)}
-            />
-            <span className="habit-toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-      
-      <p className="settings-description">
-        Track habits, journal entries, or metrics directly on your calendar.
-      </p>
+      {isMobile ? (
+        <PhoneGroup footer="Track habits, journal entries, or metrics directly on your calendar.">
+          <PhoneSwitchRow title="Habit tracker" checked={enabled} onChange={setEnabled} />
+        </PhoneGroup>
+      ) : (
+        <>
+          <div className="habit-section-header">
+            <h3 className="settings-subhead">Habit Tracker</h3>
+            <div className="habit-toggle-wrapper">
+              <label className="habit-toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={enabled}
+                  onChange={(e) => setEnabled(e.target.checked)}
+                />
+                <span className="habit-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          
+          <p className="settings-description">
+            Track habits, journal entries, or metrics directly on your calendar.
+          </p>
+        </>
+      )}
 
       {enabled && (
         <>

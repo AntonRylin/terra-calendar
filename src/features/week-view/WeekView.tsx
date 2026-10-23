@@ -164,7 +164,28 @@ const WHEEL_AXIS_LOCK_MS = 150;
  *  or two in that time. Two of these are the room it needs to keep moving
  *  while they come; the third is the margin the valve in recycle works to. */
 const PAD_DAYS = 3;
-const STRIP_DAYS = 7 + PAD_DAYS * 2;
+
+/** Days on screen at rest: the week on desktop, Google Calendar's three-day
+ *  window on phones — seven columns don't fit a phone's width. */
+const DESKTOP_DAYS = 7;
+const PHONE_DAYS = 3;
+
+/** Phone paging: how long a swipe or an arrow takes to slide to the next three
+ *  days, and what counts as a swipe rather than a nudge — a share of the page
+ *  travelled, or a flick faster than this (px/ms). */
+const PAGE_MS = 260;
+const PAGE_SWIPE_SHARE = 0.18;
+const PAGE_FLICK_SPEED = 0.3;
+/** A touch has to travel this far, and mostly sideways, before the grid takes
+ *  it as a swipe — a scroll that drifts a little stays a scroll. */
+const TOUCH_SLOP_PX = 10;
+const TOUCH_AXIS_RATIO = 1.5;
+
+/** Phone all-day lanes: compact bars, two lanes before the rest fold into +N. */
+const PHONE_LANE_H = 24;
+const PHONE_BAR_H = 22;
+const PHONE_MAX_LANES = 2;
+const PHONE_MORE_H = 20;
 
 /** Momentum after the hand lets go: the share of speed kept per frame, the
  *  crawl at which the glide gives way to the magnet, and a ceiling so a flick
@@ -200,6 +221,8 @@ interface PanState {
   lastT: number;
   /** Smoothed hand speed in px/ms, handed to the momentum glide on release. */
   velocity: number;
+  /** Phones: where the swipe began, in days from `pageRef` (see pagePosition). */
+  fromPos: number;
 }
 
 /** A released all-day bar gliding into its snapped day (purely visual). */
@@ -226,6 +249,7 @@ interface ColumnApi {
   onBlockPointerDown: (e: React.PointerEvent, b: TimedBlock) => void;
   onBlockPointerMove: (e: React.PointerEvent) => void;
   onBlockPointerUp: (e: React.PointerEvent) => void;
+  onBlockPointerCancel: () => void;
   onBlockContextMenu: (e: React.MouseEvent, b: TimedBlock) => void;
   onResizePointerDown: (e: React.PointerEvent, b: TimedBlock) => void;
   onGapContextMenu: (e: React.MouseEvent) => void;
@@ -245,6 +269,8 @@ interface DayColumnProps {
   nowMin: number | null;
   /** Openings between events up to this long get a gap marker; 0 shows none. */
   gapThresholdMin: number;
+  /** Phone layout: fixed readable type instead of the fitted title. */
+  phone: boolean;
   api: React.MutableRefObject<ColumnApi>;
 }
 
@@ -263,6 +289,7 @@ const DayColumn = memo(function DayColumn({
   settleEventId,
   nowMin,
   gapThresholdMin,
+  phone,
   api,
 }: DayColumnProps) {
   return (
@@ -314,6 +341,7 @@ const DayColumn = memo(function DayColumn({
             onPointerDown={(e) => api.current.onBlockPointerDown(e, b)}
             onPointerMove={(e) => api.current.onBlockPointerMove(e)}
             onPointerUp={(e) => api.current.onBlockPointerUp(e)}
+            onPointerCancel={() => api.current.onBlockPointerCancel()}
             onContextMenu={(e) => api.current.onBlockContextMenu(e, b)}
             role="button"
             tabIndex={0}
@@ -330,7 +358,7 @@ const DayColumn = memo(function DayColumn({
               color: b.event.color,
             })}
           >
-            <WeekEventContent title={b.event.title} startMin={startMin} endMin={endMin} />
+            <WeekEventContent title={b.event.title} startMin={startMin} endMin={endMin} phone={phone} />
             {/* Move/up events bubble to the block's handlers — attaching
                 them here too would run every commit twice. */}
             <div className="wv-resize" onPointerDown={(e) => api.current.onResizePointerDown(e, b)} />
@@ -366,10 +394,21 @@ export function WeekView() {
   const viewedDate = useUiStore((s) => s.viewedDate);
   const setViewedDate = useUiStore((s) => s.setViewedDate);
 
+  /** Days on screen at rest — see DESKTOP_DAYS / PHONE_DAYS. */
+  const visibleDays = isMobile ? PHONE_DAYS : DESKTOP_DAYS;
+  const stripDays = visibleDays + PAD_DAYS * 2;
+  const isMobileRef = useRef(isMobile);
+  isMobileRef.current = isMobile;
+
+  // `weekStart` is the first day on screen: a Monday on desktop, any day on a
+  // phone, whose three-day window opens on today.
   const [weekStart, setWeekStart] = useState(() => {
     const ui = useUiStore.getState();
-    if (ui.weekFocusDate) return addDays(ui.weekFocusDate, -3);
-    return mondayOf(ui.viewedDate || ui.selectedDate || today);
+    if (ui.weekFocusDate) return addDays(ui.weekFocusDate, -Math.floor(visibleDays / 2));
+    const base = ui.viewedDate || ui.selectedDate || today;
+    if (!isMobile) return mondayOf(base);
+    // Coming from the current month means "now": start on today.
+    return base.slice(0, 7) === today.slice(0, 7) ? today : base;
   });
   const focusOnOpen = useRef(useUiStore.getState().weekFocusDate);
   useEffect(() => {
@@ -382,8 +421,8 @@ export function WeekView() {
   // sit at PAD_DAYS..PAD_DAYS+6 and are the only ones on screen at rest.
   const stripStart = addDays(weekStart, -PAD_DAYS);
   const week = useMemo(
-    () => buildWeek(stripStart, today, STRIP_DAYS),
-    [stripStart, today],
+    () => buildWeek(stripStart, today, stripDays),
+    [stripStart, today, stripDays],
   );
   const days = week.days;
 
@@ -396,20 +435,29 @@ export function WeekView() {
     if (!selectedDate) return;
     // Already on screen — clicking an event in this very week must not throw
     // the week back to its Monday underneath the click.
-    if (selectedDate >= weekStart && selectedDate <= addDays(weekStart, 6)) return;
-    setWeekStart(mondayOf(selectedDate));
+    if (selectedDate >= weekStart && selectedDate <= addDays(weekStart, visibleDays - 1)) return;
+    setWeekStart(isMobile ? selectedDate : mondayOf(selectedDate));
     // weekStart is read to leave a visible week alone, not to re-run on it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   // Follow the minimap anchor (wheel scroll / click): shift just enough to
   // bring the viewed date into the week, so wheel panning feels continuous.
+  // Skips the mount run: the opening window was already chosen from it (and a
+  // phone opens on today, which may sit apart from it).
+  const prevViewedRef = useRef(viewedDate);
   useEffect(() => {
+    if (viewedDate === prevViewedRef.current) return;
+    prevViewedRef.current = viewedDate;
     if (!viewedDate) return;
+    const span = visibleDays - 1;
     setWeekStart((ws) => {
-      if (viewedDate >= ws && viewedDate <= addDays(ws, 6)) return ws;
-      return viewedDate < ws ? viewedDate : addDays(viewedDate, -6);
+      if (viewedDate >= ws && viewedDate <= addDays(ws, span)) return ws;
+      // A phone has no minimap to follow continuously: open on the day itself.
+      if (isMobile) return viewedDate;
+      return viewedDate < ws ? viewedDate : addDays(viewedDate, -span);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewedDate]);
 
   // Keep the minimap anchor in sync with the visible week — but leave it be
@@ -417,9 +465,9 @@ export function WeekView() {
   // follow-the-anchor effect above).
   useEffect(() => {
     const vd = useUiStore.getState().viewedDate;
-    if (vd && vd >= weekStart && vd <= addDays(weekStart, 6)) return;
+    if (vd && vd >= weekStart && vd <= addDays(weekStart, visibleDays - 1)) return;
     setViewedDate(weekStart);
-  }, [weekStart, setViewedDate]);
+  }, [weekStart, setViewedDate, visibleDays]);
 
   // Publish the seven days on screen so the minimap can band them. The window
   // rolls day by day, so this is the only reliable source for its exact start.
@@ -468,7 +516,7 @@ export function WeekView() {
    *  where scrolling reaches them. Pinning this to the track — rather than
    *  dividing the track between whichever seven days happen to be up — is what
    *  lets the view move over the days instead of being rearranged by them. */
-  const dayBase = trackWidth > 0 ? trackWidth / 7 : 0;
+  const dayBase = trackWidth > 0 ? trackWidth / visibleDays : 0;
   const dayBaseRef = useRef(0);
   dayBaseRef.current = dayBase;
 
@@ -479,6 +527,7 @@ export function WeekView() {
     tz: '',
     base: 0,
     hourHeight: 0,
+    phone: false,
     byDate: new Map<string, TimedBlock[]>(),
   });
 
@@ -486,7 +535,8 @@ export function WeekView() {
     const cache = blockCacheRef.current;
     // The base is in the key because a block's share of its day is measured
     // against it: a resize re-lays every day out.
-    if (cache.events !== events || cache.tz !== displayTimeZone || cache.base !== dayBase || cache.hourHeight !== hourHeight) {
+    if (cache.events !== events || cache.tz !== displayTimeZone || cache.base !== dayBase || cache.hourHeight !== hourHeight || cache.phone !== isMobile) {
+      cache.phone = isMobile;
       cache.events = events;
       cache.tz = displayTimeZone;
       cache.base = dayBase;
@@ -518,7 +568,8 @@ export function WeekView() {
             occDate: occ.date,
             startMin,
             endMin,
-            wantWidthPx: blockContentWidth(event.title, startMin, endMin, dayBase),
+            // Phones share a busy hour evenly: every day keeps the same width.
+            wantWidthPx: isMobile ? 0 : blockContentWidth(event.title, startMin, endMin, dayBase),
           });
         }
       }
@@ -557,7 +608,8 @@ export function WeekView() {
     const laneCount = allDay.reduce((m, s) => Math.max(m, s.lane + 1), 0);
     // Crowded days get a wider grid column; `lefts` are the cumulative
     // fractional (0..1) left edges of each day across the strip, ending at 1.
-    const weights = timed.map((blocks) => dayWeight(blocks, dayBase));
+    // Phones keep every day the same width, so three always fill the screen.
+    const weights = timed.map((blocks) => (isMobile ? 1 : dayWeight(blocks, dayBase)));
     const totalWeight = weights.reduce((a, b) => a + b, 0);
     const lefts = [0];
     for (const w of weights) lefts.push(lefts[lefts.length - 1] + w / totalWeight);
@@ -565,7 +617,7 @@ export function WeekView() {
     // to be parked for the week to begin at the track's left edge.
     const padWeight = weights.slice(0, PAD_DAYS).reduce((a, b) => a + b, 0);
     return { timed, allDay, laneCount, weights, lefts, totalWeight, padWeight };
-  }, [events, days, displayTimeZone, dayBase, hourHeight]);
+  }, [events, days, displayTimeZone, dayBase, hourHeight, isMobile]);
 
   /** Left edge of day column i as a fraction of the columns area (0..1). */
   const dayLeftFrac = (i: number) => dayData.lefts[i];
@@ -908,6 +960,107 @@ export function WeekView() {
 
   useEffect(() => stopMotion, []);
 
+  // ---- phone paging ----------------------------------------------------------
+
+  /** A fixed day the phone's page positions are counted from. */
+  const pageRef = useRef(weekStart);
+  /** The day a running page slide is heading for, so a swipe or a second tap
+   *  mid-slide is measured from where it is going, not where it started. */
+  const pageTargetRef = useRef<string | null>(null);
+
+  /** Where the left edge of the track sits, in days from pageRef: whole at
+   *  rest, fractional mid-swipe. A positive offset reveals earlier days. */
+  function pagePosition(): number {
+    const w = dayBaseRef.current || 1;
+    return dayDiff(pageRef.current, offsetAnchorRef.current) - panOffsetRef.current / w;
+  }
+
+  /** Slide the strip until `target` is the first day on screen. Moves through
+   *  nudgePan, so the days trade into `weekStart` on the way exactly as a scrub
+   *  does; the landing is then pinned to the exact day. */
+  function pageTo(target: string) {
+    stopMotion();
+    const w = dayBaseRef.current;
+    if (w <= 0) {
+      outsideMoveRef.current = true;
+      setWeekStart(target);
+      return;
+    }
+    pageTargetRef.current = target;
+    const travel = -(dayDiff(pageRef.current, target) - pagePosition()) * w;
+    let applied = 0;
+    let startedAt = 0;
+    const land = () => {
+      motionRef.current = 0;
+      pageTargetRef.current = null;
+      requestedAnchorRef.current = target;
+      if (offsetAnchorRef.current === target) {
+        panOffsetRef.current = 0;
+        outsideMoveRef.current = true;
+      } else {
+        // The layout effect adds the same widths back as the day arrives,
+        // which brings the offset to exactly zero.
+        panOffsetRef.current = -widthBetween(offsetAnchorRef.current, target);
+        outsideMoveRef.current = false;
+        setWeekStart(target);
+      }
+      writePan();
+    };
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || Math.abs(travel) < 0.5) {
+      land();
+      return;
+    }
+    const step = (now: number) => {
+      if (!startedAt) startedAt = now;
+      const k = Math.max(0, Math.min(1, (now - startedAt) / PAGE_MS));
+      const want = travel * (1 - (1 - k) ** 3);
+      nudgePan(want - applied);
+      applied = want;
+      if (k < 1) {
+        motionRef.current = requestAnimationFrame(step);
+        return;
+      }
+      land();
+    };
+    motionRef.current = requestAnimationFrame(step);
+  }
+
+  /** The first day of the page on screen, or of the one being slid to. */
+  function currentPage(): string {
+    return pageTargetRef.current ?? addDays(pageRef.current, Math.round(pagePosition()));
+  }
+
+  /** Arrows and Today on a phone: slide when the target is near, jump when not. */
+  function goToPage(target: string) {
+    if (Math.abs(dayDiff(currentPage(), target)) <= PHONE_DAYS * 2) {
+      pageTo(target);
+      return;
+    }
+    stopMotion();
+    pageTargetRef.current = null;
+    outsideMoveRef.current = true;
+    if (target === weekStart) {
+      panOffsetRef.current = 0;
+      writePan();
+    }
+    setWeekStart(target);
+  }
+
+  /** A phone swipe let go: on to the next three days if it went far or fast
+   *  enough, otherwise back to the page it started from. */
+  function settlePage(fromPos: number, velocity: number) {
+    const moved = pagePosition() - fromPos; // days, positive = later
+    const start = Math.round(fromPos);
+    // velocity is the hand's px/ms: moving right (positive) goes back in time.
+    const flick = Math.abs(velocity) > PAGE_FLICK_SPEED && Math.sign(-velocity) === Math.sign(moved);
+    let pages = 0;
+    if (flick || Math.abs(moved) > PHONE_DAYS * PAGE_SWIPE_SHARE) {
+      pages = Math.sign(moved) * Math.max(1, Math.round(Math.abs(moved) / PHONE_DAYS));
+    }
+    pageTo(addDays(pageRef.current, start + pages * PHONE_DAYS));
+  }
+
   /** Point the upcoming list at the event that was just clicked, the way the
    *  month grids do. If it isn't listed there — hidden from the view, or
    *  already past — there is simply nothing to point at. */
@@ -1005,6 +1158,15 @@ export function WeekView() {
 
   function onBlockPointerMove(e: React.PointerEvent) {
     if (!drag) return;
+    // On a phone a finger on an event is a tap or a swipe through the days,
+    // never a move: carrying events is for a mouse (or the editor's fields).
+    if (isMobile && e.pointerType === 'touch' && drag.mode === 'move') {
+      if (!drag.moved && touchSwipe(e.clientX - drag.startX, e.clientY - drag.startY)) {
+        setDrag(null);
+        startPan(e, e.clientX - drag.startX);
+      }
+      return;
+    }
     // Still a click until the pointer clearly travels — don't preview anything.
     if (
       !drag.moved &&
@@ -1083,6 +1245,11 @@ export function WeekView() {
       startMin: d.startMin,
       endMin: d.endMin,
     });
+  }
+
+  /** The browser took the touch over to scroll: nothing was picked up. */
+  function onBlockPointerCancel() {
+    setDrag(null);
   }
 
   async function commitDrag(d: DragState) {
@@ -1168,6 +1335,40 @@ export function WeekView() {
     if (!quickEntryOpen) setCreate((c) => (c && !c.active ? null : c));
   }, [quickEntryOpen]);
 
+  /** Hand the gesture to the pan engine: from an empty slot, or on a phone
+   *  from a block that was swiped rather than tapped. */
+  function startPan(e: React.PointerEvent, dx: number) {
+    setCreate(null);
+    const fromPos = pageTargetRef.current
+      ? dayDiff(pageRef.current, pageTargetRef.current)
+      : pagePosition();
+    stopMotion();
+    pageTargetRef.current = null;
+    // The travel since the press is paid out now, so the next move is
+    // measured from here; from the press would spend it twice.
+    panRef.current = { lastX: e.clientX, lastT: e.timeStamp, velocity: 0, fromPos };
+    setPanning(true);
+    nudgePan(dx);
+  }
+
+  /** On a phone a release lands on a page of three days; elsewhere it glides. */
+  function endPan() {
+    const p = panRef.current;
+    if (!p) return;
+    panRef.current = null;
+    setPanning(false);
+    if (isMobileRef.current) settlePage(p.fromPos, p.velocity);
+    else glide(p.velocity);
+  }
+
+  /** Touch only: is this travel a sideways swipe yet? Null while undecided:
+   *  short, or too diagonal to tell from a scroll that drifted. */
+  function touchSwipe(dx: number, dy: number): boolean | null {
+    if (Math.hypot(dx, dy) < TOUCH_SLOP_PX) return null;
+    if (Math.abs(dx) > Math.abs(dy) * TOUCH_AXIS_RATIO) return true;
+    return Math.abs(dy) > Math.abs(dx) ? false : null;
+  }
+
   function onGridPointerDown(e: React.PointerEvent) {
     if (e.button !== 0 || drag) return;
     capturePointer(e);
@@ -1212,16 +1413,16 @@ export function WeekView() {
     if (!create.moved) {
       const dx = e.clientX - create.startX;
       const dy = e.clientY - create.startY;
+      if (e.pointerType === 'touch') {
+        // The browser scrolls vertical touches itself (and cancels this
+        // pointer), so a touch only ever becomes a swipe, or waits.
+        if (touchSwipe(dx, dy)) startPan(e, dx);
+        return;
+      }
       if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
       if (Math.abs(dx) > Math.abs(dy)) {
         // Mostly horizontal: pan between weeks instead of creating an event.
-        setCreate(null);
-        stopMotion();
-        // The travel since the press is paid out now, so the next move is
-        // measured from here — from the press would spend it twice.
-        panRef.current = { lastX: e.clientX, lastT: e.timeStamp, velocity: 0 };
-        setPanning(true);
-        nudgePan(dx);
+        startPan(e, dx);
         return;
       }
     }
@@ -1244,12 +1445,19 @@ export function WeekView() {
     }
   }
 
+  /** The browser took the touch over (it is scrolling the hours): drop the
+   *  half-made event, and let a swipe in progress land on a page. */
+  function onGridPointerCancel() {
+    if (panRef.current) {
+      endPan();
+      return;
+    }
+    setCreate((c) => (c?.active ? null : c));
+  }
+
   function onGridPointerUp() {
     if (panRef.current) {
-      const { velocity } = panRef.current;
-      panRef.current = null;
-      setPanning(false);
-      glide(velocity);
+      endPan();
       return;
     }
     if (!create?.active) return;
@@ -1271,6 +1479,8 @@ export function WeekView() {
   const lanesRef = useRef<HTMLDivElement>(null);
   const [alldayDrag, setAlldayDrag] = useState<AlldayDragState | null>(null);
   const [alldaySettle, setAlldaySettle] = useState<AlldaySettleState | null>(null);
+  /** Phones: the folded all-day row has been opened to show every lane. */
+  const [alldayOpen, setAlldayOpen] = useState(false);
   const alldaySettleRef = useRef<HTMLDivElement>(null);
   /** Set when a bar drag just committed, so the click the browser fires right
    *  after the pointerup doesn't also open the editor. */
@@ -1298,6 +1508,8 @@ export function WeekView() {
   ) {
     if (e.button !== 0) return;
     e.stopPropagation();
+    // A finger on an all-day bar taps it open; dragging bars is for a mouse.
+    if (isMobile && e.pointerType === 'touch') return;
     capturePointer(e);
     const barRect = (e.currentTarget as Element).getBoundingClientRect();
     const lanesRect = lanesRef.current!.getBoundingClientRect();
@@ -1576,6 +1788,7 @@ export function WeekView() {
     onBlockPointerDown,
     onBlockPointerMove,
     onBlockPointerUp,
+    onBlockPointerCancel,
     onBlockContextMenu: (e, b) => openEventMenu(e, b.event, b.occDate),
     onResizePointerDown,
     onGapContextMenu,
@@ -1588,9 +1801,10 @@ export function WeekView() {
   // the column labels from the actual dates. The header reads the week, not
   // the strip, so the spare columns are skipped.
   const startDow = (parseISODate(stripStart).getDay() + 6) % 7;
-  const midMonth = days[PAD_DAYS + 3].date.split('-').map(Number);
+  const lastShown = addDays(weekStart, visibleDays - 1);
+  const midMonth = days[PAD_DAYS + Math.floor(visibleDays / 2)].date.split('-').map(Number);
   const rangeStart = days[PAD_DAYS].date.split('-').map(Number);
-  const rangeEnd = days[PAD_DAYS + 6].date.split('-').map(Number);
+  const rangeEnd = days[PAD_DAYS + visibleDays - 1].date.split('-').map(Number);
   const crossesYear = rangeStart[0] !== rangeEnd[0];
   const rangeDate = (date: number[]) => `${date[2]} ${MONTH_NAMES[date[1] - 1].slice(0, 3)}${crossesYear ? ` ${date[0]}` : ''}`;
   const rangeLabel = rangeStart[1] === rangeEnd[1] && !crossesYear
@@ -1598,17 +1812,35 @@ export function WeekView() {
     : `${rangeDate(rangeStart)} – ${rangeDate(rangeEnd)}`;
   const isCurrentWeek = weekStart === mondayOf(today);
 
+  /** Phone app bar title, like the month views': the month of the three days,
+   *  "Oct – Nov" when they straddle two, and the year only when it isn't this
+   *  one (or the days cross into the next). */
+  const phoneTitleYear = crossesYear || rangeEnd[0] !== Number(today.slice(0, 4)) ? rangeEnd[0] : null;
+  const phoneTitle = rangeStart[1] === rangeEnd[1]
+    ? MONTH_NAMES[rangeStart[1] - 1]
+    : `${MONTH_NAMES[rangeStart[1] - 1].slice(0, 3)} – ${MONTH_NAMES[rangeEnd[1] - 1].slice(0, 3)}`;
+
   /** Which way today lies when it isn't on screen — the side the button sits
    *  on and the way its arrow points, so it reads as "today is over there".
    *  Null while today is in the week, or once the button has been sent away. */
-  const todayLies: 'back' | 'ahead' | null = !showTodayButton
+  // Phones have Today in the app bar, so the floating one stays away there.
+  const todayLies: 'back' | 'ahead' | null = !showTodayButton || isMobile
     ? null
     : today < weekStart
       ? 'back'
-      : today > addDays(weekStart, 6)
+      : today > lastShown
         ? 'ahead'
         : null;
 
+  /** Today: the week that holds it on desktop; on a phone the app bar's
+   *  today button slides the three days to start on it. */
+  const goToday = () => {
+    if (isMobile) goToPage(today);
+    else setWeekStart(mondayOf(today));
+  };
+
+  // Desktop toolbar. A phone pages by swiping, with Today and the view switch
+  // in its app bar, so it has no second row.
   const prevWeek = (
     <ToolbarButton variant="icon" onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label="Previous week">
       ‹
@@ -1620,8 +1852,8 @@ export function WeekView() {
     </ToolbarButton>
   );
   const todayButton = (
-    <ToolbarButton onClick={() => setWeekStart(mondayOf(today))} disabled={isCurrentWeek}>
-      {isCurrentWeek && !isMobile ? 'This week' : 'Today'}
+    <ToolbarButton onClick={goToday} disabled={isCurrentWeek}>
+      {isCurrentWeek ? 'This week' : 'Today'}
     </ToolbarButton>
   );
   const viewSwitcher = (
@@ -1636,6 +1868,29 @@ export function WeekView() {
       onChange={setCalendarViewMode}
     />
   );
+
+  // ---- all-day lanes ---------------------------------------------------------
+
+  const laneH = isMobile ? PHONE_LANE_H : LANE_H;
+  /** Phones fold a crowded all-day row: two lanes, then "+N" under each day
+   *  that has more, which opens the rest. */
+  const lanesFold = isMobile && dayData.laneCount > PHONE_MAX_LANES;
+  const shownLanes = lanesFold && !alldayOpen ? PHONE_MAX_LANES : dayData.laneCount;
+  const hiddenPerDay = useMemo(() => {
+    const counts = new Array<number>(days.length).fill(0);
+    if (!lanesFold || alldayOpen) return counts;
+    for (const seg of dayData.allDay) {
+      if (seg.lane < PHONE_MAX_LANES) continue;
+      for (let i = seg.startIdx; i <= seg.endIdx; i++) counts[i]++;
+    }
+    return counts;
+  }, [dayData.allDay, days.length, lanesFold, alldayOpen]);
+  const lanesHeight = shownLanes * laneH + (lanesFold && !alldayOpen ? PHONE_MORE_H : 0);
+  /** A phone has room for the all-day row only while one of its three days
+   *  has something in it; desktop keeps it for the spare days either side. */
+  const showLanes = dayData.laneCount > 0 && (!isMobile || dayData.allDay.some(
+    (seg) => seg.endIdx >= PAD_DAYS && seg.startIdx < PAD_DAYS + visibleDays,
+  ));
 
   return (
     <div
@@ -1653,16 +1908,12 @@ export function WeekView() {
         <MobileHeader
           title={
             <>
-              {MONTH_NAMES[midMonth[1] - 1]} <span className="month-year">{midMonth[0]}</span>
-              <span className="wv-range">{rangeLabel}</span>
+              {phoneTitle}
+              {phoneTitleYear !== null && <span className="month-year"> {phoneTitleYear}</span>}
             </>
           }
-        >
-          {viewSwitcher}
-          {prevWeek}
-          {todayButton}
-          {nextWeek}
-        </MobileHeader>
+          onToday={goToday}
+        />
       ) : (
       <header className="month-header" data-tauri-drag-region>
         <div className="month-header-left" data-tauri-drag-region>
@@ -1685,13 +1936,30 @@ export function WeekView() {
 
       <div className="wv-top">
         <div className="wv-top-gutter">
-          {dayData.laneCount > 0 && (
+          {showLanes && (
             // Given the lanes' own height, so it sits at their middle however
             // many of them the week happens to need.
-            <span className="wv-allday-tag" style={{ height: dayData.laneCount * LANE_H }}>
-              <span>all</span>
-              <span>day</span>
-            </span>
+            lanesFold ? (
+              <button
+                type="button"
+                className="wv-allday-tag wv-allday-toggle"
+                style={{ height: lanesHeight }}
+                onClick={() => setAlldayOpen((o) => !o)}
+                aria-expanded={alldayOpen}
+                aria-label={alldayOpen ? 'Show fewer all-day events' : 'Show all all-day events'}
+              >
+                <span>all</span>
+                <span>day</span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points={alldayOpen ? '6 15 12 9 18 15' : '6 9 12 15 18 9'} />
+                </svg>
+              </button>
+            ) : (
+              <span className="wv-allday-tag" style={{ height: dayData.laneCount * laneH }}>
+                <span>all</span>
+                <span>day</span>
+              </span>
+            )
           )}
         </div>
         <div className="wv-top-days" onScroll={keepTrackPinned}>
@@ -1715,14 +1983,15 @@ export function WeekView() {
               </button>
             ))}
           </div>
-          {dayData.laneCount > 0 && (
+          {showLanes && (
             <div
               className="wv-lanes wv-strip"
               ref={lanesRef}
-              style={{ height: dayData.laneCount * LANE_H }}
+              style={{ height: lanesHeight }}
               onContextMenu={onLanesContextMenu}
             >
               {dayData.allDay.map((seg) => {
+                if (seg.lane >= shownLanes) return null;
                 const look = blockLook(seg.event);
                 const hidden =
                   (alldayDrag?.moved && alldayDrag.event.id === seg.event.id) ||
@@ -1735,7 +2004,7 @@ export function WeekView() {
                       ...look.style,
                       left: `${dayLeftFrac(seg.startIdx) * 100}%`,
                       width: `${spanWidthFrac(seg.startIdx, seg.endIdx) * 100}%`,
-                      top: seg.lane * LANE_H,
+                      top: seg.lane * laneH,
                       visibility: hidden ? 'hidden' : undefined,
                     }}
                     {...eventHoverProps({
@@ -1776,6 +2045,23 @@ export function WeekView() {
                 );
               })}
 
+              {lanesFold && !alldayOpen && hiddenPerDay.map((n, i) => n > 0 && (
+                <button
+                  key={`more:${days[i].date}`}
+                  type="button"
+                  className="wv-allday-more"
+                  style={{
+                    left: `${dayLeftFrac(i) * 100}%`,
+                    width: `${dayWidthFrac(i) * 100}%`,
+                    top: shownLanes * laneH,
+                  }}
+                  onClick={() => setAlldayOpen(true)}
+                  aria-label={`${n} more all-day event${n === 1 ? '' : 's'} on ${days[i].date}`}
+                >
+                  +{n}
+                </button>
+              ))}
+
               {alldayDrag?.moved && (
                 <>
                   <div
@@ -1783,8 +2069,8 @@ export function WeekView() {
                     style={{
                       left: `${dayLeftFrac(alldayDrag.targetStartIdx) * 100}%`,
                       width: `${spanWidthFrac(alldayDrag.targetStartIdx, alldayDrag.targetStartIdx + alldayDrag.segDays - 1) * 100}%`,
-                      top: alldayDrag.lane * LANE_H,
-                      height: 46,
+                      top: alldayDrag.lane * laneH,
+                      height: isMobile ? PHONE_BAR_H : 46,
                     }}
                   />
                   {(() => {
@@ -1796,7 +2082,7 @@ export function WeekView() {
                           ...look.style,
                           left: alldayDrag.ghostLeftPx,
                           width: `${spanWidthFrac(alldayDrag.segStartIdx, alldayDrag.segStartIdx + alldayDrag.segDays - 1) * 100}%`,
-                          top: alldayDrag.lane * LANE_H,
+                          top: alldayDrag.lane * laneH,
                         }}
                       >
                         <span className="wv-bar-label">{alldayDrag.event.title}</span>
@@ -1816,7 +2102,7 @@ export function WeekView() {
                       ...look.style,
                       left: alldaySettle.fromLeft,
                       width: `${spanWidthFrac(alldaySettle.startIdx, alldaySettle.startIdx + alldaySettle.segDays - 1) * 100}%`,
-                      top: alldaySettle.lane * LANE_H,
+                      top: alldaySettle.lane * laneH,
                     }}
                   >
                     <span className="wv-bar-label">{alldaySettle.event.title}</span>
@@ -1845,6 +2131,7 @@ export function WeekView() {
               onPointerDown={onGridPointerDown}
               onPointerMove={onGridPointerMove}
               onPointerUp={onGridPointerUp}
+              onPointerCancel={onGridPointerCancel}
               onContextMenu={onGridContextMenu}
             >
               {days.map((d, i) => (
@@ -1857,7 +2144,9 @@ export function WeekView() {
                   drag={drag}
                   settleEventId={settle?.event.id ?? null}
                   nowMin={i === todayIdx ? nowMin : null}
-                  gapThresholdMin={gapThresholdMin}
+                  // Gap markers crowd three narrow phone columns.
+                  gapThresholdMin={isMobile ? 0 : gapThresholdMin}
+                  phone={isMobile}
                   api={columnApiRef}
                 />
               ))}
@@ -1888,7 +2177,7 @@ export function WeekView() {
                           height: Math.max(((drag.endMin - drag.startMin) / 60) * hourHeight, 14),
                         }}
                       >
-                        <WeekEventContent title={drag.event.title} startMin={drag.startMin} endMin={drag.endMin} />
+                        <WeekEventContent title={drag.event.title} startMin={drag.startMin} endMin={drag.endMin} phone={isMobile} />
                       </div>
                     );
                   })()}
@@ -1909,7 +2198,7 @@ export function WeekView() {
                       height: settle.heightPx,
                     }}
                   >
-                    <WeekEventContent title={settle.event.title} startMin={settle.startMin} endMin={settle.endMin} />
+                    <WeekEventContent title={settle.event.title} startMin={settle.startMin} endMin={settle.endMin} phone={isMobile} />
                   </div>
                 );
               })()}
@@ -1942,7 +2231,7 @@ export function WeekView() {
                       height: Math.max(((endMin - startMin) / 60) * hourHeight, 14),
                     }}
                   >
-                    <WeekEventContent title={displayTitle} startMin={startMin} endMin={endMin} />
+                    <WeekEventContent title={displayTitle} startMin={startMin} endMin={endMin} phone={isMobile} />
                   </div>
                 );
               })()}
@@ -1955,7 +2244,7 @@ export function WeekView() {
         <button
           type="button"
           className={`wv-today-fab is-${todayLies}`}
-          onClick={() => setWeekStart(mondayOf(today))}
+          onClick={goToday}
           onContextMenu={(e) => {
             e.preventDefault();
             e.stopPropagation();

@@ -607,45 +607,337 @@
   background: var(--color-danger);
 }
 
+/* ---- phones: Google-Calendar-style three-day view -------------------------
+   WeekView shows three equal days on a phone (PHONE_DAYS) and pages through
+   them by swiping or with the arrows. Everything below is phone-only; the
+   desktop week above is untouched. */
 @media (max-width: 768px) {
-  .week-view .month-header {
-    padding-left: var(--space-2);
-    padding-right: var(--space-2);
-  }
-
-  /* Same breathing room above the header as the month views. */
-  .week-view .month-header.mobile-header {
-    padding-top: calc(var(--space-3) + var(--safe-top));
-  }
-
-  /* Phone columns are narrow: wrap titles between words only, so the fitter
-     shrinks the font instead of splitting "Focus" into "Foc / us". */
-  .wv-title-text {
-    overflow-wrap: normal;
-  }
-
-  /* …and give a narrow block's whole width to its title; the time is on the
-     hour grid right beside it. */
-  @container week-event (max-width: 100px) {
-    .wv-block-content {
-      grid-template-columns: minmax(0, 1fr);
-      padding-left: 4px;
-      padding-right: 3px;
-    }
-    .wv-block-times {
-      display: none;
-    }
-  }
-}
-
-@media (max-width: 640px) {
   .week-view {
-    --wv-gutter: 40px;
+    --wv-gutter: 44px;
+    --wv-line: var(--m-outline);
+    font-family: var(--m-font);
+  }
+
+  /* The app bar is the shared MobileHeader: undo the desktop inset above so
+     it sits exactly where it does over the month views. */
+  .week-view .month-header.mobile-header {
+    padding: var(--safe-top) 4px 0;
+  }
+
+  /* -- day headers: weekday over the date, today in a filled accent circle -- */
+
+  .wv-top {
+    border-bottom: 1px solid var(--wv-line);
+  }
+
+  .wv-top-gutter {
+    padding-bottom: 4px;
   }
 
   .wv-day-head {
     flex-direction: column;
     align-items: center;
+    gap: 2px;
+    padding: 6px 0 8px;
+    border-left: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wv-day-head:hover,
+  .wv-day-head.is-selected {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .wv-day-head:active {
+    background: var(--m-pressed);
+  }
+
+  .wv-day-head .wv-dow {
+    font: 500 12px/16px var(--m-font);
+    letter-spacing: 0.02em;
+    color: var(--color-text-secondary);
+  }
+
+  .wv-day-head .wv-dom,
+  .wv-day-head.is-today .wv-dom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    font: 500 20px/1 var(--m-font);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wv-day-head.is-today .wv-dow {
+    color: var(--m-accent);
+    font-weight: 600;
+  }
+
+  .wv-day-head.is-today .wv-dom {
+    background: var(--m-accent);
+    color: var(--m-on-accent);
+  }
+
+  /* -- all-day row: compact bars, two lanes, then +N ------------------------ */
+
+  .wv-allday-tag {
+    font: 500 11px/13px var(--m-font);
+  }
+
+  .wv-allday-toggle {
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font: 500 11px/13px var(--m-font);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wv-allday-toggle svg {
+    margin-top: 1px;
+  }
+
+  .wv-allday-toggle:active {
+    background: var(--m-pressed);
+  }
+
+  .wv-lanes {
+    margin-bottom: 4px;
+  }
+
+  .wv-allday-bar {
+    height: 22px;
+    padding: 0 6px; /* BAR_PAD in WeekView.tsx */
+    border-radius: 4px;
+    /* A pixel off each end, so neighbouring bars never run together. */
+    clip-path: inset(0 1px round 4px);
+    box-shadow: none;
+    background: var(--event-color, var(--m-accent-container));
+    color: var(--event-text-color, var(--m-on-accent-container));
+    font: 600 12px/16px var(--m-font);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wv-allday-bar:hover {
+    filter: none;
+  }
+
+  .wv-allday-bar:active {
+    filter: brightness(0.92);
+  }
+
+  .wv-allday-more {
+    position: absolute;
+    height: 20px;
+    padding: 0 7px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font: 600 12px/20px var(--m-font);
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wv-allday-more:active {
+    background: var(--m-pressed);
+  }
+
+  /* -- hour grid ------------------------------------------------------------ */
+
+  /* Three days always fit, so nothing scrolls sideways — a sideways finger
+     pages instead (see the swipe in WeekView). */
+  .wv-scroll {
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    /* The last hours can scroll clear of the floating + button. */
+    padding-bottom: calc(var(--m-fab) + 24px + var(--safe-bottom, 0px));
+  }
+
+  .wv-canvas {
+    min-width: 0;
+  }
+
+  .wv-hour-label {
+    right: 8px;
+    font: 500 11px/1 var(--m-font);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-secondary);
+  }
+
+  .wv-day {
+    border-left-color: var(--wv-line);
+    background-image: linear-gradient(
+      to bottom,
+      var(--wv-line) 0,
+      var(--wv-line) 1px,
+      transparent 1px
+    );
+  }
+
+  .wv-day.is-today {
+    background-color: color-mix(in srgb, var(--m-accent) 5%, transparent);
+  }
+
+  .wv-now {
+    border-top-width: 2px;
+  }
+
+  .wv-now-dot {
+    left: -6px;
+    top: -6px;
+    width: 10px;
+    height: 10px;
+  }
+
+  /* -- event blocks: fixed readable type, rounded, a hair apart -------------- */
+
+  .wv-block,
+  .wv-ghost-solid,
+  .wv-ghost {
+    border-radius: 6px;
+  }
+
+  /* Inset a pixel all round, so two blocks side by side (or back to back)
+     show a 2px gap without changing the geometry the grid lays out. */
+  .wv-block {
+    clip-path: inset(1px round 6px);
+    box-shadow: none;
+    /* An event with no color or category still reads as a block, not as a
+       hole in the grid. */
+    background: var(--event-color, var(--m-accent-container));
+    color: var(--event-text-color, var(--m-on-accent-container));
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wv-block:active {
+    filter: brightness(0.94);
+  }
+
+  .wv-block-content.is-phone {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0;
+    padding: 4px 7px;
+    overflow: hidden;
+  }
+
+  .wv-phone-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--wv-lines, 2);
+    overflow: hidden;
+    font: var(--m-label);
+    line-height: 18px;
+    overflow-wrap: break-word;
+  }
+
+  .wv-phone-when {
+    display: none;
+    font: 400 12px/16px var(--m-font);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.88;
+  }
+
+  /* Tall enough for the times under the title: give the title whatever lines
+     remain above them. */
+  @container week-event (min-height: 62px) {
+    .wv-phone-when {
+      display: block;
+    }
+  }
+
+  @container week-event (min-height: 80px) {
+    .wv-block-content.is-phone {
+      --wv-lines: 3;
+    }
+  }
+
+  @container week-event (min-height: 98px) {
+    .wv-block-content.is-phone {
+      --wv-lines: 4;
+    }
+  }
+
+  @container week-event (min-height: 134px) {
+    .wv-block-content.is-phone {
+      --wv-lines: 6;
+    }
+  }
+
+  /* Sharing the hour with another event: the start time alone fits. */
+  @container week-event (max-width: 100px) {
+    .wv-block-content.is-phone {
+      padding-left: 5px;
+      padding-right: 4px;
+    }
+
+    .wv-phone-end {
+      display: none;
+    }
+  }
+
+  /* Half an hour or less: one line, the title then its start time. */
+  @container week-event (max-height: 43px) {
+    .wv-block-content.is-phone {
+      flex-direction: row;
+      align-items: center;
+      gap: 5px;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    .wv-phone-title {
+      display: block;
+      flex: 0 1 auto;
+      min-width: 0;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .wv-phone-when {
+      display: block;
+      flex: 0 0 auto;
+    }
+
+    .wv-phone-end {
+      display: none;
+    }
+  }
+
+  @container week-event (max-height: 22px) {
+    .wv-block-content.is-phone {
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+
+    .wv-phone-title {
+      font: 600 11px/12px var(--m-font);
+    }
+
+    .wv-phone-when {
+      font-size: 10px;
+      line-height: 12px;
+    }
+  }
+
+  /* Gap markers are not rendered on phones (WeekView passes no threshold). */
+}
+
+/* A finger can't aim at a 12px strip, and on a phone that strip would steal
+   the scroll that starts on it: resize is the editor's job there. */
+@media (max-width: 768px) and (pointer: coarse) {
+  .wv-resize {
+    display: none;
   }
 }

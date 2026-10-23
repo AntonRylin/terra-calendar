@@ -1598,6 +1598,21 @@
   animation: event-match-shift 6s linear infinite;
 }
 
+/* Phones: a category gradient is any user gradient (often 135deg, first stop
+   not repeated), so scrolling it across tile boundaries shows a hard seam —
+   very visible on tall week-view blocks. Drift back and forth inside one tile
+   instead (0% → 100% of a 300%-wide image never reaches the next tile). Kept
+   above the reduced-motion block so that still switches it off. */
+@keyframes event-match-sway {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+@media (max-width: 768px) {
+  .event-match-gradient {
+    animation: event-match-sway 6s ease-in-out infinite alternate;
+  }
+}
+
 /* The matched-category drift was left out of the reduced-motion block above
    because it is applied by an inline style rather than a cosmetic- class. */
 @media (prefers-reduced-motion: reduce) {

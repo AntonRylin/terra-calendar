@@ -21,6 +21,7 @@ import { HabitDayContent, HabitEntryEditor } from '../habit-tabs/HabitDayContent
 import { useHabitEntriesStore } from '../../app/habitEntriesStore';
 import { groupOccurrences } from './grid';
 import { useExpandedDay } from './ExpandedDay';
+import { DaySheet } from './DaySheet';
 import { buildWeeks, mondayOf, weekMonth } from './weeks';
 import { Dropdown } from '../../ui/Dropdown';
 import { ZoomStepper } from '../../ui/ZoomStepper';
@@ -29,6 +30,7 @@ import { AccountMenu } from '../../ui/AccountMenu';
 import { SidebarToggle } from '../../app/SidebarToggle';
 import { MobileHeader } from '../../app/MobileHeader';
 import { useIsMobile } from '../../ui/useMediaQuery';
+import { useAndroidBack } from '../../app/androidBack';
 import { useAutoHideScrollbar } from '../../ui/useAutoHideScrollbar';
 import { AnchoredPopover } from '../../ui/AnchoredPopover';
 import { eventHoverProps } from '../../ui/eventHoverStore';
@@ -49,6 +51,8 @@ const MONTH_NAMES = [
 ];
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MAX_CHIPS = 3;
+/** Week row height on phones (px): date circle + three event bars + "+N". */
+const PHONE_WEEK_HEIGHT = 108;
 
 // Holds a copied day style across cell selections. Module-scoped (not a ref or
 // state) so it survives the grid re-mounting when the selected cell changes.
@@ -267,6 +271,7 @@ function LocationDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  useAndroidBack(isOpen, onClose);
 
   useEffect(() => {
     if (isOpen) {
@@ -370,6 +375,7 @@ function LocationDialog({
 
 export function MonthGrid() {
   const today = todayISO();
+  const currentYear = Number(today.slice(0, 4));
   const tileScale = useSettingsStore((s) => s.tileScale);
   const setTileScale = useSettingsStore((s) => s.setTileScale);
   const tileScaleAuto = useSettingsStore((s) => s.tileScaleAuto);
@@ -387,7 +393,9 @@ export function MonthGrid() {
   const showGrid = useSettingsStore((s) => s.showGrid) ?? true;
 
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
-  const WEEK_HEIGHT = 186 * tileScale;
+  // Phones use one fixed, Google-Calendar-like row height (a date circle and
+  // three compact bars); the desktop zoom (tileScale) doesn't apply there.
+  const WEEK_HEIGHT = isMobile ? PHONE_WEEK_HEIGHT : 186 * tileScale;
   const EDGE_PX = WEEK_HEIGHT * 4;
 
   const currentMonday = useMemo(() => mondayOf(today), [today]);
@@ -463,7 +471,9 @@ export function MonthGrid() {
   // width is independent of tileScale while its height is proportional to it, so
   // scaling the current scale by (width / height) lands on square in one step.
   useEffect(() => {
-    if (!tileScaleAuto) return;
+    // Phones have a fixed row height, so fitting would only rewrite the
+    // (synced) desktop zoom setting.
+    if (!tileScaleAuto || isMobile) return;
     const container = scrollRef.current;
     if (!container) return;
     const fit = () => {
@@ -480,7 +490,7 @@ export function MonthGrid() {
     const ro = new ResizeObserver(fit);
     ro.observe(container);
     return () => ro.disconnect();
-  }, [tileScaleAuto, setTileScaleAuto]);
+  }, [tileScaleAuto, setTileScaleAuto, isMobile]);
 
 
   const [firstMonday, setFirstMonday] = useState(() => addDays(currentMonday, -INITIAL_BEFORE * 7));
@@ -525,6 +535,13 @@ export function MonthGrid() {
     date: string; tile: HTMLElement; collapsedHeight: number;
   } | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  // Phones: tapping a day opens its bottom sheet (events, weather, actions).
+  // `tile` stays mounted while the sheet is open, so it anchors whatever the
+  // sheet opens next (editor, quick entry, day style).
+  const [daySheet, setDaySheet] = useState<{ date: string; tile: HTMLElement } | null>(null);
+  useEffect(() => {
+    if (!isMobile) setDaySheet(null);
+  }, [isMobile]);
 
   const closeExpandedDay = (restoreFocus = false) => {
     if (restoreFocus) returnFocusRef.current = expandedDay?.tile ?? null;
@@ -588,7 +605,7 @@ export function MonthGrid() {
   const habitTabsEnabled = useSettingsStore((s) => s.habitTabsEnabled);
   const habitTabs = useSettingsStore((s) => s.habitTabs);
   const activeHabitTabId = useUiStore((s) => s.activeHabitTab);
-  useEffect(() => { setExpandedDay(null); }, [calendarViewMode, activeHabitTabId]);
+  useEffect(() => { setExpandedDay(null); setDaySheet(null); }, [calendarViewMode, activeHabitTabId]);
   const habitEntries = useHabitEntriesStore((s) => s.entries);
   const activeTab = habitTabsEnabled ? habitTabs.find((t) => t.id === activeHabitTabId) ?? null : null;
 
@@ -1531,7 +1548,7 @@ export function MonthGrid() {
           customBgClass +
           (expanded ? '' : specialAnimationClass)
         }
-        onPointerDown={isCurrentMonth && !habitActive && !expanded ? (e) => onTilePointerDown(e, cell.date) : undefined}
+        onPointerDown={isCurrentMonth && !habitActive && !expanded && !isMobile ? (e) => onTilePointerDown(e, cell.date) : undefined}
         onPointerEnter={isCurrentMonth && !habitActive ? () => onTilePointerEnter(cell.date) : undefined}
 
         onDragEnter={isCurrentMonth && !habitActive ? (e) => {
@@ -1582,6 +1599,10 @@ export function MonthGrid() {
           }
           setSelectedDate(cell.date);
           if (selectionActive) return;
+          if (isMobile) {
+            setDaySheet({ date: cell.date, tile: e.currentTarget });
+            return;
+          }
           openQuickEntry(cell.date, e.currentTarget);
         }}
         onContextMenu={isCurrentMonth ? (e) => onDayContextMenu(e, cell.date) : undefined}
@@ -1594,11 +1615,11 @@ export function MonthGrid() {
         <span className="day-number">
           {calendarViewMode !== 'separate' && cell.isFirstOfMonth && (
             <span className="month-marker">
-              {MONTH_NAMES[monthNum]}
-              {monthNum === 0 ? ` ${monthYear}` : ''}
+              {isMobile ? MONTH_NAMES[monthNum].slice(0, 3) : MONTH_NAMES[monthNum]}
+              {monthNum === 0 && !isMobile ? ` ${monthYear}` : ''}
             </span>
           )}
-          {cell.day}
+          {isMobile ? <span className="day-num">{cell.day}</span> : cell.day}
           {specialDay?.emoji && (
             <span className="special-day-emoji-badge" title="Special day!">
               {specialDay.emoji}
@@ -1723,7 +1744,8 @@ export function MonthGrid() {
           const info = weather && weather[cell.date];
           const showWeather =
             weatherAndLocationEnabled && showWeatherIconOnDays && !!info && cell.date >= today && isRainyOrSunny(info.code);
-          const showClock = cell.isToday && showClockOnToday;
+          // Phones mark today with the filled date circle instead of a clock.
+          const showClock = cell.isToday && showClockOnToday && !isMobile;
           if (!showWeather && !showClock) return null;
           const weatherIcon = showWeather && info ? (
             <span
@@ -1903,7 +1925,7 @@ export function MonthGrid() {
               const tile = e.currentTarget.parentElement!;
               setExpandedDay({ date: cell.date, tile, collapsedHeight: tile.offsetHeight });
             }}
-          >+{dayEvents.length - MAX_CHIPS} more</button>
+          >+{dayEvents.length - MAX_CHIPS}{isMobile ? '' : ' more'}</button>
         )}
         {expanded && (
           <div className="expanded-day-actions">
@@ -1943,16 +1965,24 @@ export function MonthGrid() {
   );
 
   return (
-    <div className={`month-grid grid-style-${showGrid ? 'on' : 'off'}`}>
+    <div
+      className={
+        `month-grid grid-style-${showGrid ? 'on' : 'off'}` +
+        (isMobile ? ' is-phone' : '') +
+        (isMobile && selectionActive ? ' is-selecting' : '')
+      }
+    >
       <DayCustomStyleSheet specialDays={specialDays} />
       {isMobile ? (
         <MobileHeader
-          title={<>{MONTH_NAMES[header.month - 1]} <span className="month-year">{header.year}</span></>}
-        >
-          {viewSwitcher}
-          <ToolbarButton onClick={scrollToToday} disabled={todayVisible}>Today</ToolbarButton>
-          {weatherGlance}
-        </MobileHeader>
+          title={
+            <>
+              {MONTH_NAMES[header.month - 1]}
+              {header.year !== currentYear && <span className="month-year"> {header.year}</span>}
+            </>
+          }
+          onToday={scrollToToday}
+        />
       ) : (
       <header className="month-header" data-tauri-drag-region>
         <div className="month-header-left" data-tauri-drag-region>
@@ -1984,7 +2014,7 @@ export function MonthGrid() {
       <HabitTabSwitcher />
       <div className="weekday-row">
         {WEEKDAYS.map((d) => (
-          <div key={d}>{d}</div>
+          <div key={d} aria-label={isMobile ? d : undefined}>{isMobile ? d[0] : d}</div>
         ))}
       </div>
       <div
@@ -1999,7 +2029,10 @@ export function MonthGrid() {
           groupedMonths.map((month) => (
             <div key={month.key} className="month-block-container" data-month-block={month.key}>
               <h2 className="month-block-title">
-                {MONTH_NAMES[month.month - 1]} <span className="month-block-year">{month.year}</span>
+                {MONTH_NAMES[month.month - 1]}
+                {(!isMobile || month.year !== currentYear) && (
+                  <> <span className="month-block-year">{month.year}</span></>
+                )}
               </h2>
               <div className="month-block">
                 <div className="month-block-grid">
@@ -2078,6 +2111,43 @@ export function MonthGrid() {
       {menu && (
         <ContextMenu anchor={menu.anchor} items={menu.items} onClose={() => setMenu(null)} />
       )}
+      {daySheet && (() => {
+        const sd = getSpecialDayForDate(specialDays, daySheet.date);
+        const sbg = sd ? resolveDayBackground(sd) : ({ kind: 'none' } as DayBackground);
+        let styleClassName = '';
+        if (sbg.kind === 'cosmetic') {
+          const c = cosmeticById(sbg.id);
+          const cls = cosmeticClass(sbg.id);
+          if (c && cls) styleClassName = ` ${cls} cosmetic-${c.kind}`;
+        } else if (sbg.kind === 'image' || sbg.kind === 'css') {
+          styleClassName = ' is-custom-bg';
+        }
+        const styleFill =
+          sbg.kind === 'image' && dayImageUrls[sbg.ref.id] ? (
+            <DayMediaFill url={dayImageUrls[sbg.ref.id]} video={sbg.ref.media === 'video'} />
+          ) : sbg.kind === 'css' ? (
+            <div className={`day-fill ${sbg.scopeClass}`} aria-hidden="true" />
+          ) : null;
+        const info = weatherAndLocationEnabled && weather ? weather[daySheet.date] : undefined;
+        return (
+          <DaySheet
+            date={daySheet.date}
+            today={today}
+            anchorEl={daySheet.tile}
+            events={byDate.get(daySheet.date) ?? []}
+            weather={info}
+            locationName={weatherAndLocationEnabled ? locationName : undefined}
+            onLocationClick={() => {
+              setDaySheet(null);
+              handleLocationClick();
+            }}
+            styleClassName={styleClassName}
+            styleFill={styleFill}
+            emoji={sd?.emoji || undefined}
+            onClose={() => setDaySheet(null)}
+          />
+        );
+      })()}
       <LocationDialog
         isOpen={isLocationDialogOpen}
         onClose={() => setIsLocationDialogOpen(false)}

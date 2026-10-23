@@ -102,3 +102,51 @@ it('centers a requested day using layout pixels at enlarged interface scale', ()
   expect((container.querySelector('.wv-day-headers') as HTMLElement).style.translate).toBe('-100px');
   expect(useUiStore.getState().weekFocusDate).toBeNull();
 });
+
+function phone() {
+  vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+    matches: query.includes('max-width: 768px'),
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }));
+}
+
+it('shows three days on a phone, opening on today, with today in the app bar', () => {
+  phone();
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-09-09T12:00:00Z'));
+  try {
+    useUiStore.setState({ viewedDate: '2026-09-01' });
+    const { container } = render(<WeekView />);
+    const shown = () => [...container.querySelectorAll<HTMLElement>('.wv-day-head')]
+      .map((b) => b.dataset.date)
+      .slice(3, 6);
+    expect(shown()).toEqual(['2026-09-09', '2026-09-10', '2026-09-11']);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^September$/);
+    expect(screen.queryByRole('button', { name: 'Next week' })).not.toBeInTheDocument();
+
+    act(() => useUiStore.setState({ viewedDate: '2026-09-29' }));
+    expect(shown()).toEqual(['2026-09-29', '2026-09-30', '2026-10-01']);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Sep – Oct$/);
+
+    act(() => screen.getByRole('button', { name: 'Go to today' }).click());
+    expect(shown()).toEqual(['2026-09-09', '2026-09-10', '2026-09-11']);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it('gives phone events a fixed title with their times underneath', () => {
+  phone();
+  useUiStore.setState({ viewedDate: '2026-09-08', selectedDate: '2026-09-08' });
+  render(<WeekView />);
+  const block = screen.getByRole('button', { name: /Morning meeting/ });
+  expect(block.querySelector('.wv-phone-title')).toHaveTextContent('Morning meeting');
+  expect(block.querySelector('.wv-title-text')).toBeNull();
+  expect(within(block).getByText('09:00', { selector: 'time' })).toBeInTheDocument();
+});

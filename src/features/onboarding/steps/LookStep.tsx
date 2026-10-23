@@ -1,6 +1,7 @@
 import { useSettingsStore, ACCENT_COLORS, type ThemeMode } from '../../../app/settingsStore';
 import { PaletteSelector } from '../../../ui/PaletteSelector';
 import { useOnboardingStore } from '../onboardingStore';
+import { useIsMobile } from '../../../ui/useMediaQuery';
 
 const THEMES: { id: ThemeMode; label: string }[] = [
   { id: 'light', label: 'Light' },
@@ -18,11 +19,16 @@ export function LookStep({ primaryRef }: { primaryRef: React.Ref<HTMLButtonEleme
   const setAccentColor = useSettingsStore((s) => s.setAccentColor);
   const next = useOnboardingStore((s) => s.next);
   const back = useOnboardingStore((s) => s.back);
+  const isMobile = useIsMobile();
 
   return (
     <>
       <h1 className="onboarding-title">Pick your look</h1>
-      <p className="onboarding-sub">Changes apply instantly — watch the calendar behind this card.</p>
+      <p className="onboarding-sub">
+        {isMobile
+          ? 'Changes apply right away — this screen is already wearing them.'
+          : 'Changes apply instantly — watch the calendar behind this card.'}
+      </p>
       <div className="onboarding-field">
         <span className="onboarding-label">Theme</span>
         <div className="onboarding-theme-seg" role="radiogroup" aria-label="Theme">

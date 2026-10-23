@@ -214,3 +214,81 @@
   background: rgba(0, 0, 0, 0.42);
   color: #fff;
 }
+
+/* Phones: "All styles" is a sheet; the sheet scrolls, not an inner box, and
+   the tiles fill a five-column grid at touch size. */
+@media (max-width: 768px) {
+  .popover-sheet .more-styles-container {
+    gap: 16px;
+  }
+
+  .popover-sheet .more-styles-header {
+    position: sticky;
+    top: var(--sheet-handle, 22px);
+    z-index: 2;
+    min-height: 56px;
+    margin: 0 calc(-1 * var(--sheet-pad, 16px));
+    padding: 0 4px 0 24px;
+    border-bottom: none;
+    background: var(--m-surface);
+  }
+
+  .popover-sheet .more-styles-header h3 {
+    font: 500 20px/28px var(--m-font);
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 1;
+  }
+
+  .popover-sheet .more-styles-close {
+    width: var(--m-touch);
+    height: var(--m-touch);
+    padding: 0;
+    border-radius: 50%;
+    font-size: 22px;
+  }
+
+  .popover-sheet .more-styles-close:active {
+    background: var(--m-pressed);
+  }
+
+  .popover-sheet .more-styles-body {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    gap: 20px;
+  }
+
+  .popover-sheet .more-styles-section-label {
+    font: var(--m-label);
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 1;
+  }
+
+  .popover-sheet .more-styles-section-hint {
+    font: var(--m-body-sm);
+  }
+
+  .popover-sheet .more-styles-grid {
+    gap: 10px;
+  }
+
+  .popover-sheet .more-styles-grid .cosmetic-swatch,
+  .popover-sheet .more-styles-grid .custom-swatch-wrap {
+    width: 100%;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .popover-sheet .more-styles-grid .custom-swatch-wrap .cosmetic-swatch {
+    height: 100%;
+  }
+
+  /* No hover on touch: keep the delete badge visible on saved styles. */
+  .popover-sheet .custom-swatch-del {
+    opacity: 1;
+    width: 22px;
+    height: 22px;
+  }
+}

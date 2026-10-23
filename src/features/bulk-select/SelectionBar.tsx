@@ -1,6 +1,7 @@
 import { useSelectionStore } from '../../app/selectionStore';
 import { useCalendarStore } from '../../app/store';
 import { confirmDialog } from '../../ui/confirmStore';
+import { useAndroidBack } from '../../app/androidBack';
 import './selectionBar.css';
 
 /** Floating bulk-action bar, shown while a selection is active. Rendered inside
@@ -14,6 +15,8 @@ export function SelectionBar() {
   const events = useCalendarStore((s) => s.events);
   const deleteEvents = useCalendarStore((s) => s.deleteEvents);
   const notify = useCalendarStore((s) => s.notify);
+  // Android back leaves selection mode, like any Android multi-select.
+  useAndroidBack(active, exit);
 
   if (!active) return null;
 

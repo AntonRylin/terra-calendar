@@ -244,7 +244,8 @@ export function CategoryEditor({ category, variant = 'pane' }: Props) {
         />
       </div>
 
-      <div className="catedit-match">
+      {/* Hidden on phones, which have no minimap (the setting still syncs). */}
+      <div className="catedit-match catedit-match--minimap">
         <div className="catedit-match-label">
           <div className="catedit-match-title">Hide from minimap</div>
           <div className="catedit-match-hint">No events of this category on the minimap.</div>

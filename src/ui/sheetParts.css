@@ -1,0 +1,365 @@
+/*
+ * Phone sheet building blocks (see SheetParts.tsx). Only phone code renders
+ * these classes, so desktop never matches them.
+ */
+
+/* ---- Header: ✕ · Title · [Save] ---------------------------------------- */
+.sheet-header {
+  position: sticky;
+  top: var(--sheet-handle, 22px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 56px;
+  margin: 0 calc(-1 * var(--sheet-pad, 16px)) 4px;
+  padding: 0 16px 4px 4px;
+  background: var(--m-surface);
+  touch-action: none;
+}
+
+.sheet-header-gap {
+  width: 12px;
+  flex: none;
+}
+
+.sheet-header-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0 4px;
+  font: var(--m-title-md);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sheet-icon-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--m-touch);
+  height: var(--m-touch);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-icon-btn:active {
+  background: var(--m-pressed);
+}
+
+/* Filled pill (Save / Done). */
+.sheet-pill {
+  flex: none;
+  height: 40px;
+  min-width: 72px;
+  padding: 0 22px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  font: var(--m-label);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-pill:active:not(:disabled) {
+  box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.16);
+}
+
+.sheet-pill:disabled {
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+  color: color-mix(in srgb, var(--color-text) 38%, transparent);
+  cursor: default;
+}
+
+/* Full-width tonal button (Custom background, Add reminder …). */
+.sheet-tonal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--m-touch);
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+  font: var(--m-label);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-tonal-btn:active {
+  box-shadow: inset 0 0 0 100px var(--m-pressed);
+}
+
+/* Text buttons (Delete, Reset). */
+.sheet-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--m-touch);
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  background: transparent;
+  color: var(--m-accent);
+  font: var(--m-label);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-text-btn:active {
+  background: var(--m-pressed);
+}
+
+.sheet-text-btn.is-danger {
+  color: var(--color-danger);
+}
+
+.sheet-divider {
+  height: 1px;
+  margin: 4px calc(-1 * var(--sheet-pad, 16px));
+  background: var(--m-outline);
+  border: none;
+  flex: none;
+}
+
+.sheet-section-label {
+  margin: 8px 0 0;
+  font: var(--m-label);
+  color: var(--color-text-secondary);
+}
+
+/* Title line for a menu sheet that has no header row. */
+.sheet-title {
+  margin: 2px 8px 8px;
+  font: var(--m-title-md);
+  color: var(--color-text);
+}
+
+/* ---- Leading-icon rows -------------------------------------------------- */
+.sheet-row {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  gap: 0;
+}
+
+.sheet-row.is-top {
+  align-items: flex-start;
+}
+
+.sheet-row-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  padding-left: 0;
+  color: var(--color-text-secondary);
+}
+
+.sheet-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 56px;
+}
+
+/* ---- Filled field (inputs, selects) ------------------------------------- */
+.sheet-field {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--m-radius-field);
+  background: var(--m-surface-2);
+  color: var(--color-text);
+  font: var(--m-body);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sheet-field:focus {
+  box-shadow: inset 0 0 0 2px var(--m-accent);
+}
+
+.sheet-field::placeholder {
+  color: var(--color-text-faint);
+}
+
+/* ---- Material 3 switch -------------------------------------------------- */
+.sheet-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-switch-row.is-disabled {
+  cursor: default;
+}
+
+.sheet-switch-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-switch-label {
+  font: var(--m-body);
+  color: var(--color-text);
+}
+
+.sheet-switch-hint {
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+}
+
+.sheet-switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 32px;
+}
+
+.sheet-switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.sheet-switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: var(--m-surface-3);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-text) 45%, transparent);
+  transition: background 160ms var(--m-ease), box-shadow 160ms var(--m-ease);
+  pointer-events: none;
+}
+
+.sheet-switch-thumb {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-text) 55%, transparent);
+  color: transparent;
+  transition: transform 200ms var(--m-ease), width 200ms var(--m-ease), height 200ms var(--m-ease),
+    top 200ms var(--m-ease), left 200ms var(--m-ease), background 160ms ease;
+}
+
+.sheet-switch input:checked + .sheet-switch-track {
+  background: var(--m-accent);
+  box-shadow: none;
+}
+
+.sheet-switch input:checked + .sheet-switch-track .sheet-switch-thumb {
+  top: 4px;
+  left: 24px;
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  color: var(--m-accent);
+}
+
+.sheet-switch input:active + .sheet-switch-track .sheet-switch-thumb {
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+}
+
+.sheet-switch input:checked:active + .sheet-switch-track .sheet-switch-thumb {
+  left: 22px;
+}
+
+.sheet-switch input:disabled + .sheet-switch-track {
+  opacity: 0.38;
+}
+
+.sheet-switch input:focus-visible + .sheet-switch-track {
+  outline: 2px solid var(--m-accent);
+  outline-offset: 2px;
+}
+
+/* ---- Menu sheet rows ---------------------------------------------------- */
+.sheet-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: calc(100% + 2 * var(--sheet-pad, 16px));
+  min-height: 56px;
+  margin: 0 calc(-1 * var(--sheet-pad, 16px));
+  padding: 0 24px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: var(--m-body);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-menu-item:active:not(:disabled) {
+  background: var(--m-pressed);
+}
+
+.sheet-menu-item:disabled {
+  opacity: 0.38;
+}
+
+.sheet-menu-item.is-danger {
+  color: var(--color-danger);
+}
+
+.sheet-menu-icon {
+  flex: none;
+  display: inline-flex;
+  width: 24px;
+  color: var(--color-text-secondary);
+}
+
+.sheet-menu-item.is-danger .sheet-menu-icon {
+  color: inherit;
+}
+
+.sheet-menu-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.sheet-menu-check {
+  flex: none;
+  display: inline-flex;
+  color: var(--m-accent);
+}

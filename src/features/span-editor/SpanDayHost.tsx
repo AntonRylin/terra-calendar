@@ -6,6 +6,9 @@ import { useCalendarStore } from '../../app/store';
 import { useUiStore, type SpanDayTarget } from '../../app/uiStore';
 import { AnchoredPopover } from '../../ui/AnchoredPopover';
 import { TimeField } from '../../ui/TimeField';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { SheetHeader, SheetRow } from '../../ui/SheetParts';
+import { ClockIcon } from '../../ui/sheetIcons';
 import '../event-editor/eventEditor.css';
 import './spanEditor.css';
 
@@ -135,6 +138,7 @@ function SpanDayForm({
   const [title, setTitle] = useState(initialTitle);
   const [time, setTime] = useState(initialTime);
   const [onMap, setOnMap] = useState(initialOnMap);
+  const isMobile = useIsMobile();
 
   // Only persist fields that differ from the span's own values.
   const override: DayOverride = {};
@@ -147,6 +151,40 @@ function SpanDayForm({
     onChange(computed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, time, onMap]);
+
+  // Phones: sheet header with Save; no minimap, so no "On map" switch.
+  if (isMobile) {
+    return (
+      <div className="event-editor event-editor--phone">
+        <SheetHeader
+          title={friendlyDate(date, undefined, todayISO())}
+          action={{ label: 'Save', onClick: () => onSave(computed) }}
+        />
+        <input
+          className="editor-title ee-title"
+          aria-label="Title"
+          placeholder={spanTitle}
+          value={title}
+          enterKeyHint="done"
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onSave(computed)}
+        />
+        <div className="sheet-divider" />
+        <SheetRow icon={<ClockIcon />}>
+          <div className="ee-when">
+            <TimeField value={time} onChange={setTime} ariaLabel="Time" clearable />
+          </div>
+        </SheetRow>
+        {hasOverride && (
+          <div className="ee-delete-row">
+            <button type="button" className="sheet-text-btn is-danger" onClick={() => onSave(null)}>
+              Reset day
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="event-editor">

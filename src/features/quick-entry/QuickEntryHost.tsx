@@ -7,6 +7,8 @@ import { useUiStore } from '../../app/uiStore';
 import { AnchoredPopover } from '../../ui/AnchoredPopover';
 import { useSettingsStore } from '../../app/settingsStore';
 import { QuickEntryDemo } from './QuickEntryDemo';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { CheckIcon } from '../../ui/sheetIcons';
 import './quickEntry.css';
 
 interface HourlyWeatherItem {
@@ -218,6 +220,8 @@ function QuickEntryForm({
     const interval = setInterval(fetchAndSet, 60000);
     return () => clearInterval(interval);
   }, [date]);
+
+  const isMobile = useIsMobile();
 
   async function submit() {
     if (!canSave) return;
@@ -507,6 +511,33 @@ function QuickEntryForm({
           grow without dragging the box you're typing in off the day. */}
       <div className="quick-entry-input-anchor">
         <div className="quick-entry-input-card">
+          {isMobile ? (
+            // Phone: a filled field with a save button at its end (there is
+            // no Enter key to point at on a touch keyboard's "done").
+            <div className="quick-entry-field">
+              <input
+                className="quick-entry-input"
+                autoFocus
+                aria-label="New event"
+                placeholder="9 30 11 30 spanish lesson..."
+                enterKeyHint="done"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void submit();
+                }}
+              />
+              <button
+                type="button"
+                className="quick-entry-save"
+                aria-label="Save event"
+                disabled={!canSave}
+                onClick={() => void submit()}
+              >
+                <CheckIcon />
+              </button>
+            </div>
+          ) : (
           <input
             className="quick-entry-input"
             autoFocus
@@ -517,6 +548,7 @@ function QuickEntryForm({
               if (e.key === 'Enter') void submit();
             }}
           />
+          )}
           <div className="quick-entry-hint">
             {(() => {
               const displayTime = parsed.time ?? slotTime;
@@ -526,7 +558,8 @@ function QuickEntryForm({
               return (
                 <>
                   {friendlyDate(date, displayTime, todayISO())}
-                  {displayTime && displayEndTime ? `–${displayEndTime}` : ''} · Enter to save · Esc to cancel
+                  {displayTime && displayEndTime ? `–${displayEndTime}` : ''}
+                  {isMobile ? '' : ' · Enter to save · Esc to cancel'}
                 </>
               );
             })()}

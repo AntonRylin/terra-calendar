@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import type { Recurrence, EventReminder } from '../../core/types';
 import { addMinutesToTime, defaultEndTime, durationMinutes, DEFAULT_DURATION_MIN } from '../../core/timeOfDay';
 import { PaletteSelector } from '../../ui/PaletteSelector';
@@ -16,6 +16,10 @@ import { TimeField } from '../../ui/TimeField';
 import { CategoryEditor } from '../category-editor/CategoryEditor';
 import { REMINDER_PRESETS, PRESET_KEYS, reminderLabel, type ReminderUnit } from './reminderPresets';
 import { EventSharePicker } from '../sharing/EventSharePicker';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { SheetHeader, SheetRow, SheetSwitch } from '../../ui/SheetParts';
+import { BellIcon, ClockIcon, ListIcon, NotesIcon, PaletteIcon, RepeatIcon, SparkleIcon, TagIcon } from '../../ui/sheetIcons';
+import { PhoneCategoryField } from './PhoneCategoryField';
 import './eventEditor.css';
 
 interface FormReminder {
@@ -75,6 +79,25 @@ interface EventFormProps {
   onChange?(values: EventFormValues): void;
   /** When provided, a Delete button is shown (edit mode). */
   onDelete?(): void;
+  /** Phone sheet title; defaults to "Edit event" / "New event". */
+  heading?: string;
+  /** Phone only: a note shown under the sheet header (e.g. shared calendar). */
+  notice?: ReactNode;
+}
+
+/** Phone repeat choices, worded like Android calendars. */
+const PHONE_REPEAT: { value: RecurrenceUnit; label: string }[] = [
+  { value: 'never', label: 'Does not repeat' },
+  { value: 'day', label: 'Every day' },
+  { value: 'week', label: 'Every week' },
+  { value: 'month', label: 'Every month' },
+  { value: 'year', label: 'Every year' },
+];
+
+/** Start time offered when a phone user switches "All-day" off: the next hour. */
+function nextHour(): string {
+  const h = Math.min(new Date().getHours() + 1, 23);
+  return `${String(h).padStart(2, '0')}:00`;
 }
 
 const PRESET_COLORS = [
@@ -184,7 +207,8 @@ function VisibilitySwitch({ label, checked, onChange, lockedBy, lockReason, onEd
 }
 
 /** Shared event form used by both the editor (edit) and the manual-add popover. */
-export function EventForm({ initial, submitLabel, onSubmit, onChange, onDelete }: EventFormProps) {
+export function EventForm({ initial, submitLabel, onSubmit, onChange, onDelete, heading, notice }: EventFormProps) {
+  const isMobile = useIsMobile();
   const caldav = useConnectionStore((s) => s.caldav);
   const google = useConnectionStore((s) => s.google);
   const enabledCalendars = useMemo(
@@ -432,6 +456,333 @@ export function EventForm({ initial, submitLabel, onSubmit, onChange, onDelete }
     });
   }
 
+  const calendarsField = (
+    <fieldset className="editor-calendars" aria-label="Calendars">
+      <legend>Calendars</legend>
+      {calendarGroups.map((group) => (
+        <div className="editor-account-group" key={`${group.provider}:${group.account}`}>
+          <div className="editor-account-header">
+            <span className="editor-account-logo">
+              <ProviderLogo provider={group.provider} size={13} />
+            </span>
+            <span className="editor-account-email">{group.account}</span>
+          </div>
+          {group.calendars.map((cal) => {
+            const checked = calendarUrls.includes(cal.url);
+            return (
+              <label key={cal.url} className="editor-cal-row">
+                <input
+                  type="checkbox"
+                  className="editor-cal-input"
+                  checked={checked}
+                  onChange={() => toggleCalendar(cal.url)}
+                />
+                <span className={`editor-cal-check${checked ? ' checked' : ''}`} aria-hidden="true">
+                  {checked && (
+                    <svg viewBox="0 0 16 16" width="11" height="11" fill="none">
+                      <path
+                        d="M3.5 8.5l3 3 6-7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </span>
+                <span className="editor-cal-name">{cal.displayName}</span>
+              </label>
+            );
+          })}
+        </div>
+      ))}
+    </fieldset>
+  );
+
+  const reminderPills = (
+    <div className="reminder-pills">
+      {reminders.map((r, index) => {
+        const active = editingReminder === index;
+        return (
+          <span className={`reminder-pill${active ? ' active' : ''}`} key={index}>
+            <button
+              type="button"
+              className="reminder-pill-label"
+              onClick={r.isCustom ? () => setEditingReminder(active ? null : index) : undefined}
+              disabled={!r.isCustom}
+            >
+              {reminderLabel(r.value, r.unit)}
+            </button>
+            <button
+              type="button"
+              className="reminder-pill-remove"
+              aria-label={`Remove reminder ${index + 1}`}
+              onClick={() => removeReminder(index)}
+            >
+              <svg viewBox="0 0 16 16" width="11" height="11" fill="none">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </button>
+          </span>
+        );
+      })}
+
+      <div className="reminder-add-wrap">
+        <button
+          ref={addMenuBtnRef}
+          type="button"
+          className="reminder-add-pill"
+          aria-label="Add reminder"
+          aria-expanded={addMenuOpen}
+          onClick={() => setAddMenuOpen((o) => !o)}
+        >
+          {isMobile ? 'Add reminder' : '+ Add'}
+        </button>
+        {addMenuOpen && addMenuBtnRef.current && (
+          <AnchoredPopover
+            anchorEl={addMenuBtnRef.current}
+            onClose={() => setAddMenuOpen(false)}
+            placement="bottom-start"
+            className="reminder-add-popover"
+          >
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {isMobile && <div className="sheet-title">Add reminder</div>}
+              {REMINDER_PRESETS.map((p) => {
+                const added = reminderKeys.has(`${p.value}-${p.unit}`);
+                return (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="reminder-menu-item"
+                    key={`${p.value}-${p.unit}`}
+                    disabled={added}
+                    onClick={() => addReminderPreset(p.value, p.unit)}
+                  >
+                    <span className="reminder-menu-check" aria-hidden="true">
+                      {added && (
+                        <svg viewBox="0 0 16 16" width="11" height="11" fill="none">
+                          <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </span>
+                    {p.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                role="menuitem"
+                className="reminder-menu-item custom"
+                onClick={addCustomReminder}
+              >
+                <span className="reminder-menu-check" aria-hidden="true" />
+                Custom…
+              </button>
+            </div>
+          </AnchoredPopover>
+        )}
+      </div>
+    </div>
+  );
+
+  const reminderCustomEditor = editingReminder !== null && reminders[editingReminder]?.isCustom && (
+      <div className="reminder-custom-editor">
+        <input
+          type="number"
+          className="reminder-custom-value"
+          aria-label={`Reminder ${editingReminder + 1} custom value`}
+          min={0}
+          value={reminders[editingReminder].value}
+          autoFocus
+          onChange={(e) => handleReminderCustomValueChange(editingReminder, Number(e.target.value))}
+        />
+        <select
+          className="reminder-custom-unit"
+          aria-label={`Reminder ${editingReminder + 1} custom unit`}
+          value={reminders[editingReminder].unit}
+          onChange={(e) => handleReminderCustomUnitChange(editingReminder, e.target.value as ReminderUnit)}
+        >
+          <option value="minutes">minutes</option>
+          <option value="hours">hours</option>
+          <option value="days">days</option>
+        </select>
+        <span className="reminder-custom-suffix">before</span>
+        <button
+          type="button"
+          className="reminder-custom-done"
+          onClick={() => setEditingReminder(null)}
+        >
+          Done
+        </button>
+      </div>
+  );
+
+  // Phones: a Material sheet — ✕ · title · Save on top, then rows with
+  // leading icons (Google Calendar's layout). Same state and handlers as the
+  // desktop form below; only the arrangement differs.
+  if (isMobile) {
+    return (
+      <div className="event-editor event-editor--phone">
+        <SheetHeader
+          title={heading ?? (onDelete ? 'Edit event' : 'New event')}
+          action={{ label: 'Save', onClick: () => submit(), disabled: !canSave }}
+        />
+        {notice}
+        <input
+          className="editor-title ee-title"
+          aria-label="Title"
+          placeholder="Add title"
+          value={title}
+          enterKeyHint="done"
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          autoFocus={!onDelete}
+        />
+        <div className="sheet-divider" />
+
+        <SheetRow icon={<ClockIcon />}>
+          <SheetSwitch
+            label="All-day"
+            checked={!time}
+            onChange={(allDay) => handleTimeChange(allDay ? '' : nextHour())}
+          />
+        </SheetRow>
+        <SheetRow>
+          <div className="ee-when">
+            <DateField value={date} onChange={setDate} ariaLabel="Date" />
+            {time && <TimeField value={time} onChange={handleTimeChange} ariaLabel="Time" />}
+          </div>
+        </SheetRow>
+        {time && (
+          <SheetRow>
+            <div className="ee-when">
+              <span className="ee-when-label">Ends</span>
+              <TimeField value={endTime} onChange={setEndTime} ariaLabel="End time" relativeTo={time} />
+            </div>
+          </SheetRow>
+        )}
+        <SheetRow icon={<RepeatIcon />}>
+          <div className="ee-repeat">
+            <span className="ee-select-wrap">
+              <select
+                className="ee-select"
+                aria-label="Repeats"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value as RecurrenceUnit)}
+              >
+                {PHONE_REPEAT.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </span>
+            {unit !== 'never' && (
+              <label className="ee-interval">
+                every
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  aria-label="Interval"
+                  min={1}
+                  value={interval}
+                  onChange={(e) => setIntervalValue(Number(e.target.value))}
+                />
+                {UNIT_LABELS[unit]}
+              </label>
+            )}
+          </div>
+        </SheetRow>
+        <div className="sheet-divider" />
+
+        <SheetRow icon={<TagIcon />}>
+          <div className="ee-category">
+            <PhoneCategoryField value={category} onChange={setCategory} categories={existingCategories} />
+            {categoryName && (
+              <button
+                type="button"
+                ref={categoryEditBtnRef}
+                className="sheet-text-btn"
+                aria-label={`Edit category ${categoryName}`}
+                onClick={() => setCategoryEditorOpen(true)}
+              >
+                Edit
+              </button>
+            )}
+          </div>
+        </SheetRow>
+        <SheetRow icon={<PaletteIcon />} className="ee-swatch-row">
+          <div className="ee-swatch-scroll" aria-label="Color">
+            <PaletteSelector value={color} onChange={setColor} presets={PRESET_COLORS} allowCustom={true} />
+          </div>
+        </SheetRow>
+        <SheetRow icon={<SparkleIcon />} className="ee-swatch-row">
+          <div className="ee-swatch-scroll" aria-label="Style">
+            <CosmeticSelector value={cosmetic} onChange={setCosmetic} color={color || undefined} />
+          </div>
+        </SheetRow>
+        <div className="sheet-divider" />
+
+        <SheetRow icon={<BellIcon />} align="start" className="ee-reminders">
+          {reminderPills}
+          {reminderCustomEditor}
+        </SheetRow>
+        <SheetRow icon={<NotesIcon />} align="start">
+          <textarea
+            className="ee-notes"
+            aria-label="Description"
+            placeholder="Add description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+          />
+        </SheetRow>
+
+        {isConnected && calendarsField}
+        <EventSharePicker
+          eventType={category.trim() || undefined}
+          shareInclude={shareOverrides.shareInclude}
+          shareExclude={shareOverrides.shareExclude}
+          onChange={setShareOverrides}
+        />
+
+        <div className="sheet-divider" />
+        {/* No minimap on phones, so only the Upcoming switch. */}
+        <SheetRow icon={<ListIcon />}>
+          <SheetSwitch
+            label="Show in Upcoming"
+            checked={upcomingLockedBy ? false : showInUpcoming}
+            disabled={Boolean(upcomingLockedBy)}
+            hint={upcomingLockedBy ? `Hidden by the “${upcomingLockedBy}” category` : undefined}
+            onChange={setShowInUpcoming}
+          />
+        </SheetRow>
+
+        {onDelete && (
+          <div className="ee-delete-row">
+            <button type="button" className="sheet-text-btn is-danger" onClick={onDelete}>
+              Delete event
+            </button>
+          </div>
+        )}
+
+        {categoryEditorOpen && categoryName && categoryEditBtnRef.current && (
+          <AnchoredPopover anchorEl={categoryEditBtnRef.current} onClose={() => setCategoryEditorOpen(false)}>
+            <SheetHeader title="Edit category" leading="back" action={{ label: 'Done' }} />
+            <div className="category-editor">
+              <CategoryEditor category={categoryName} variant="popover" />
+            </div>
+          </AnchoredPopover>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="event-editor">
       <input
@@ -622,48 +973,7 @@ export function EventForm({ initial, submitLabel, onSubmit, onChange, onDelete }
         <CosmeticSelector value={cosmetic} onChange={setCosmetic} color={color || undefined} />
       </div>
 
-      {isConnected && (
-        <fieldset className="editor-calendars" aria-label="Calendars">
-          <legend>Calendars</legend>
-          {calendarGroups.map((group) => (
-            <div className="editor-account-group" key={`${group.provider}:${group.account}`}>
-              <div className="editor-account-header">
-                <span className="editor-account-logo">
-                  <ProviderLogo provider={group.provider} size={13} />
-                </span>
-                <span className="editor-account-email">{group.account}</span>
-              </div>
-              {group.calendars.map((cal) => {
-                const checked = calendarUrls.includes(cal.url);
-                return (
-                  <label key={cal.url} className="editor-cal-row">
-                    <input
-                      type="checkbox"
-                      className="editor-cal-input"
-                      checked={checked}
-                      onChange={() => toggleCalendar(cal.url)}
-                    />
-                    <span className={`editor-cal-check${checked ? ' checked' : ''}`} aria-hidden="true">
-                      {checked && (
-                        <svg viewBox="0 0 16 16" width="11" height="11" fill="none">
-                          <path
-                            d="M3.5 8.5l3 3 6-7"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                    </span>
-                    <span className="editor-cal-name">{cal.displayName}</span>
-                  </label>
-                );
-              })}
-            </div>
-          ))}
-        </fieldset>
-      )}
+      {isConnected && calendarsField}
 
       {/* Who this particular event goes to, on top of each share's own scope.
           Renders nothing until the user has actually created a share. */}
@@ -719,120 +1029,9 @@ export function EventForm({ initial, submitLabel, onSubmit, onChange, onDelete }
             Reminders
           </span>
         </div>
-        <div className="reminder-pills">
-          {reminders.map((r, index) => {
-            const active = editingReminder === index;
-            return (
-              <span className={`reminder-pill${active ? ' active' : ''}`} key={index}>
-                <button
-                  type="button"
-                  className="reminder-pill-label"
-                  onClick={r.isCustom ? () => setEditingReminder(active ? null : index) : undefined}
-                  disabled={!r.isCustom}
-                >
-                  {reminderLabel(r.value, r.unit)}
-                </button>
-                <button
-                  type="button"
-                  className="reminder-pill-remove"
-                  aria-label={`Remove reminder ${index + 1}`}
-                  onClick={() => removeReminder(index)}
-                >
-                  <svg viewBox="0 0 16 16" width="11" height="11" fill="none">
-                    <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                  </svg>
-                </button>
-              </span>
-            );
-          })}
+        {reminderPills}
 
-          <div className="reminder-add-wrap">
-            <button
-              ref={addMenuBtnRef}
-              type="button"
-              className="reminder-add-pill"
-              aria-label="Add reminder"
-              aria-expanded={addMenuOpen}
-              onClick={() => setAddMenuOpen((o) => !o)}
-            >
-              + Add
-            </button>
-            {addMenuOpen && addMenuBtnRef.current && (
-              <AnchoredPopover
-                anchorEl={addMenuBtnRef.current}
-                onClose={() => setAddMenuOpen(false)}
-                placement="bottom-start"
-                className="reminder-add-popover"
-              >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {REMINDER_PRESETS.map((p) => {
-                    const added = reminderKeys.has(`${p.value}-${p.unit}`);
-                    return (
-                      <button
-                        type="button"
-                        role="menuitem"
-                        className="reminder-menu-item"
-                        key={`${p.value}-${p.unit}`}
-                        disabled={added}
-                        onClick={() => addReminderPreset(p.value, p.unit)}
-                      >
-                        <span className="reminder-menu-check" aria-hidden="true">
-                          {added && (
-                            <svg viewBox="0 0 16 16" width="11" height="11" fill="none">
-                              <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          )}
-                        </span>
-                        {p.label}
-                      </button>
-                    );
-                  })}
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="reminder-menu-item custom"
-                    onClick={addCustomReminder}
-                  >
-                    <span className="reminder-menu-check" aria-hidden="true" />
-                    Custom…
-                  </button>
-                </div>
-              </AnchoredPopover>
-            )}
-          </div>
-        </div>
-
-        {editingReminder !== null && reminders[editingReminder]?.isCustom && (
-          <div className="reminder-custom-editor">
-            <input
-              type="number"
-              className="reminder-custom-value"
-              aria-label={`Reminder ${editingReminder + 1} custom value`}
-              min={0}
-              value={reminders[editingReminder].value}
-              autoFocus
-              onChange={(e) => handleReminderCustomValueChange(editingReminder, Number(e.target.value))}
-            />
-            <select
-              className="reminder-custom-unit"
-              aria-label={`Reminder ${editingReminder + 1} custom unit`}
-              value={reminders[editingReminder].unit}
-              onChange={(e) => handleReminderCustomUnitChange(editingReminder, e.target.value as ReminderUnit)}
-            >
-              <option value="minutes">minutes</option>
-              <option value="hours">hours</option>
-              <option value="days">days</option>
-            </select>
-            <span className="reminder-custom-suffix">before</span>
-            <button
-              type="button"
-              className="reminder-custom-done"
-              onClick={() => setEditingReminder(null)}
-            >
-              Done
-            </button>
-          </div>
-        )}
+        {reminderCustomEditor}
       </div>
 
       <div className="minimap-toggle-row">

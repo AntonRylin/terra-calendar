@@ -1,5 +1,6 @@
 import { useEffect, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
+import { useAndroidBack } from '../../app/androidBack';
 
 /** One animation effect. Any number can be on at once; `id` is what's stored in
  *  a special day's `animations` array. */
@@ -320,6 +321,10 @@ export function EffectsModal({ selected, day, onToggle, onClear, onClose }: Effe
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // Android back closes this gallery first (the panel's own back handler is
+  // off while it is up).
+  useAndroidBack(true, onClose);
 
   const count = selected.length;
 

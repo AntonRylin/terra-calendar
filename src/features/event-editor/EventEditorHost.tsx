@@ -11,6 +11,8 @@ import { AnchoredPopover } from '../../ui/AnchoredPopover';
 import { EventForm, type EventFormValues } from './EventForm';
 import type { CalendarEvent } from '../../core/types';
 import { confirmDialog, confirmChoice } from '../../ui/confirmStore';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { SheetHeader } from '../../ui/SheetParts';
 
 export function EventEditorHost() {
   const target = useUiStore((s) => s.editor);
@@ -35,6 +37,7 @@ function EditorPopover({
   occurrenceDate?: string;
 }) {
   const close = useUiStore((s) => s.closeOverlays);
+  const isMobile = useIsMobile();
   const displayTimeZone = useSettingsStore((s) => s.displayTimeZone);
   // Own events and received shared ones both open here; which store an edit
   // goes back to is decided in handleSubmit.
@@ -170,6 +173,7 @@ function EditorPopover({
   if (owner.readOnly) {
     return (
       <AnchoredPopover anchorEl={anchorEl} onClose={close}>
+        {isMobile && <SheetHeader title="Event" />}
         <div className="event-readonly">
           <h3 className="event-readonly-title">{event.title}</h3>
           <p className="event-readonly-when">
@@ -187,15 +191,19 @@ function EditorPopover({
     );
   }
 
+  const sharedNote = (
+    <p className="event-shared-note">
+      On {owner.calendarName ?? 'a shared calendar'} — your changes are sent to everyone
+      it’s shared with.
+    </p>
+  );
+
   return (
     <AnchoredPopover anchorEl={anchorEl} onClose={close}>
-      {owner.foreign && (
-        <p className="event-shared-note">
-          On {owner.calendarName ?? 'a shared calendar'} — your changes are sent to everyone
-          it’s shared with.
-        </p>
-      )}
+      {owner.foreign && !isMobile && sharedNote}
       <EventForm
+        heading="Edit event"
+        notice={owner.foreign && isMobile ? sharedNote : undefined}
         initial={{
           title: event.title,
           date: shown.date,

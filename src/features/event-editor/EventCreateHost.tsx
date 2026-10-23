@@ -89,6 +89,7 @@ export function EventCreateHost() {
       <EventForm
         initial={{ title: '', date: todayISO(), recurrence: null, color: '', showOnMinimap: true, showInUpcoming: true, reminders: [] }}
         submitLabel="Add"
+        heading="New event"
         onSubmit={handleSubmit}
         onChange={handleChange}
       />

@@ -20,6 +20,8 @@ import { buildEventMenuItems, deleteEventWithConfirm } from '../../app/eventActi
 import { useAutoHideScrollbar } from '../../ui/useAutoHideScrollbar';
 import { useMarqueeSelect } from './useMarqueeSelect';
 import { ExpandingSearch } from '../../ui/ExpandingSearch';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { eventSwatch } from '../../app/eventSwatch';
 import './upcomingStack.css';
 import '../../ui/toolbarButton.css';
 // Reuse the day-editing popover's control styles (.sd-*) so the filter popover
@@ -82,6 +84,8 @@ export function UpcomingStack() {
   const events = useVisibleEvents();
   const displayTimeZone = useSettingsStore((s) => s.displayTimeZone);
   const storeCategories = useSettingsStore((s) => s.categories);
+  // Phones show the panel inside the navigation drawer as compact list rows.
+  const isMobile = useIsMobile();
 
   /** Matched-category tint for a card's dot (event's own color wins upstream). */
   const matchedDotStyle = (event: CalendarEvent): React.CSSProperties | undefined => {
@@ -624,6 +628,48 @@ export function UpcomingStack() {
       setViewedDate(date);
     };
 
+    const menuItemsFor = (cardEl: Element) =>
+      buildMenuItems({
+        event,
+        navDate: date,
+        occurrenceDate: date,
+        cardEl,
+        span: isSpan(event) ? { start: event.date, end: spanEndDate(event) } : undefined,
+      });
+
+    // Phone (inside the drawer): one compact row — colour dot, title over its
+    // date, relative time at the end. Long-press opens the same menu.
+    if (isMobile) {
+      return (
+        <div
+          key={`${event.id}-${date}`}
+          id={`upcoming-card-${event.id}-${date}`}
+          data-event-id={event.id}
+          className={'upcoming-card upcoming-row' + (isSelected ? ' is-selected' : '') + (isHighlighted ? ' is-highlighted' : '')}
+          role="button"
+          tabIndex={0}
+          onClick={cardClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              cardClick();
+            }
+          }}
+          onContextMenu={(e) => openCardMenu(e, menuItemsFor(e.currentTarget), event.id)}
+        >
+          <span className="upcoming-dot" style={{ background: eventSwatch(event, storeCategories) }} aria-hidden="true" />
+          <span className="upcoming-card-body">
+            <span className="upcoming-title">{event.title}</span>
+            <span className="upcoming-date">
+              {friendlyDate(date, time, today)}
+              {event.recurrence && <span className="upcoming-repeat"> · {describeRecurrence(event.recurrence)}</span>}
+            </span>
+          </span>
+          {showTimeUntil && <span className="upcoming-when">{getTimeUntil(date, time)}</span>}
+        </div>
+      );
+    }
+
     const details: React.ReactNode[] = [];
 
     settingsOrder.forEach((key) => {
@@ -807,7 +853,7 @@ export function UpcomingStack() {
       key={event.id}
       id={`upcoming-card-${event.id}`}
       data-event-id={event.id}
-      className={'upcoming-card task-card' + (compactMode ? ' is-compact' : '') + (selectionActive && selectedIds.has(event.id) ? ' is-selected' : '')}
+      className={'upcoming-card task-card' + (isMobile ? ' upcoming-row' : compactMode ? ' is-compact' : '') + (selectionActive && selectedIds.has(event.id) ? ' is-selected' : '')}
       role="button"
       tabIndex={0}
       onClick={(e) => {
@@ -850,6 +896,13 @@ export function UpcomingStack() {
         ], event.id)
       }
     >
+      {isMobile && (
+        <span
+          className="upcoming-dot is-task"
+          style={event.color ? { borderColor: event.color } : undefined}
+          aria-hidden="true"
+        />
+      )}
       <span className="upcoming-card-body">
         <div className="upcoming-title">{event.title}</div>
         {showCategory && event.type && (
@@ -858,7 +911,7 @@ export function UpcomingStack() {
           </div>
         )}
       </span>
-      <button
+      {isMobile ? null : <button
         className={'upcoming-delete-btn' + (selectionActive ? ' is-suppressed' : '')}
         onClick={(e) => handleDelete(e, event)}
         disabled={selectionActive}
@@ -869,7 +922,7 @@ export function UpcomingStack() {
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
-      </button>
+      </button>}
     </div>
   );
 
@@ -1384,6 +1437,9 @@ export function UpcomingStack() {
         ) : (
           <>
             {items.map(renderItem)}
+            {isMobile && filteredTasks.length > 0 && (
+              <div className="panel-sublabel upcoming-section-label">Tasks</div>
+            )}
             {filteredTasks.map(renderTask)}
           </>
         )}

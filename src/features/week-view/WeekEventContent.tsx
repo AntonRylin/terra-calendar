@@ -5,18 +5,21 @@ interface Props {
   title: string;
   startMin: number;
   endMin: number;
+  /** Phone layout: the title at a fixed, readable size with the times on a
+   *  line under it — no fitting, so every event reads at the same size. */
+  phone?: boolean;
 }
 
 /** Shared by events and their move/create previews, so the text uses the same
  * layout while dragging. Only the title font changes; event geometry never does. */
-export const WeekEventContent = memo(function WeekEventContent({ title, startMin, endMin }: Props) {
+export const WeekEventContent = memo(function WeekEventContent({ title, startMin, endMin, phone = false }: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
 
   useLayoutEffect(() => {
     const box = boxRef.current;
     const text = textRef.current;
-    if (!box || !text) return;
+    if (phone || !box || !text) return;
     let active = true;
 
     const fit = () => {
@@ -53,10 +56,24 @@ export const WeekEventContent = memo(function WeekEventContent({ title, startMin
       active = false;
       observer.disconnect();
     };
-  }, [title]);
+  }, [title, phone]);
 
   const start = minutesToTime(startMin);
   const end = minutesToTime(endMin);
+  if (phone) {
+    return (
+      <div className="wv-block-content is-phone">
+        <span className="wv-phone-title">{title}</span>
+        <span className="wv-phone-when">
+          <time dateTime={start}>{start}</time>
+          <span className="wv-phone-end">
+            {' – '}
+            <time dateTime={end}>{end}</time>
+          </span>
+        </span>
+      </div>
+    );
+  }
   return (
     <div className="wv-block-content">
       <div className="wv-block-times">

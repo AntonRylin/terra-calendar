@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { AnchoredPopover } from './AnchoredPopover';
 import { ToolbarButton } from './ToolbarButton';
+import { SheetMenuItem } from './SheetParts';
+import { useIsMobile } from './useMediaQuery';
 import './dropdown.css';
 
 export interface DropdownOption<T extends string> {
@@ -22,6 +24,7 @@ export function Dropdown<T extends string>({ value, options, onChange, ariaLabel
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLButtonElement>(null);
   const current = options.find((o) => o.value === value);
+  const isMobile = useIsMobile();
 
   // The menu shows hint keys (kbd) — honor them while it's open.
   useEffect(() => {
@@ -53,6 +56,23 @@ export function Dropdown<T extends string>({ value, options, onChange, ariaLabel
       </ToolbarButton>
       {open && anchor.current && (
         <AnchoredPopover anchorEl={anchor.current} onClose={() => setOpen(false)} placement="bottom-end" className="popover--dropdown">
+          {isMobile ? (
+            // Phone: a menu sheet — title, 56px rows, a check on the current one.
+            <div className="dd-menu" role="menu" aria-label={ariaLabel}>
+              {ariaLabel && <div className="sheet-title">{ariaLabel}</div>}
+              {options.map((o) => (
+                <SheetMenuItem
+                  key={o.value}
+                  label={o.label}
+                  selected={o.value === value}
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
           <div className="dd-menu" role="menu">
             {options.map((o) => (
               <button
@@ -77,6 +97,7 @@ export function Dropdown<T extends string>({ value, options, onChange, ariaLabel
               </button>
             ))}
           </div>
+          )}
         </AnchoredPopover>
       )}
     </>

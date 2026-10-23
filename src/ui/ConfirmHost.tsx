@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { FloatingPortal } from '@floating-ui/react';
 import { useConfirmStore } from './confirmStore';
+import { useAndroidBack } from '../app/androidBack';
 import './confirmDialog.css';
 
 /**
@@ -11,6 +12,8 @@ export function ConfirmHost() {
   const request = useConfirmStore((s) => s.request);
   const resolve = useConfirmStore((s) => s.resolve);
   const primaryRef = useRef<HTMLButtonElement>(null);
+  // Android back answers "Cancel", like a native dialog.
+  useAndroidBack(request !== null, () => resolve(null));
 
   useEffect(() => {
     if (!request) return;

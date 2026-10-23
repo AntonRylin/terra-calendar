@@ -72,3 +72,57 @@
   background: transparent;
   color: var(--color-text-faint, #636366);
 }
+
+/* Phones: a floating bottom action bar above the gesture bar, with touch-size
+   buttons, instead of a slim column on the screen edge. */
+@media (max-width: 768px) {
+  .main-screen-mobile .selection-bar,
+  .selection-bar {
+    position: fixed;
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(16px + var(--safe-bottom));
+    transform: translateX(-50%);
+    margin: 0;
+    z-index: 360;
+    flex-direction: row;
+    gap: 4px;
+    padding: 8px 8px 8px 16px;
+    border: none;
+    border-radius: var(--m-radius-card);
+    background: color-mix(in srgb, var(--m-accent) 6%, var(--m-surface));
+    box-shadow: var(--m-elev-3);
+  }
+
+  .selection-count {
+    width: auto;
+    min-width: 32px;
+    height: 32px;
+    margin-right: 8px;
+    padding: 0 10px;
+    border-radius: var(--m-radius-pill);
+    font: var(--m-label);
+  }
+
+  .selection-icon {
+    width: var(--m-touch);
+    height: var(--m-touch);
+    color: var(--color-text);
+  }
+
+  .selection-icon:hover,
+  .selection-icon-danger:hover {
+    background: transparent;
+    color: var(--color-text);
+  }
+
+  .selection-icon:active {
+    background: var(--m-pressed);
+  }
+
+  .selection-icon-danger,
+  .selection-icon-danger:hover {
+    color: var(--color-danger);
+  }
+}

@@ -81,7 +81,41 @@
   position: relative;
 }
 
-/* Above the calendar and the selection bar's base (200 sits over it so bulk
+/* ---- Floating action button (MobileFab.tsx) ---- */
+.m-fab {
+  position: fixed;
+  right: calc(16px + var(--safe-right));
+  bottom: calc(16px + var(--safe-bottom));
+  /* Over the calendar, under the drawer (190), the selection bar (200) and
+     every sheet/modal. */
+  z-index: 150;
+  width: var(--m-fab);
+  height: var(--m-fab);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--m-radius-fab);
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  box-shadow: var(--m-elev-3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 0.15s ease;
+}
+
+.m-fab:active {
+  box-shadow: var(--m-elev-1), inset 0 0 0 999px rgba(255, 255, 255, 0.16);
+}
+
+.m-fab:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--m-accent) 45%, transparent);
+  outline-offset: 2px;
+}
+
+/* ---- Navigation drawer (MobileDrawer.tsx) ----
+   Above the calendar and the selection bar's base (200 sits over it so bulk
    actions started from the drawer stay usable); below the settings modal (300)
    and bottom sheets (400), which can be opened from inside it. */
 .mobile-drawer-root {
@@ -98,9 +132,9 @@
 .mobile-drawer-scrim {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--m-scrim);
   opacity: 0;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.25s var(--m-ease);
 }
 
 .mobile-drawer-root.is-open .mobile-drawer-scrim {
@@ -112,52 +146,117 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: min(88vw, 380px);
+  width: min(85vw, 360px);
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
-  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.22);
+  background: var(--m-surface);
+  border-radius: 0 16px 16px 0;
+  box-shadow: var(--m-elev-3);
   padding: var(--safe-top) 0 var(--safe-bottom) var(--safe-left);
+  font-family: var(--m-font);
+  color: var(--color-text);
+  outline: none;
   transform: translateX(-100%);
   visibility: hidden;
-  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.26s;
+  transition: transform 0.3s var(--m-ease), visibility 0s linear 0.3s;
 }
 
 .mobile-drawer-root.is-open .mobile-drawer {
   transform: translateX(0);
   visibility: visible;
-  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
+  transition: transform 0.3s var(--m-ease), visibility 0s;
 }
 
 .mobile-drawer-head {
+  flex-shrink: 0;
+  padding: 20px 12px 8px;
+  border-bottom: 1px solid var(--m-outline);
+}
+
+.mobile-drawer-brand {
+  padding: 0 16px 12px;
+  font: var(--m-title-lg);
+  letter-spacing: -0.01em;
+}
+
+.mobile-drawer-account,
+.mobile-drawer-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 28px;
+  background: transparent;
+  color: var(--color-text);
+  font: var(--m-label);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-drawer-account:active,
+.mobile-drawer-row:active {
+  background: var(--m-pressed);
+}
+
+.mobile-drawer-account {
+  margin-bottom: 4px;
+}
+
+.mobile-drawer-avatar {
   flex-shrink: 0;
-  padding: var(--space-2) var(--space-2) 0 var(--space-4);
-}
-
-.mobile-drawer-title {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.mobile-drawer-close {
   width: 40px;
   height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
+  overflow: hidden;
   border-radius: 50%;
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+  font: 600 15px/1 var(--m-font);
 }
 
-.mobile-drawer-close:active {
-  background: var(--color-muted-bg);
+.mobile-drawer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mobile-drawer-who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-drawer-name {
+  font: var(--m-body);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-drawer-plan {
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-drawer-row svg {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.mobile-drawer-row {
+  gap: 16px;
 }
 
 .mobile-drawer-body {
@@ -167,6 +266,12 @@
   overflow: hidden;
 }
 
+.mobile-drawer-foot {
+  flex-shrink: 0;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--m-outline);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mobile-drawer,
   .mobile-drawer-root.is-open .mobile-drawer,
@@ -174,7 +279,6 @@
     transition: none;
   }
 }
-
 /* Resize Handles */
 .resize-handle-h {
   position: absolute;

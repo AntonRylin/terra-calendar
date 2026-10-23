@@ -8,6 +8,8 @@ import { confirmDialog } from '../../ui/confirmStore';
 import { shareLinkFor } from './shareLink';
 import type { Share, ShareDetail, ShareRole, ShareScopeMode } from '../../data/sharing/types';
 import { SHARE_MEMBER_LIMIT } from '../../data/sharing/types';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { PhoneActionRow, PhoneGroup } from '../settings/PhoneSettings';
 import './sharing.css';
 
 /** One line of plain English describing what a share currently covers. */
@@ -27,10 +29,33 @@ export function SharingSection() {
   const notify = useCalendarStore((s) => s.notify);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('Family');
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (session && cloudActive) void useShareStore.getState().refresh();
   }, [session, cloudActive]);
+
+  // Phones: the empty states as Android rows that lead somewhere.
+  if (isMobile && (!session || !cloudActive)) {
+    return (
+      <section className="settings-section ps-section">
+        <PhoneGroup
+          footer={<>Already receive a calendar shared through Google or Apple? That keeps working without Cloud — connect the account under Calendars.</>}
+        >
+          <PhoneActionRow
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            }
+            title={session ? 'Share with Cloud' : 'Sign in to share'}
+            summary="Send family a link. They see the events you choose — no subscription needed on their side."
+            onClick={() => useSettingsStore.getState().openSettings('account')}
+          />
+        </PhoneGroup>
+      </section>
+    );
+  }
 
   if (!session) {
     return (

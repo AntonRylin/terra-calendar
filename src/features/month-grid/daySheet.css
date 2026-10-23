@@ -1,0 +1,274 @@
+/* Phone day sheet (DaySheet.tsx): what a tapped day opens. Lives inside the
+   shared bottom sheet (AnchoredPopover on phones); only ever shown there. */
+.popover.popover-sheet.popover--day-sheet {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.day-sheet {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--m-font);
+  color: var(--color-text);
+}
+
+/* ---- Heading: style badge + date ---- */
+.day-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 24px 16px;
+}
+
+/* The badge is a tiny day tile, so the day's own style (gradient, emoji, image)
+   paints it exactly like the grid does. These rules undo the tile layout. */
+.day-tile.day-sheet-badge {
+  flex-shrink: 0;
+  position: relative;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--m-radius-card);
+  background-color: var(--m-surface-3);
+  overflow: hidden;
+  cursor: default;
+  font-size: 12px;
+}
+
+.day-tile.day-sheet-badge:hover {
+  border: none;
+}
+
+.day-tile.day-sheet-badge.is-today:not(.is-styled) {
+  background-color: var(--m-accent);
+}
+
+.day-sheet-badge .day-number {
+  position: relative;
+  z-index: 3;
+  font: 600 24px/1 var(--m-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.day-sheet-badge.is-today:not(.is-styled) .day-number {
+  color: var(--m-on-accent);
+}
+
+.day-sheet-badge.is-styled .day-number {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.day-sheet-badge-emoji {
+  position: absolute;
+  z-index: 3;
+  right: 3px;
+  bottom: 1px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.day-sheet-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.day-sheet-title {
+  margin: 0;
+  font: var(--m-title-lg);
+  letter-spacing: -0.01em;
+}
+
+.day-sheet-year {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.day-sheet-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+}
+
+.day-sheet-rel {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.day-sheet-rel.is-today {
+  color: var(--m-accent);
+}
+
+/* ---- Weather ---- */
+.day-sheet-weather {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 16px 8px;
+  padding: 10px 16px;
+  min-height: var(--m-touch);
+  border: none;
+  border-radius: var(--m-radius-field);
+  background: var(--m-surface-2);
+  color: var(--color-text);
+  font: var(--m-body-sm);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.day-sheet-weather:disabled {
+  cursor: default;
+}
+
+.day-sheet-weather:not(:disabled):active {
+  background: var(--m-surface-3);
+}
+
+.day-sheet-weather-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.day-sheet-weather-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  font-weight: 500;
+}
+
+.day-sheet-weather-temp,
+.day-sheet-weather-rain {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.day-sheet-weather-place {
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+/* ---- Event rows ---- */
+.day-sheet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+}
+
+.day-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 16px 8px 24px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.day-sheet-row:active {
+  background: var(--m-pressed);
+}
+
+.day-sheet-bar {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 4px;
+  min-height: 36px;
+  margin: 2px 0;
+  border-radius: 2px;
+}
+
+.day-sheet-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.day-sheet-row-title {
+  font: var(--m-body);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.day-sheet-row-when {
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-sheet-row-chev {
+  flex-shrink: 0;
+  color: var(--color-text-faint);
+}
+
+.day-sheet-empty {
+  margin: 4px 24px 16px;
+  font: var(--m-body-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Actions ---- */
+.day-sheet-actions {
+  display: flex;
+  gap: 12px;
+  padding: 8px 16px 4px;
+}
+
+.day-sheet-btn {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--m-touch);
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  font: var(--m-label);
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.day-sheet-btn.is-filled {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}
+
+.day-sheet-btn.is-tonal {
+  background: var(--m-accent-container);
+  color: var(--m-on-accent-container);
+}
+
+.day-sheet-btn:active {
+  box-shadow: inset 0 0 0 999px var(--m-pressed);
+}

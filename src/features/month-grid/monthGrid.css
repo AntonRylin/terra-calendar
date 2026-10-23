@@ -352,105 +352,6 @@
   outline-offset: 1px;
 }
 
-/* ---- Mobile ---- */
-@media (max-width: 768px) {
-  .month-grid {
-    padding: var(--space-3) var(--space-2) 0;
-  }
-
-  .month-header {
-    padding: 0 var(--space-1) var(--space-2);
-  }
-
-  .month-title {
-    font-size: 22px;
-  }
-
-  .weekday-row {
-    padding: 0 var(--space-1);
-    font-size: 10px;
-  }
-
-  .week-row {
-    gap: 3px;
-  }
-
-  .day-tile {
-    padding: 3px 4px;
-    border-radius: 5px;
-  }
-
-  .day-number {
-    font-size: 13px;
-  }
-
-  .today-clock {
-    top: 3px;
-    right: 4px;
-    font-size: 9px;
-  }
-
-  .day-weather {
-    top: 3px;
-    right: 4px;
-    font-size: 9px;
-  }
-
-  .day-corner {
-    top: 3px;
-    right: 4px;
-    gap: 3px;
-  }
-
-  .is-today .day-weather {
-    right: 50px;
-  }
-
-
-
-  /* Chips need a little more height to be readable/tappable. */
-  .event-chip {
-    padding: 2px 4px;
-    font-size: 10px;
-  }
-
-  /* A phone-width tile only fits a few characters, so a chip shows its title
-     (the time ate the whole chip). The expanded day has room for both. */
-  .day-tile:not(.day-tile-expanded) .event-chip .event-time {
-    display: none;
-  }
-
-  /* Tighter tiles and chips so a title shows a few more letters. Specificity
-     beats the grid-style-on/off padding rules further down; span bars bleed
-     over exactly that padding, so they follow it. */
-  .month-grid.grid-style-on .day-tile,
-  .month-grid.grid-style-off .day-tile {
-    padding: 6px 3px;
-  }
-
-  .month-grid .span-seg {
-    margin-left: -3px;
-    margin-right: -3px;
-  }
-
-  .month-grid .span-seg-start {
-    margin-left: 2px;
-  }
-
-  .month-grid .span-seg-end {
-    margin-right: 2px;
-  }
-
-  .month-grid .event-chip {
-    padding: 2px 3px;
-    text-overflow: clip;
-  }
-
-  .month-marker {
-    font-size: 9px;
-  }
-}
-
 /* Bulk-select mode */
 .event-chip.is-selected {
   outline: 2px solid var(--event-color, var(--color-accent));
@@ -631,4 +532,252 @@
    border doesn't shift the grid. */
 .grid-style-on .day-tile.hl-border-left {
   border-left: 1px solid var(--color-accent);
+}
+
+/* ---- Phones ----------------------------------------------------------------
+   Google-Calendar-like month: edge-to-edge cells, a centred date circle (filled
+   accent for today), compact full-width event bars, and the day styles still
+   filling the whole cell. Tapping a cell opens its day sheet (DaySheet.tsx), so
+   the bars themselves don't take taps. Kept last so it wins the grid-style
+   rules above at equal specificity. */
+@media (max-width: 768px) {
+  .month-grid {
+    padding: 0;
+    --effective-tile-scale: 1;
+    font-family: var(--m-font);
+  }
+
+  /* Weekday initials: one quiet row pinned under the app bar. */
+  .month-grid .weekday-row {
+    flex-shrink: 0;
+    align-items: center;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    font: 500 12px/16px var(--m-font);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .month-grid .weekday-row > div {
+    padding: 0;
+    text-align: center;
+  }
+
+  /* Room under the last row so the FAB never hides a day. */
+  .month-grid .week-scroll {
+    padding-bottom: calc(var(--m-fab) + 32px);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .month-grid .week-scroll::-webkit-scrollbar {
+    width: 0;
+  }
+
+  .month-grid .week-row {
+    gap: 0;
+    padding-bottom: 0;
+    contain-intrinsic-size: auto 108px;
+  }
+
+  .month-grid .day-tile,
+  .month-grid.grid-style-on .day-tile,
+  .month-grid.grid-style-off .day-tile {
+    padding: 4px 2px 2px;
+    gap: 2px;
+    border-radius: 0;
+    font-size: 11px;
+    -webkit-tap-highlight-color: transparent;
+    transition: none;
+  }
+
+  /* Touch has no hover: a tapped cell must not stay tinted. */
+  .month-grid.grid-style-on .day-tile:hover {
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+  }
+
+  .month-grid.grid-style-off .day-tile:hover {
+    background-color: transparent;
+  }
+
+  .month-grid .day-tile:active {
+    box-shadow: inset 0 0 0 999px var(--m-pressed);
+  }
+
+  /* The selected day is shown by its date circle, not an outline. */
+  .month-grid .day-tile.day-tile-today,
+  .month-grid .day-tile.day-tile-today:hover {
+    box-shadow: none;
+    z-index: auto;
+  }
+
+  .month-grid .day-tile.day-tile-today:active {
+    box-shadow: inset 0 0 0 999px var(--m-pressed);
+  }
+
+  /* ---- Date ---- */
+  .month-grid .day-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex-shrink: 0;
+    height: 26px;
+    font: 500 13px/1 var(--m-font);
+    color: var(--color-text);
+  }
+
+  .month-grid .day-tile-today .day-number {
+    font-weight: 500;
+  }
+
+  .month-grid .day-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 4px;
+    border-radius: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .month-grid .day-tile.day-tile-today .day-num {
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+    font-weight: 700;
+  }
+
+  .month-grid .day-tile.is-today .day-num,
+  .month-grid .day-tile.is-today.day-tile-today .day-num {
+    background: var(--m-accent);
+    color: var(--m-on-accent);
+    font-weight: 700;
+    text-shadow: none;
+  }
+
+  /* The first of a month in the continuous stream: "Nov 1". */
+  .month-grid .month-marker {
+    margin: 0;
+    padding: 0 3px;
+    border-radius: 4px;
+    font: 700 9px/14px var(--m-font);
+  }
+
+  /* Corner glyphs: the day's emoji top-left, a forecast icon top-right. */
+  .month-grid .day-tile .special-day-emoji-badge {
+    position: absolute;
+    top: 4px;
+    left: 3px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 14px;
+    vertical-align: baseline;
+  }
+
+  .month-grid .day-weather,
+  .month-grid .is-today .day-weather {
+    top: 3px;
+    right: 3px;
+    font-size: 10px;
+    line-height: 1;
+    cursor: default;
+  }
+
+  .month-grid .day-corner {
+    top: 3px;
+    right: 3px;
+  }
+
+  /* ---- Event bars ---- */
+  .month-grid .event-chip,
+  .month-grid .span-seg {
+    flex-shrink: 0;
+    height: 16px;
+    padding: 1px 3px;
+    font: var(--m-chip);
+    font-size: 10.5px;
+    line-height: 14px;
+    letter-spacing: -0.01em;
+    border-radius: 4px;
+    text-overflow: clip;
+  }
+
+  .month-grid .event-chip:not(.event-chip-allday) {
+    border-left-width: 2px;
+    border-radius: 3px;
+    background-color: color-mix(in srgb, var(--event-color, var(--color-accent)) 16%, transparent);
+  }
+
+  /* A bar already filled with its category colour/gradient needs no stripe. */
+  .month-grid .event-chip[style*='background'],
+  .month-grid .event-chip[class*='cosmetic-'] {
+    border-left: none;
+    border-radius: 4px;
+  }
+
+  /* A phone cell only fits a few letters: the title wins over the time. */
+  .month-grid .day-tile:not(.day-tile-expanded) .event-chip .event-time {
+    display: none;
+  }
+
+  .month-grid .span-seg {
+    margin-left: -2px;
+    margin-right: -2px;
+    border-radius: 0;
+  }
+
+  .month-grid .span-seg-start {
+    margin-left: 2px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  .month-grid .span-seg-end {
+    margin-right: 2px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+  .month-grid .event-more {
+    flex-shrink: 0;
+    padding: 0 3px;
+    font: 600 10px/13px var(--m-font);
+    color: var(--color-text-secondary);
+  }
+
+  /* The whole cell is the tap target (it opens the day sheet); bars are too
+     small to hit reliably. Bulk-select mode still toggles them directly. */
+  .month-grid.is-phone:not(.is-selecting) .day-tile .event-chip,
+  .month-grid.is-phone:not(.is-selecting) .day-tile .span-seg,
+  .month-grid.is-phone:not(.is-selecting) .day-tile .event-more {
+    pointer-events: none;
+  }
+
+  /* ---- Months view: a compact label per month section ---- */
+  .month-grid .month-block-container {
+    margin-bottom: 4px;
+  }
+
+  .month-grid .month-block-title {
+    margin: 0;
+    padding: 18px 16px 8px;
+    font: 700 20px/28px var(--m-font);
+    letter-spacing: -0.01em;
+  }
+
+  .month-grid .month-block-year {
+    margin-left: 6px;
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  .month-grid.grid-style-on .month-block-grid {
+    border-top: 1px solid var(--color-border);
+  }
 }

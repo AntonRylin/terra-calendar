@@ -150,3 +150,96 @@
     animation: none;
   }
 }
+
+/* ---- Phones: Material 3 dialog ----------------------------------------
+   28px corners, headline + supporting text, text buttons along the bottom
+   right with Cancel first (DOM order keeps the primary action first for
+   keyboard/screen readers; row-reverse puts it on the far right). */
+@media (max-width: 768px) {
+  .confirm-overlay {
+    padding: 24px max(24px, var(--safe-right)) max(24px, var(--safe-bottom)) max(24px, var(--safe-left));
+    background: var(--m-scrim);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .confirm-card {
+    max-width: 360px;
+    gap: 16px;
+    padding: 24px 24px 18px;
+    border: none;
+    border-radius: var(--m-radius-sheet);
+    background: color-mix(in srgb, var(--m-accent) 5%, var(--m-surface));
+    box-shadow: var(--m-elev-3);
+    animation: confirm-card-in 220ms var(--m-ease);
+  }
+
+  .confirm-title {
+    font: var(--m-title-lg);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .confirm-message {
+    font: var(--m-body-sm);
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--color-text-secondary);
+  }
+
+  .confirm-actions {
+    flex-direction: row-reverse;
+    flex-wrap: wrap-reverse;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 8px -12px 0 0;
+  }
+
+  .confirm-btn,
+  .confirm-btn.primary,
+  .confirm-btn.danger,
+  .confirm-cancel {
+    min-height: 40px;
+    padding: 0 12px;
+    border: none;
+    border-radius: var(--m-radius-pill);
+    background: transparent;
+    color: var(--m-accent);
+    font: var(--m-label);
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .confirm-btn.danger {
+    color: var(--color-danger);
+  }
+
+  /* The primary action is focused on open for Enter; on a touch screen that
+     ring would just look like a stray outline. */
+  .confirm-btn:focus-visible {
+    outline: none;
+  }
+
+  .confirm-btn:hover,
+  .confirm-btn.primary:hover:not(:disabled),
+  .confirm-btn.danger:hover:not(:disabled),
+  .confirm-cancel:hover {
+    background: transparent;
+    opacity: 1;
+  }
+
+  .confirm-cancel:hover {
+    color: var(--m-accent);
+  }
+
+  .confirm-btn:active,
+  .confirm-btn.primary:active:not(:disabled),
+  .confirm-btn.danger:active:not(:disabled),
+  .confirm-cancel:active {
+    transform: none;
+    background: var(--m-pressed);
+    opacity: 1;
+  }
+}

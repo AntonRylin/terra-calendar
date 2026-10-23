@@ -939,56 +939,8 @@
   border-top: none;
 }
 
-/* Mobile: stack the split card — the nav becomes a horizontal scrollable row. */
-@media (max-width: 768px) {
-  /* Phones: settings is a full-screen page rather than a 640px card floating
-     near the top with the calendar showing underneath. */
-  .settings-backdrop {
-    padding: 0;
-  }
-
-  .settings-card-split {
-    flex-direction: column;
-    width: 100%;
-    padding: var(--safe-top) 0 var(--safe-bottom);
-    height: 100dvh;
-    max-height: 100dvh;
-    border: none;
-    border-radius: 0;
-  }
-
-  .settings-nav-item {
-    min-height: 40px;
-  }
-
-  .settings-close {
-    width: 40px;
-    height: 40px;
-  }
-
-  .settings-nav {
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
-    overflow-x: auto;
-    border-right: none;
-    border-bottom: 0.5px solid var(--color-border);
-  }
-
-  .settings-nav-item {
-    flex: none;
-    white-space: nowrap;
-  }
-
-  /* No room for the account header in the horizontal mobile nav. */
-  .settings-nav-account {
-    display: none;
-  }
-
-  .settings-theme-seg {
-    width: 100%;
-  }
-}
+/* Phones render their own Settings screen (PhoneSettings.tsx, phoneSettings.css)
+   instead of this split card. */
 
 .settings-action-btn {
   display: block;

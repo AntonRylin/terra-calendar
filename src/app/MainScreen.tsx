@@ -6,6 +6,7 @@ import { isSidebarShortcut, toggleSidebar } from './sidebarVisibility';
 import { SelectionBar } from '../features/bulk-select/SelectionBar';
 import { useReminderScheduler } from './useReminderScheduler';
 import { MobileDrawer } from './MobileDrawer';
+import { MobileFab } from './MobileFab';
 import './mainScreen.css';
 
 export function MainScreen({ layout = defaultLayout }: { layout?: LayoutConfig }) {
@@ -122,13 +123,15 @@ export function MainScreen({ layout = defaultLayout }: { layout?: LayoutConfig }
   };
 
   // Phones: the calendar fills the screen. Upcoming lives in a slide-in drawer
-  // opened from the header's menu button; the minimap isn't offered at all.
+  // opened from the app bar's menu button; the minimap isn't offered at all.
+  // New events come from the floating action button.
   if (isMobile) {
     return (
       <div className="main-screen main-screen-mobile">
         <div className="mobile-view">
           <Main />
         </div>
+        <MobileFab />
         <MobileDrawer>
           <Top />
         </MobileDrawer>

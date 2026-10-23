@@ -22,6 +22,7 @@ import { MainScreen } from './MainScreen';
 import { MOBILE_QUERY } from '../ui/useMediaQuery';
 import { openMobileMenu, useMobileMenuStore } from './mobileMenu';
 import { useUiStore } from './uiStore';
+import { handleBack } from './androidBack';
 
 beforeEach(() => {
   localStorage.clear();
@@ -104,13 +105,15 @@ describe('MainScreen on a phone', () => {
     expect(drawer).toHaveAttribute('inert');
   });
 
-  it('opens the drawer and closes it from the close button, Escape and the scrim', () => {
+  it('opens the drawer and closes it from the back gesture, Escape and the scrim', () => {
     const { container } = render(<MainScreen />);
     const isOpen = () => container.querySelector('.mobile-drawer-root.is-open') !== null;
 
     act(() => openMobileMenu());
     expect(isOpen()).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Close menu' }));
+    act(() => {
+      handleBack();
+    });
     expect(isOpen()).toBe(false);
 
     act(() => openMobileMenu());
@@ -129,5 +132,14 @@ describe('MainScreen on a phone', () => {
     act(() => useUiStore.getState().setViewedDate('2031-05-04'));
 
     expect(container.querySelector('.mobile-drawer-root.is-open')).toBeNull();
+  });
+
+  it('shows a floating "+" that adds an event on the selected day', () => {
+    useUiStore.setState({ selectedDate: '2031-05-04', quickEntry: null });
+    render(<MainScreen />);
+
+    fireEvent.click(screen.getByRole('button', { name: /^New event on/ }));
+
+    expect(useUiStore.getState().quickEntry?.date).toBe('2031-05-04');
   });
 });

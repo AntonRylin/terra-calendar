@@ -13,6 +13,8 @@ import { SCENE_PRESETS, sceneDataUri, sceneImageRef, type ScenePreset } from './
 import { useCustomStylesStore } from '../../app/customStylesStore';
 import { useIsMobile } from '../../ui/useMediaQuery';
 import { CodeIcon, GradientIcon, LinkIcon, PhotoIcon, SceneIcon, VideoIcon } from './backgroundIcons';
+import { useAndroidBack } from '../../app/androidBack';
+import { BackIcon, CloseIcon } from '../../ui/sheetIcons';
 import './dayBackground.css';
 
 /** The five ways to set a background. 'home' is the method chooser. */
@@ -54,11 +56,14 @@ export function DayBackgroundHost() {
 
 function DayBackgroundModal({ date }: { date: string }) {
   const close = useUiStore((s) => s.closeOverlays);
+  const isPhone = useIsMobile();
   const { specialDays, setSpecialDayInMemory, removeSpecialDayInMemory, commit } = useSpecialDaysStore();
   const existing = specialDays.find((d) => d.date === date);
 
   // Always open on the method chooser: one clear step at a time.
   const [view, setView] = useState<View>('home');
+  // Android back steps out of a method page first, then closes.
+  useAndroidBack(true, () => (view === 'home' ? close() : setView('home')));
   const [preview, setPreview] = useState<Preview | null>(null);
   const [recipe, setRecipe] = useState(
     existing?.customStyle?.kind === 'recipe' ? existing.customStyle : DEFAULT_RECIPE,
@@ -215,6 +220,25 @@ function DayBackgroundModal({ date }: { date: string }) {
   return (
     <div className="dbg-backdrop" onClick={close}>
       <div className="dbg-modal" onClick={(e) => e.stopPropagation()}>
+        {isPhone && <div className="sheet-grabber" aria-hidden="true" />}
+        {isPhone ? (
+          // Phone: the same sheet header as every other sheet — ✕ (or ← on a
+          // method page) · title · Done.
+          <div className="dbg-header dbg-header--phone">
+            <button
+              type="button"
+              className="dbg-phone-icon"
+              aria-label={view === 'home' ? 'Close' : 'Back'}
+              onClick={view === 'home' ? close : () => setView('home')}
+            >
+              {view === 'home' ? <CloseIcon /> : <BackIcon />}
+            </button>
+            <span className="dbg-header-title">{activeMethod ? activeMethod.title : 'Day background'}</span>
+            <button type="button" className="dbg-phone-done" onClick={close}>
+              Done
+            </button>
+          </div>
+        ) : (
         <div className="dbg-header">
           {view === 'home' ? (
             <span className="dbg-back-spacer" />
@@ -224,6 +248,7 @@ function DayBackgroundModal({ date }: { date: string }) {
           <span className="dbg-header-title">{activeMethod ? activeMethod.title : 'Day background'}</span>
           <button className="dbg-close" onClick={close} aria-label="Done">✕</button>
         </div>
+        )}
 
         {previewStyle && <style>{previewCss}</style>}
         {hasPreview && (

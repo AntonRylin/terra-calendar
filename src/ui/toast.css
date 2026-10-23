@@ -13,3 +13,29 @@
   z-index: 1000; /* above the settings modal so "not implemented" notices show */
   max-width: 480px;
 }
+
+/* Phones: a Material snackbar, full width above the gesture bar. */
+@media (max-width: 768px) {
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: calc(16px + var(--safe-bottom));
+    transform: none;
+    max-width: none;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--color-text) 92%, var(--color-surface));
+    font: var(--m-body-sm);
+    box-shadow: var(--m-elev-3);
+    animation: toastUp 240ms var(--m-ease);
+  }
+}
+
+@keyframes toastUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}

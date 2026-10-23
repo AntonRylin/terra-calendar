@@ -364,3 +364,198 @@ input[type='range'] { accent-color: var(--color-accent); }
 
 .dbg-note { font-size: 11px; color: var(--color-text-faint); margin: var(--space-1) 0 0; }
 .dbg-error { font-size: 12px; color: var(--color-danger); margin: var(--space-1) 0 0; }
+
+/* ===== Phones: the background studio as a bottom sheet ====================
+   Same shape, handle, header and list rows as the other sheets. */
+@media (max-width: 768px) {
+  .dbg-backdrop {
+    align-items: flex-end;
+    overflow: hidden;
+    background: var(--m-scrim);
+    animation: sheetBackdropIn 240ms var(--m-ease);
+  }
+
+  .dbg-modal {
+    --sheet-pad: 16px;
+    --sheet-handle: 22px;
+    flex: none;
+    box-sizing: border-box;
+    width: calc(100% + 2px);
+    max-width: 640px;
+    max-height: calc(92dvh - var(--safe-top));
+    gap: 12px;
+    padding: 0 var(--sheet-pad) calc(16px + var(--safe-bottom));
+    border: none;
+    border-radius: var(--m-radius-sheet) var(--m-radius-sheet) 0 0;
+    background: var(--m-surface);
+    box-shadow: var(--m-elev-3);
+    font-family: var(--m-font);
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    animation: sheetUp 320ms var(--m-ease);
+  }
+
+  .dbg-header.dbg-header--phone {
+    position: sticky;
+    top: var(--sheet-handle);
+    z-index: 2;
+    min-height: 56px;
+    gap: 4px;
+    margin: 0 calc(-1 * var(--sheet-pad));
+    padding: 0 16px 4px 4px;
+    background: var(--m-surface);
+  }
+
+  .dbg-header--phone .dbg-header-title {
+    text-align: left;
+    margin-left: 4px;
+    font: 500 20px/28px var(--m-font);
+  }
+
+  .dbg-phone-icon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--m-touch);
+    height: var(--m-touch);
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-text);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .dbg-phone-icon:active {
+    background: var(--m-pressed);
+  }
+
+  .dbg-phone-done {
+    flex: none;
+    height: 40px;
+    padding: 0 22px;
+    border: none;
+    border-radius: var(--m-radius-pill);
+    background: var(--m-accent);
+    color: var(--m-on-accent);
+    font: var(--m-label);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Method chooser: Material list rows with a tonal leading icon. */
+  .dbg-methods {
+    gap: 0;
+    margin: 0 calc(-1 * var(--sheet-pad));
+  }
+
+  .dbg-method {
+    gap: 16px;
+    min-height: 72px;
+    padding: 8px 24px 8px 16px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .dbg-method:hover {
+    background: transparent;
+  }
+
+  .dbg-advanced .dbg-method {
+    width: calc(100% + 2 * var(--sheet-pad));
+    margin: 0 calc(-1 * var(--sheet-pad));
+  }
+
+  .dbg-method:active {
+    transform: none;
+    background: var(--m-pressed);
+  }
+
+  .dbg-method-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--m-surface-2);
+  }
+
+  .dbg-method.on .dbg-method-icon {
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+  }
+
+  .dbg-method-title {
+    font: var(--m-body);
+    font-weight: 500;
+  }
+
+  .dbg-method-sub {
+    font: var(--m-body-sm);
+  }
+
+  .dbg-advanced-label {
+    font: var(--m-label-sm);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-text-secondary);
+  }
+
+  .dbg-reset {
+    min-height: 48px;
+    border-radius: var(--m-radius-pill);
+    font: var(--m-label);
+  }
+
+  .dbg-preview {
+    width: 140px;
+    border-radius: 12px;
+  }
+
+  .dbg-scenes {
+    gap: 10px;
+  }
+
+  .dbg-scene {
+    border-radius: 12px;
+  }
+
+  .dbg-scene-name {
+    font-size: 11px;
+  }
+
+  .dbg-seg {
+    padding: 0;
+    gap: 0;
+    min-height: 40px;
+    background: transparent;
+    border-radius: var(--m-radius-pill);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 35%, transparent);
+    overflow: hidden;
+  }
+
+  .dbg-seg button {
+    border-radius: 0;
+    font: var(--m-label);
+  }
+
+  .dbg-seg button + button {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--color-text) 35%, transparent);
+  }
+
+  .dbg-seg button.on {
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+    box-shadow: none;
+  }
+
+  .dbg-input {
+    min-height: 48px;
+    font-size: 16px;
+    border-radius: var(--m-radius-field);
+  }
+
+  .dbg-dropzone {
+    border-radius: var(--m-radius-card);
+  }
+}

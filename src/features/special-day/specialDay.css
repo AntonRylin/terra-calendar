@@ -1283,3 +1283,188 @@
     display: none;
   }
 }
+
+/* ===== Phones: "Style this day" sheet ======================================
+   Header (✕ · title · Done) comes from SheetHeader. The swatches are the
+   stars: big rounded tiles, four to a row. */
+@media (max-width: 768px) {
+  .sd-panel.sd-panel--phone {
+    gap: 20px;
+    animation: none;
+  }
+
+  .sd-sheet-date {
+    margin-left: 10px;
+    font: var(--m-body-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .sd-panel--phone .sd-section {
+    gap: 10px;
+  }
+
+  .sd-panel--phone .sd-label {
+    font: var(--m-label);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-text-secondary);
+  }
+
+  .sd-panel--phone .sd-styles.cosmetic-options {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .sd-panel--phone .sd-styles .cosmetic-swatch {
+    height: auto;
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+    border-color: color-mix(in srgb, var(--color-text) 10%, transparent);
+  }
+
+  .sd-panel--phone .sd-styles .cosmetic-swatch:hover {
+    transform: none;
+  }
+
+  .sd-panel--phone .sd-styles .cosmetic-swatch.selected {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px var(--m-surface), 0 0 0 4px var(--color-text);
+  }
+
+  .sd-panel--phone .sd-styles .cosmetic-more {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--color-text-secondary);
+    background: var(--m-surface-2);
+    border: none;
+  }
+
+  /* Effects opener: the purple firefly card, at touch size. */
+  .sd-panel--phone .sd-effects-open {
+    min-height: 56px;
+    padding: 0 16px;
+    border-radius: 16px;
+    font: var(--m-body);
+  }
+
+  .sd-panel--phone .sd-effects-chev {
+    margin-left: auto;
+    font-size: 22px;
+  }
+
+  /* Repeat: Material segmented button. */
+  .sd-panel--phone .sd-segment {
+    padding: 0;
+    height: 48px;
+    background: transparent;
+    border-radius: var(--m-radius-pill);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 35%, transparent);
+    overflow: hidden;
+  }
+
+  .sd-panel--phone .sd-segment-thumb {
+    display: none;
+  }
+
+  .sd-panel--phone .sd-segment-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0;
+    font: var(--m-label);
+    color: var(--color-text);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sd-panel--phone .sd-segment-btn + .sd-segment-btn {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--color-text) 35%, transparent);
+  }
+
+  .sd-panel--phone .sd-segment-btn:active {
+    background: var(--m-pressed);
+  }
+
+  .sd-panel--phone .sd-segment-btn.selected {
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+    font-weight: 600;
+  }
+
+  /* Custom background: full-width tonal button. */
+  .sd-panel--phone .sd-custom-bg-btn {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 8px;
+    min-height: 48px;
+    padding: 8px 24px;
+    border: none;
+    border-radius: var(--m-radius-pill);
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+    font: var(--m-label);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sd-panel--phone .sd-custom-bg-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .sd-panel--phone .sd-custom-bg-btn:active {
+    filter: none;
+    box-shadow: inset 0 0 0 100px var(--m-pressed);
+  }
+
+  .sd-panel--phone .sd-custom-bg-cur {
+    font: var(--m-body-sm);
+    opacity: 0.8;
+  }
+
+  .sd-panel--phone .sd-custom-bg-cur::before {
+    content: '· ';
+  }
+
+  .sd-panel--phone .sd-footbar {
+    padding-top: 0;
+    border-top: none;
+    min-height: 0;
+  }
+
+  .sd-panel--phone .sd-footbar:empty {
+    display: none;
+  }
+
+  .sd-panel--phone .sd-foot-reset {
+    min-height: 48px;
+    margin-left: -12px;
+    padding: 0 12px;
+    border-radius: var(--m-radius-pill);
+    font: var(--m-label);
+    color: var(--color-danger);
+  }
+
+  .sd-panel--phone .sd-foot-reset:active {
+    background: var(--m-pressed);
+  }
+
+  /* Effects gallery: a full-height sheet from the bottom on phones. */
+  .fx-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .fx-modal {
+    max-height: calc(94dvh - var(--safe-top));
+    border: none;
+    border-radius: var(--m-radius-sheet) var(--m-radius-sheet) 0 0;
+    padding-bottom: var(--safe-bottom);
+    animation: sheetUp 320ms var(--m-ease);
+  }
+
+  .fx-modal-x {
+    width: var(--m-touch);
+    height: var(--m-touch);
+  }
+}

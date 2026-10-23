@@ -23,6 +23,19 @@ import { todayISO } from '../../core/dates';
 import { saveTextFile } from '../../data/saveTextFile';
 import { exportHabits, importHabits } from '../../app/habitBackup';
 import { SharingSection } from '../sharing/SharingSection';
+import { useShareStore } from '../../app/shareStore';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { useAndroidBack } from '../../app/androidBack';
+import {
+  PhoneAppBar,
+  PhoneActionRow,
+  PhoneBlock,
+  PhoneGroup,
+  PhoneNavRow,
+  PhoneSelectRow,
+  PhoneSwitchRow,
+} from './PhoneSettings';
+import { version as APP_VERSION } from '../../../package.json';
 import './settings.css';
 
 export const ICLOUD_SERVER = 'https://caldav.icloud.com';
@@ -62,6 +75,18 @@ const TIME_ZONES: string[] = (() => {
 function navIcon(paths: JSX.Element): JSX.Element {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {paths}
+    </svg>
+  );
+}
+
+const THEME_LABELS = { light: 'Light', dark: 'Dark', sand: 'Sand', system: 'System' } as const;
+const FONT_SCALES = [0.8, 0.9, 1, 1.2, 1.4];
+
+/** 24px outline icon for phone rows (sized by CSS). */
+function phoneIcon(paths: JSX.Element): JSX.Element {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {paths}
     </svg>
   );
@@ -683,6 +708,65 @@ export function Settings() {
     );
   }
 
+  // ── Phones: a two-level Android settings screen (section list → one page per
+  // section) instead of the desktop dialog. ──────────────────────────────────
+  const isMobile = useIsMobile();
+  const [phoneList, setPhoneList] = useState(true);
+  // Direction of the last page change, for the slide animation.
+  const [phoneBack, setPhoneBack] = useState(false);
+  const [phoneRaised, setPhoneRaised] = useState(false);
+  const [prevPanel, setPrevPanel] = useState(panel);
+  if (panel !== prevPanel) {
+    setPrevPanel(panel);
+    // Opening Settings: 'account' is what the generic "Settings" entry opens,
+    // so on a phone that lands on the section list; deep links (Calendars from
+    // the tour or the account menu) open their own page.
+    if (!prevPanel && panel) {
+      setPhoneList(panel === 'account');
+      setPhoneBack(false);
+      setPhoneRaised(false);
+    }
+  }
+
+  function phoneOpen(id: SettingsPanel) {
+    openSettings(id);
+    setSelectedCategory(null);
+    setPhoneList(false);
+    setPhoneBack(false);
+    setPhoneRaised(false);
+  }
+
+  /** App-bar back arrow: category editor → section → list → close. */
+  function goBack() {
+    if (panel === 'categories' && selectedCategory) {
+      setSelectedCategory(null);
+      setPhoneBack(true);
+      return;
+    }
+    if (isMobile && !phoneList) {
+      setPhoneList(true);
+      setPhoneBack(true);
+      setPhoneRaised(false);
+      return;
+    }
+    close();
+  }
+  // Android back, one registration per level (each press pops the topmost):
+  // Settings itself, then the section page, then the category being edited.
+  useAndroidBack(Boolean(panel), close);
+  useAndroidBack(Boolean(panel) && isMobile && !phoneList, () => {
+    setPhoneList(true);
+    setPhoneBack(true);
+    setPhoneRaised(false);
+  });
+  useAndroidBack(panel === 'categories' && Boolean(selectedCategory), () => {
+    setSelectedCategory(null);
+    setPhoneBack(true);
+  });
+
+  const shares = useShareStore((s) => s.shares);
+  const habitTabsEnabled = useSettingsStore((s) => s.habitTabsEnabled);
+
   if (!panel) return null;
 
   const closeButton = (
@@ -694,66 +778,421 @@ export function Settings() {
     </button>
   );
 
-  return (
-    <div className={`settings-backdrop${panel === 'minimap' ? ' minimap-mode' : ''}`} onClick={close}>
-      <div className={`settings-card${panel !== 'minimap' ? ' settings-card-split' : ''}`} onClick={(e) => e.stopPropagation()}>
-        {panel !== 'minimap' && (
-          <nav className="settings-nav">
-            <div className="settings-nav-account">
-              <div className="settings-nav-avatar" aria-hidden="true">
-                {session?.user.email ? session.user.email.slice(0, 2).toUpperCase() : '?'}
-              </div>
-              <div className="settings-nav-id">
-                <div className="settings-nav-email">{session?.user.email ?? 'Not signed in'}</div>
-                <div className="settings-nav-plan">{cloudActive ? 'Cloud plan' : 'Free plan'}</div>
-              </div>
-            </div>
-            {SECTIONS.map((s) => (
-              <button
-                key={s.id}
-                className={`settings-nav-item${panel === s.id ? ' is-active' : ''}`}
-                onClick={() => openSettings(s.id)}
-              >
-                {s.icon}
-                <span>{s.label}</span>
-              </button>
-            ))}
-            <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
-              <a
-                href="https://discord.com/invite/kfTbsN7eF7"
-                target="_blank"
-                rel="noreferrer"
-                className="settings-nav-item"
-                style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', gap: '9px' }}
-              >
-                <svg viewBox="0 0 127.14 96.36" width="14" height="14" fill="currentColor" aria-hidden="true" style={{ flex: 'none' }}>
-                  <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,52.8,6.83,77.19,77.19,0,0,0,49.5,0,105.15,105.15,0,0,0,19.06,8.07C-3.41,41.92-1.74,75.16,8.32,96A105.73,105.73,0,0,0,39.46,84.14a79.25,79.25,0,0,0,6.6-11A67.46,67.46,0,0,1,34,68.32c1-.7,1.94-1.44,2.83-2.22a74.37,74.37,0,0,0,53.46,0c.89.78,1.86,1.52,2.83,2.22a67.46,67.46,0,0,1-12.06,4.82,79.25,79.25,0,0,0,6.6,11A105.73,105.73,0,0,0,118.4,96C128.46,75.16,129.8,41.92,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.9,46,53.9,53,48.72,65.69,42.45,65.69Zm42,0C78.18,65.69,73,60,73,53S78.18,40.36,84.45,40.36,95.9,46,95.9,53,90.72,65.69,84.45,65.69Z" />
-                </svg>
-                <span>Discord</span>
-              </a>
-            </div>
-          </nav>
-        )}
-        {panel !== 'minimap' && (
-          <div className="settings-pane">
-            <header className="settings-header">
-              {panel === 'categories' && selectedCategory ? (
-                <button
-                  className="settings-back"
-                  onClick={() => setSelectedCategory(null)}
-                  aria-label="All categories"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
-                  <span>All categories</span>
-                </button>
-              ) : (
-                <h2>{SECTIONS.find((s) => s.id === panel)?.label ?? 'Settings'}</h2>
-              )}
-              {closeButton}
-            </header>
+  // ── Phone versions of the sections whose desktop layout (checkbox lists,
+  // fixed-width selects, window-layout controls) doesn't translate. ─────────
+  const phoneAppearance = isMobile ? (
+    <section className="settings-section ps-section">
+      <h3 className="ps-subhead">Theme</h3>
+      <div className="ps-seg" role="group" aria-label="Theme">
+        {(['light', 'dark', 'sand', 'system'] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            className={`ps-seg-btn${theme === mode ? ' is-active' : ''}`}
+            aria-pressed={theme === mode}
+            onClick={() => setTheme(mode)}
+          >
+            {theme === mode && (
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+            {THEME_LABELS[mode]}
+          </button>
+        ))}
+      </div>
+      <PhoneGroup>
+        <PhoneSwitchRow
+          title="Softer styles in dark mode"
+          summary="Dims day styles, event skins and day backgrounds so they sit in the dark theme"
+          checked={dimSkinsInDark}
+          onChange={setDimSkinsInDark}
+        />
+      </PhoneGroup>
 
+      <PhoneBlock title="Accent color">
+        <PaletteSelector
+          value={accentColor}
+          onChange={setAccentColor}
+          presets={ACCENT_COLORS.map((c) => ({ value: c.primary, bg: c.primary }))}
+          allowCustom={true}
+        />
+      </PhoneBlock>
+
+      <PhoneGroup title="Text">
+        <PhoneSelectRow
+          title="Text size"
+          value={String(fontScale)}
+          options={FONT_SCALES.map((v) => ({ value: String(v), label: `${Math.round(v * 100)}%` }))}
+          onChange={(v) => setFontScale(Number(v))}
+        />
+      </PhoneGroup>
+
+      <div className="ps-clock">
+        <ClockSection />
+      </div>
+
+      <PhoneGroup title="New events">
+        <PhoneSwitchRow
+          title="Time-syntax tip"
+          summary={<>Shows how &ldquo;1230 1410 gym&rdquo; becomes a 12:30&ndash;14:10 event</>}
+          checked={showQuickEntryDemo}
+          onChange={setShowQuickEntryDemo}
+        />
+      </PhoneGroup>
+
+      <PhoneGroup title="Week view">
+        <PhoneSwitchRow
+          title="Way back to today"
+          summary="Show a Today button when you scroll away"
+          checked={showWeekTodayButton}
+          onChange={setShowWeekTodayButton}
+        />
+      </PhoneGroup>
+    </section>
+  ) : null;
+
+  const phoneWeather = isMobile ? (
+    <section className="settings-section ps-section">
+      <PhoneGroup
+        title="Time zone"
+        footer="Events keep the time zone they were created in; times are shown converted to this one."
+      >
+        <PhoneSelectRow
+          title="Show times in"
+          sheetTitle="Time zone"
+          value={displayTimeZone}
+          options={TIME_ZONES.map((tz) => ({ value: tz, label: tz.replace(/_/g, ' ') }))}
+          onChange={setDisplayTimeZone}
+        />
+      </PhoneGroup>
+
+      <PhoneGroup title="Weather">
+        {!weatherAndLocationEnabled && (
+          <PhoneActionRow
+            icon={phoneIcon(<path d="M17.5 19a4.5 4.5 0 1 0 0-9 6 6 0 0 0-11.6 2A3.5 3.5 0 0 0 6.5 19z" />)}
+            title="Turn on location and weather"
+            summary="Forecasts on your days and in the weather details"
+            onClick={() => {
+              setWeatherAndLocationEnabled(true);
+              setShowWeatherIconOnDays(true);
+              setShowHourlyWeather(true);
+              setShowUvIndex(true);
+              notify('Location and weather features enabled.');
+            }}
+          />
+        )}
+        <PhoneSwitchRow
+          title="Weather icon on days"
+          checked={showWeatherIconOnDays}
+          disabled={!weatherAndLocationEnabled}
+          onChange={setShowWeatherIconOnDays}
+        />
+        <PhoneSwitchRow
+          title="Hourly forecast"
+          summary="Temperature through the day in the weather details"
+          checked={showHourlyWeather}
+          disabled={!weatherAndLocationEnabled}
+          onChange={setShowHourlyWeather}
+        />
+        <PhoneSwitchRow
+          title="UV index chart"
+          checked={showUvIndex}
+          disabled={!weatherAndLocationEnabled}
+          onChange={setShowUvIndex}
+        />
+      </PhoneGroup>
+
+      <PhoneGroup title="Calendar">
+        <PhoneSwitchRow
+          title="Clock on today"
+          summary="Current time on today's day cell"
+          checked={showClockOnToday}
+          onChange={setShowClockOnToday}
+        />
+        <PhoneSwitchRow
+          title="Grid lines"
+          summary="Shared borders between days"
+          checked={showGrid}
+          onChange={setShowGrid}
+        />
+      </PhoneGroup>
+    </section>
+  ) : null;
+
+  const phoneData = isMobile ? (
+    <section className="settings-section ps-section">
+      <PhoneGroup
+        title="Backup & restore"
+        footer="Categories, colors, saved styles and your profile. Events aren't included — they sync through your calendar account."
+      >
+        <PhoneActionRow
+          icon={phoneIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>)}
+          title="Export settings"
+          onClick={() => void handleExportSettings()}
+        />
+        <PhoneActionRow
+          icon={phoneIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></>)}
+          title="Import settings"
+          onClick={() => importSettingsInputRef.current?.click()}
+        />
+      </PhoneGroup>
+      <input
+        ref={importSettingsInputRef}
+        type="file"
+        accept="application/json,.json"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void handleImportSettingsFile(f);
+          e.target.value = '';
+        }}
+      />
+
+      <PhoneGroup
+        title="Habits"
+        footer="Habits and daily logs live on this device, not in Apple or Google Calendar."
+      >
+        {habitTabs.length > 0 && (
+          <PhoneActionRow
+            icon={phoneIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>)}
+            title="Export habits"
+            onClick={() => void handleExportHabits()}
+          />
+        )}
+        <PhoneActionRow
+          icon={phoneIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></>)}
+          title="Import habits"
+          onClick={() => importHabitsInputRef.current?.click()}
+        />
+      </PhoneGroup>
+      <input
+        ref={importHabitsInputRef}
+        type="file"
+        accept="application/json,.json"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void handleImportHabitsFile(f);
+          e.target.value = '';
+        }}
+      />
+
+      <PhoneGroup title="Cleanup">
+        <PhoneActionRow
+          icon={phoneIcon(<><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>)}
+          title="Delete past events"
+          summary="One-time events before today. Recurring events stay."
+          onClick={() => void deletePastEvents()}
+        />
+      </PhoneGroup>
+
+      <div className="ps-danger">
+        <DeleteAllDataSection />
+      </div>
+    </section>
+  ) : null;
+
+  const planLabel = cloudActive ? 'Cloud plan' : 'Free plan';
+  const phoneAvatar = (size: 'lg' | 'md') => (
+    <span className={`ps-avatar ps-avatar-${size}`} aria-hidden="true">
+      {identity.avatarDataUrl ? (
+        <img src={identity.avatarDataUrl} alt="" />
+      ) : (
+        <span>{initials(identity.name ?? identity.email ?? '') || '?'}</span>
+      )}
+    </span>
+  );
+
+  const phoneAccount = isMobile ? (
+    <section className="settings-section ps-section">
+      <div className="ps-profile">
+        <button
+          type="button"
+          className="ps-profile-avatar"
+          onClick={() => avatarInputRef.current?.click()}
+          disabled={avatarBusy}
+          aria-label={identity.avatarDataUrl ? 'Change profile picture' : 'Add a profile picture'}
+        >
+          {phoneAvatar('lg')}
+          <span className="ps-profile-badge" aria-hidden="true">
+            {phoneIcon(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></>)}
+          </span>
+        </button>
+        <label className="ps-field">
+          <span className="ps-field-label">Name</span>
+          <input
+            className="ps-field-input"
+            type="text"
+            placeholder="Your name"
+            maxLength={60}
+            value={nameInput}
+            onFocus={() => {
+              nameFocused.current = true;
+            }}
+            onChange={(e) => setNameInput(e.target.value)}
+            onBlur={() => {
+              nameFocused.current = false;
+              void commitName();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+            }}
+          />
+        </label>
+        <div className="ps-profile-sub">
+          {identity.email ? `${identity.email} · ${planLabel}` : `Saved on this device · ${planLabel}`}
+        </div>
+        {identity.avatarDataUrl && (
+          <button type="button" className="ps-text-btn" onClick={() => void removeAvatar()}>
+            Remove picture
+          </button>
+        )}
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void pickAvatar(f);
+            e.target.value = '';
+          }}
+        />
+      </div>
+
+      {accountAvailable ? (
+        <>
+          <PhoneGroup title="Plan">
+            <PhoneActionRow
+              icon={phoneIcon(<path d="M17.5 19a4.5 4.5 0 1 0 0-9 6 6 0 0 0-11.6 2A3.5 3.5 0 0 0 6.5 19z" />)}
+              title="Cloud sync"
+              summary={cloudActive
+                ? 'On — events, settings and day styles sync across your devices'
+                : 'Sync across your devices. Free works on this device with iCloud and Google.'}
+              onClick={cloudActive ? undefined : () => void buy('cloud')}
+              disabled={cloudActive}
+              trailing={!cloudActive && <span className="ps-chip">$2/mo</span>}
+            />
+            <PhoneActionRow
+              icon={phoneIcon(<><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" /><path d="M19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7z" /></>)}
+              title="Premium cosmetics"
+              summary={cosmeticsUnlocked ? 'Unlocked' : 'Extra themes, fonts and day styles'}
+              onClick={cosmeticsUnlocked ? undefined : () => void buy('cosmetics')}
+              disabled={cosmeticsUnlocked}
+              trailing={!cosmeticsUnlocked && <span className="ps-chip">$3.99</span>}
+            />
+          </PhoneGroup>
+
+          {session ? (
+            <PhoneGroup title="Account" footer="Your name and picture sync with this account.">
+              <PhoneActionRow
+                icon={phoneIcon(<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></>)}
+                title="Signed in"
+                summary={session.user.email}
+                disabled
+              />
+              <PhoneActionRow
+                icon={phoneIcon(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></>)}
+                title="Sign out"
+                onClick={() => void signOut()}
+              />
+            </PhoneGroup>
+          ) : (
+            <div className="ps-group">
+              <h3 className="ps-subhead">{account.mode === 'signin' ? 'Sign in' : 'Create account'}</h3>
+              <div className="ps-form">
+                <p className="ps-form-hint">
+                  Only needed for Cloud sync. Carries your name, picture and purchases across devices.
+                </p>
+                {isDesktop && (
+                  <>
+                    <button
+                      type="button"
+                      className="ps-btn ps-btn-tonal"
+                      onClick={() => {
+                        void (async () => {
+                          const { startBrowserSignIn } = await import('../../auth/desktopBrowserAuth');
+                          const result = await startBrowserSignIn();
+                          setAccount((a) => ({
+                            ...a,
+                            error: result.error ?? '',
+                            info: result.error ? '' : 'Continue in your browser — you are signed in here when you finish.',
+                          }));
+                        })();
+                      }}
+                    >
+                      Sign in with browser
+                    </button>
+                    <div className="ps-or"><span>or with email</span></div>
+                  </>
+                )}
+                <label className="ps-field">
+                  <span className="ps-field-label">Email</span>
+                  <input
+                    className="ps-field-input"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={account.email}
+                    onChange={(e) => setAccount((a) => ({ ...a, email: e.target.value }))}
+                  />
+                </label>
+                <label className="ps-field">
+                  <span className="ps-field-label">Password</span>
+                  <input
+                    className="ps-field-input"
+                    type="password"
+                    autoComplete={account.mode === 'signin' ? 'current-password' : 'new-password'}
+                    value={account.password}
+                    onChange={(e) => setAccount((a) => ({ ...a, password: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        void submitAccount();
+                      }
+                    }}
+                  />
+                </label>
+                {account.error && <p className="ps-form-error">{account.error}</p>}
+                {account.info && <p className="ps-form-hint">{account.info}</p>}
+                <button
+                  type="button"
+                  className="ps-btn ps-btn-filled"
+                  disabled={account.busy}
+                  onClick={() => void submitAccount()}
+                >
+                  {account.busy ? 'Please wait…' : account.mode === 'signin' ? 'Sign in' : 'Create account'}
+                </button>
+                <button
+                  type="button"
+                  className="ps-text-btn"
+                  onClick={() =>
+                    setAccount((a) => ({
+                      ...a,
+                      mode: a.mode === 'signin' ? 'signup' : 'signin',
+                      error: '',
+                      info: '',
+                    }))
+                  }
+                >
+                  {account.mode === 'signin' ? 'No account? Create one' : 'Have an account? Sign in'}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <p className="ps-footnote ps-footnote-center">
+          Your profile is saved on this device. Cloud accounts aren&apos;t available in this build.
+        </p>
+      )}
+    </section>
+  ) : null;
+
+  // Section bodies, shared by the desktop pane and the phone section page.
+  const sectionContent = (
+    <>
         {panel === 'sharing' && <SharingSection />}
 
         {panel === 'calendars' && (
@@ -771,6 +1210,9 @@ export function Settings() {
               </>
             )}
 
+            {isMobile && (!isAppleConnected || !isGoogleConnected) && (
+              <h3 className="ps-subhead ps-calendars-add">Add an account</h3>
+            )}
             {(!isAppleConnected || !isGoogleConnected) && (
               <div className="settings-actions">
                 {!isAppleConnected && (
@@ -800,6 +1242,11 @@ export function Settings() {
                   </button>
                 )}
               </div>
+            )}
+            {isMobile && !isConnected && (
+              <p className="ps-footnote">
+                Both can be connected at once. Events show merged and sync both ways.
+              </p>
             )}
 
             {apple.open && (
@@ -841,7 +1288,8 @@ export function Settings() {
           </section>
         )}
 
-        {panel === 'appearance' && (
+        {panel === 'appearance' && isMobile && phoneAppearance}
+        {panel === 'appearance' && !isMobile && (
           <section className="settings-section">
             <p className="settings-empty">
               Choose a light or dark look, or follow your system setting.
@@ -1016,7 +1464,8 @@ export function Settings() {
           </section>
         )}
 
-        {panel === 'weather' && (
+        {panel === 'weather' && isMobile && phoneWeather}
+        {panel === 'weather' && !isMobile && (
           <section className="settings-section">
             <h3 className="settings-subhead">Time zone</h3>
             <p className="settings-empty">
@@ -1125,7 +1574,8 @@ export function Settings() {
 
         {panel === 'habits' && <HabitTabsSection />}
 
-        {panel === 'data' && (
+        {panel === 'data' && isMobile && phoneData}
+        {panel === 'data' && !isMobile && (
           <section className="settings-section">
             <h3 className="settings-subhead">Calendar cleanup</h3>
             <p className="settings-empty">
@@ -1211,7 +1661,8 @@ export function Settings() {
           </section>
         )}
 
-        {panel === 'account' && (
+        {panel === 'account' && isMobile && phoneAccount}
+        {panel === 'account' && !isMobile && (
           <section className="settings-section">
             {/* Profile — name + avatar. Works fully offline; no account needed. */}
             <div className="profile-card">
@@ -1565,6 +2016,176 @@ export function Settings() {
             )}
           </section>
         )}
+    </>
+  );
+
+  if (isMobile) {
+    const sectionSummary = (id: SettingsPanel): string => {
+      switch (id) {
+        case 'calendars': {
+          if (Object.values(syncHealth).some((h) => h?.status === 'error')) return 'Sync paused — tap to check';
+          if (isAppleConnected && isGoogleConnected) return 'iCloud and Google connected';
+          if (isAppleConnected) return 'iCloud connected';
+          if (isGoogleConnected) return 'Google connected';
+          return 'Connect iCloud or Google Calendar';
+        }
+        case 'sharing':
+          if (!session) return 'Sign in to share with family';
+          if (!cloudActive) return 'Share a link with family · Cloud';
+          return shares.length === 0
+            ? 'Send a link to family'
+            : `${shares.length} shared ${shares.length === 1 ? 'link' : 'links'}`;
+        case 'appearance':
+          return `${THEME_LABELS[theme]} theme · ${Math.round(fontScale * 100)}% text`;
+        case 'categories':
+          return existingCategories.length === 0
+            ? 'Colors and styles for kinds of events'
+            : `${existingCategories.length} ${existingCategories.length === 1 ? 'category' : 'categories'}`;
+        case 'weather':
+          return `${weatherAndLocationEnabled ? 'Weather on' : 'Weather off'} · ${displayTimeZone.replace(/_/g, ' ')}`;
+        case 'habits':
+          return habitTabsEnabled
+            ? `On · ${habitTabs.length} ${habitTabs.length === 1 ? 'habit' : 'habits'}`
+            : 'Off';
+        case 'data':
+          return 'Backup, restore and cleanup';
+        default:
+          return '';
+      }
+    };
+    const row = (id: SettingsPanel) => {
+      const s = SECTIONS.find((x) => x.id === id)!;
+      return <PhoneNavRow key={id} icon={s.icon} title={s.label} summary={sectionSummary(id)} onClick={() => phoneOpen(id)} />;
+    };
+
+    const onList = phoneList;
+    const title = onList
+      ? 'Settings'
+      : panel === 'categories' && selectedCategory
+        ? selectedCategory
+        : SECTIONS.find((s) => s.id === panel)?.label ?? 'Settings';
+
+    return (
+      <div className="settings-phone" role="dialog" aria-modal="true" aria-label={title}>
+        <PhoneAppBar
+          title={title}
+          onBack={goBack}
+          backLabel={onList ? 'Close settings' : 'Back'}
+          raised={phoneRaised}
+        />
+        <div
+          key={onList ? 'list' : `${panel}:${selectedCategory ?? ''}`}
+          className={`settings-phone-body${phoneBack ? ' is-back' : ''}`}
+          onScroll={(e) => setPhoneRaised(e.currentTarget.scrollTop > 0)}
+        >
+          {onList ? (
+            <>
+              <button type="button" className="ps-account" onClick={() => phoneOpen('account')}>
+                {phoneAvatar('md')}
+                <span className="ps-row-text">
+                  <span className="ps-account-name">{identity.name ?? 'Set up your profile'}</span>
+                  <span className="ps-row-summary">
+                    {identity.email ? `${identity.email} · ${planLabel}` : `Saved on this device · ${planLabel}`}
+                  </span>
+                </span>
+                <svg className="ps-chevron" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="9 6 15 12 9 18" />
+                </svg>
+              </button>
+              <PhoneGroup>
+                {row('calendars')}
+                {row('sharing')}
+              </PhoneGroup>
+              <PhoneGroup>
+                {row('appearance')}
+                {row('categories')}
+                {row('weather')}
+                {row('habits')}
+              </PhoneGroup>
+              <PhoneGroup>{row('data')}</PhoneGroup>
+              <PhoneGroup>
+                <PhoneActionRow
+                  href="https://discord.com/invite/kfTbsN7eF7"
+                  icon={
+                    <svg viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
+                      <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,52.8,6.83,77.19,77.19,0,0,0,49.5,0,105.15,105.15,0,0,0,19.06,8.07C-3.41,41.92-1.74,75.16,8.32,96A105.73,105.73,0,0,0,39.46,84.14a79.25,79.25,0,0,0,6.6-11A67.46,67.46,0,0,1,34,68.32c1-.7,1.94-1.44,2.83-2.22a74.37,74.37,0,0,0,53.46,0c.89.78,1.86,1.52,2.83,2.22a67.46,67.46,0,0,1-12.06,4.82,79.25,79.25,0,0,0,6.6,11A105.73,105.73,0,0,0,118.4,96C128.46,75.16,129.8,41.92,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.9,46,53.9,53,48.72,65.69,42.45,65.69Zm42,0C78.18,65.69,73,60,73,53S78.18,40.36,84.45,40.36,95.9,46,95.9,53,90.72,65.69,84.45,65.69Z" />
+                    </svg>
+                  }
+                  title="Discord"
+                  summary="Get help and share ideas"
+                />
+              </PhoneGroup>
+              <p className="ps-version">Terra Calendar {APP_VERSION}</p>
+            </>
+          ) : (
+            sectionContent
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`settings-backdrop${panel === 'minimap' ? ' minimap-mode' : ''}`} onClick={close}>
+      <div className={`settings-card${panel !== 'minimap' ? ' settings-card-split' : ''}`} onClick={(e) => e.stopPropagation()}>
+        {panel !== 'minimap' && (
+          <nav className="settings-nav">
+            <div className="settings-nav-account">
+              <div className="settings-nav-avatar" aria-hidden="true">
+                {session?.user.email ? session.user.email.slice(0, 2).toUpperCase() : '?'}
+              </div>
+              <div className="settings-nav-id">
+                <div className="settings-nav-email">{session?.user.email ?? 'Not signed in'}</div>
+                <div className="settings-nav-plan">{cloudActive ? 'Cloud plan' : 'Free plan'}</div>
+              </div>
+            </div>
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                className={`settings-nav-item${panel === s.id ? ' is-active' : ''}`}
+                onClick={() => openSettings(s.id)}
+              >
+                {s.icon}
+                <span>{s.label}</span>
+              </button>
+            ))}
+            <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
+              <a
+                href="https://discord.com/invite/kfTbsN7eF7"
+                target="_blank"
+                rel="noreferrer"
+                className="settings-nav-item"
+                style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', gap: '9px' }}
+              >
+                <svg viewBox="0 0 127.14 96.36" width="14" height="14" fill="currentColor" aria-hidden="true" style={{ flex: 'none' }}>
+                  <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,52.8,6.83,77.19,77.19,0,0,0,49.5,0,105.15,105.15,0,0,0,19.06,8.07C-3.41,41.92-1.74,75.16,8.32,96A105.73,105.73,0,0,0,39.46,84.14a79.25,79.25,0,0,0,6.6-11A67.46,67.46,0,0,1,34,68.32c1-.7,1.94-1.44,2.83-2.22a74.37,74.37,0,0,0,53.46,0c.89.78,1.86,1.52,2.83,2.22a67.46,67.46,0,0,1-12.06,4.82,79.25,79.25,0,0,0,6.6,11A105.73,105.73,0,0,0,118.4,96C128.46,75.16,129.8,41.92,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.9,46,53.9,53,48.72,65.69,42.45,65.69Zm42,0C78.18,65.69,73,60,73,53S78.18,40.36,84.45,40.36,95.9,46,95.9,53,90.72,65.69,84.45,65.69Z" />
+                </svg>
+                <span>Discord</span>
+              </a>
+            </div>
+          </nav>
+        )}
+        {panel !== 'minimap' && (
+          <div className="settings-pane">
+            <header className="settings-header">
+              {panel === 'categories' && selectedCategory ? (
+                <button
+                  className="settings-back"
+                  onClick={() => setSelectedCategory(null)}
+                  aria-label="All categories"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                  <span>All categories</span>
+                </button>
+              ) : (
+                <h2>{SECTIONS.find((s) => s.id === panel)?.label ?? 'Settings'}</h2>
+              )}
+              {closeButton}
+            </header>
+
+        {sectionContent}
           </div>
         )}
 

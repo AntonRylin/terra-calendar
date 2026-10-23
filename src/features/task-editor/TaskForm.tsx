@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PaletteSelector } from '../../ui/PaletteSelector';
 import { CosmeticSelector } from '../../ui/CosmeticSelector';
 import { DateField } from '../../ui/DateField';
+import { useIsMobile } from '../../ui/useMediaQuery';
+import { SheetHeader, SheetRow } from '../../ui/SheetParts';
+import { CalendarIcon, NotesIcon, PaletteIcon, SparkleIcon, TagIcon } from '../../ui/sheetIcons';
+import { PhoneCategoryField } from '../event-editor/PhoneCategoryField';
+import { useCalendarStore } from '../../app/store';
+import { useSettingsStore } from '../../app/settingsStore';
 import '../event-editor/eventEditor.css';
 
 export interface TaskFormValues {
@@ -43,6 +49,14 @@ export function TaskForm({ initial, submitLabel, onSubmit, onDelete, focusDate }
   const [cosmetic, setCosmetic] = useState(initial.cosmetic ?? '');
   const [date, setDate] = useState(initial.date ?? '');
   const canSave = title.trim().length > 0;
+  const isMobile = useIsMobile();
+  const events = useCalendarStore((s) => s.events);
+  const storeCategories = useSettingsStore((s) => s.categories);
+  const categories = useMemo(() => {
+    const set = new Set<string>(Object.keys(storeCategories));
+    events.forEach((e) => e.type && set.add(e.type));
+    return Array.from(set).sort();
+  }, [events, storeCategories]);
 
   function submit() {
     if (!canSave) return;
@@ -54,6 +68,66 @@ export function TaskForm({ initial, submitLabel, onSubmit, onDelete, focusDate }
       cosmetic: cosmetic || undefined,
       date: date || undefined,
     });
+  }
+
+  // Phones: the same sheet layout as the event editor.
+  if (isMobile) {
+    return (
+      <div className="event-editor event-editor--phone">
+        <SheetHeader
+          title={onDelete ? 'Edit task' : 'New task'}
+          action={{ label: 'Save', onClick: submit, disabled: !canSave }}
+        />
+        <input
+          className="editor-title ee-title"
+          aria-label="Title"
+          placeholder="Add task"
+          value={title}
+          enterKeyHint="done"
+          autoFocus={!focusDate}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+        />
+        <div className="sheet-divider" />
+        <SheetRow icon={<CalendarIcon />}>
+          <div className="ee-when">
+            <DateField value={date} onChange={setDate} ariaLabel="Date" clearable />
+          </div>
+        </SheetRow>
+        <p className="ee-hint">Setting a date turns this task into a calendar event.</p>
+        <SheetRow icon={<TagIcon />}>
+          <PhoneCategoryField value={category} onChange={setCategory} categories={categories} />
+        </SheetRow>
+        <SheetRow icon={<PaletteIcon />} className="ee-swatch-row">
+          <div className="ee-swatch-scroll" aria-label="Color">
+            <PaletteSelector value={color} onChange={setColor} presets={PRESET_COLORS} allowCustom={true} />
+          </div>
+        </SheetRow>
+        <SheetRow icon={<SparkleIcon />} className="ee-swatch-row">
+          <div className="ee-swatch-scroll" aria-label="Style">
+            <CosmeticSelector value={cosmetic} onChange={setCosmetic} color={color || undefined} />
+          </div>
+        </SheetRow>
+        <div className="sheet-divider" />
+        <SheetRow icon={<NotesIcon />} align="start">
+          <textarea
+            className="ee-notes"
+            aria-label="Description"
+            placeholder="Add description"
+            rows={2}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </SheetRow>
+        {onDelete && (
+          <div className="ee-delete-row">
+            <button type="button" className="sheet-text-btn is-danger" onClick={onDelete}>
+              Delete task
+            </button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (

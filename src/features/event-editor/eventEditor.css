@@ -869,3 +869,420 @@
   margin: 12px 0 0;
   padding-top: 10px;
 }
+
+/* ===== Phones: the editor as a Material sheet ==============================
+   EventForm (and TaskForm / SpanForm) render a different arrangement on
+   phones (header, big title, leading-icon rows), marked .event-editor--phone.
+   Rows, header, switch and fields come from src/ui/sheetParts.css. */
+@media (max-width: 768px) {
+  .event-editor.event-editor--phone {
+    gap: 0;
+    font-family: var(--m-font);
+  }
+
+  /* Big borderless title, aligned with the row text (after the icon column). */
+  .event-editor--phone .ee-title,
+  .event-editor--phone .ee-title:focus {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 64px;
+    padding: 8px 0 8px 56px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    font: 400 24px/32px var(--m-font);
+    color: var(--color-text);
+  }
+
+  .event-editor--phone .ee-title::placeholder {
+    color: var(--color-text-faint);
+  }
+
+  /* Date ... start time / Ends ... end time. */
+  .ee-when {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 48px;
+  }
+
+  .ee-when .phone-picker:last-child:not(:first-child) {
+    margin-left: 0;
+    margin-right: -12px;
+  }
+
+  .ee-when-label {
+    font: var(--m-body);
+    color: var(--color-text-secondary);
+  }
+
+  .ee-hint {
+    margin: -8px 0 4px 56px;
+    font: var(--m-body-sm);
+    color: var(--color-text-secondary);
+  }
+
+  /* Repeat: a native select (Android shows its own list) dressed as text. */
+  .ee-repeat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+  }
+
+  .ee-select-wrap {
+    position: relative;
+    display: inline-flex;
+    margin-left: -12px;
+  }
+
+  .event-editor--phone .ee-select,
+  .event-editor--phone .ee-select:focus {
+    min-height: 48px;
+    padding: 0 36px 0 12px;
+    border: none;
+    border-radius: var(--m-radius-pill);
+    background-color: transparent;
+    background-position: right 12px center;
+    box-shadow: none;
+    font: var(--m-body);
+    color: var(--color-text);
+  }
+
+  .event-editor--phone .ee-select:active {
+    background-color: var(--m-pressed);
+  }
+
+  .ee-interval {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font: var(--m-body);
+    color: var(--color-text-secondary);
+  }
+
+  .event-editor--phone .ee-interval input {
+    width: 64px;
+    min-height: 40px;
+    padding: 0 8px;
+    border: none;
+    border-radius: var(--m-radius-field);
+    background: var(--m-surface-2);
+    font: var(--m-body);
+    text-align: center;
+  }
+
+  .event-editor--phone .ee-interval input:focus {
+    box-shadow: inset 0 0 0 2px var(--m-accent);
+  }
+
+  /* Category chip + Edit. */
+  .ee-category {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* Colour dots and style swatches share one horizontally scrolling strip that
+     runs to the sheet edge. */
+  .ee-swatch-row .sheet-row-body {
+    margin-right: calc(-1 * var(--sheet-pad, 16px));
+  }
+
+  .ee-swatch-scroll {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding: 8px var(--sheet-pad, 16px) 8px 4px;
+    margin-left: -4px;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent);
+  }
+
+  .ee-swatch-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ee-swatch-scroll .color-options,
+  .ee-swatch-scroll .cosmetic-options {
+    flex: none;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+
+  .ee-swatch-scroll .color-options {
+    gap: 9px;
+  }
+
+  .ee-swatch-scroll .color-circle {
+    width: 29px;
+    height: 29px;
+    flex: none;
+  }
+
+  .ee-swatch-scroll .color-circle:hover {
+    transform: none;
+  }
+
+  .ee-swatch-scroll .color-circle.selected {
+    border: 2px solid var(--m-surface);
+    box-shadow: 0 0 0 2px var(--color-text);
+  }
+
+  .ee-swatch-scroll .palette-icon {
+    font-size: 14px;
+  }
+
+  .ee-swatch-scroll .cosmetic-swatch {
+    width: 52px;
+    height: 32px;
+    flex: none;
+    border-radius: 10px;
+  }
+
+  /* Reminders: pills wrap under the bell, "Add reminder" is a text button. */
+  .ee-reminders .sheet-row-body {
+    padding: 8px 0;
+  }
+
+  .ee-reminders .reminder-pills {
+    gap: 8px;
+    align-items: center;
+  }
+
+  .ee-reminders .reminder-pill {
+    min-height: 32px;
+    border-radius: 8px;
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+    font: var(--m-label);
+  }
+
+  .ee-reminders .reminder-pill-label {
+    padding: 6px 4px 6px 12px;
+  }
+
+  .ee-reminders .reminder-pill-remove {
+    padding: 6px 10px 6px 6px;
+    opacity: 0.8;
+  }
+
+  .ee-reminders .reminder-pill-remove svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .ee-reminders .reminder-add-pill {
+    min-height: 40px;
+    margin-left: -12px;
+    padding: 0 12px;
+    border: none;
+    border-radius: var(--m-radius-pill);
+    font: var(--m-body);
+    color: var(--color-text-secondary);
+  }
+
+  .ee-reminders .reminder-pills:has(.reminder-pill) .reminder-add-pill {
+    margin-left: 0;
+    color: var(--m-accent);
+    font: var(--m-label);
+  }
+
+  .ee-reminders .reminder-add-pill:active {
+    background: var(--m-pressed);
+  }
+
+  .ee-reminders .reminder-custom-editor {
+    margin-top: 8px;
+    padding: 8px;
+    gap: 8px;
+    border-radius: var(--m-radius-field);
+    background: var(--m-surface-2);
+  }
+
+  .event-editor--phone .reminder-custom-value,
+  .event-editor--phone .reminder-custom-unit {
+    min-height: 44px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--m-surface);
+    font: var(--m-body);
+  }
+
+  .event-editor--phone .reminder-custom-done {
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: var(--m-radius-pill);
+    font: var(--m-label);
+  }
+
+  /* Description: a borderless multi-line field next to its icon. */
+  .event-editor--phone .ee-notes,
+  .event-editor--phone .ee-notes:focus {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 56px;
+    padding: 16px 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    font: var(--m-body);
+    resize: none;
+    field-sizing: content;
+  }
+
+  .event-editor--phone .ee-notes::placeholder {
+    color: var(--color-text-secondary);
+  }
+
+  .event-editor--phone .editor-calendars {
+    margin: 8px 0;
+    border-color: var(--m-outline);
+    border-radius: var(--m-radius-card);
+  }
+
+  .event-editor--phone .editor-cal-row {
+    min-height: 48px;
+    font: var(--m-body);
+  }
+
+  .ee-delete-row {
+    display: flex;
+    margin: 8px 0 0 44px;
+  }
+
+  .event-editor--phone .event-shared-note {
+    margin: 0 calc(-1 * var(--sheet-pad, 16px)) 4px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 0;
+    background: var(--m-accent-container);
+    color: var(--m-on-accent-container);
+    font: var(--m-body-sm);
+  }
+
+  /* Reminder presets as a menu sheet. */
+  .popover.popover-sheet.reminder-add-popover {
+    min-width: 0;
+    max-height: calc(92dvh - var(--safe-top));
+    overflow-y: auto;
+    padding: 0 var(--sheet-pad) calc(8px + var(--safe-bottom));
+  }
+
+  .popover-sheet .reminder-menu-item {
+    gap: 16px;
+    min-height: 56px;
+    margin: 0 calc(-1 * var(--sheet-pad));
+    padding: 0 24px;
+    border-radius: 0;
+    font: var(--m-body);
+  }
+
+  .popover-sheet .reminder-menu-item:hover:enabled {
+    background: transparent;
+  }
+
+  .popover-sheet .reminder-menu-item:active:enabled {
+    background: var(--m-pressed);
+  }
+
+  .popover-sheet .reminder-menu-item.custom {
+    margin-top: 4px;
+    padding-top: 0;
+    border-top-color: var(--m-outline);
+  }
+
+  .popover-sheet .reminder-menu-check {
+    width: 24px;
+    height: 24px;
+    order: 2;
+    margin-left: auto;
+  }
+
+  .popover-sheet .reminder-menu-check svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* View-only shared event on a phone. */
+  .popover-sheet .event-readonly {
+    max-width: none;
+    padding: 4px 0 8px;
+  }
+
+  .popover-sheet .event-readonly-title {
+    font: var(--m-title-lg);
+  }
+}
+
+/* Phone category picker (PhoneCategoryField): the trigger in its row and
+   the sheet it opens. */
+.phone-cat-trigger {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  margin-left: -12px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--m-radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  font: var(--m-body);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.phone-cat-trigger.is-empty {
+  color: var(--color-text-secondary);
+}
+
+.phone-cat-trigger:active {
+  background: var(--m-pressed);
+}
+
+.phone-cat-chip.upcoming-type {
+  padding: 0;
+  font: var(--m-body);
+  font-weight: 500;
+}
+
+.phone-cat-dot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0 5px;
+  border-radius: 50%;
+}
+
+.phone-cat-dot.is-none {
+  box-sizing: border-box;
+  border: 2px solid var(--color-text-faint);
+}
+
+.phone-cat-trigger .phone-cat-dot {
+  margin: 0 10px 0 0;
+}
+
+.phone-cat-new {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0 8px;
+}
+
+.phone-cat-new .sheet-field {
+  padding-right: 56px;
+}
+
+.phone-cat-add {
+  position: absolute;
+  right: 4px;
+  color: var(--m-accent);
+}
